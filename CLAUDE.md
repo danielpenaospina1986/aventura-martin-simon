@@ -67,6 +67,14 @@ aventura-martin-simon/
       dibujo.js         fabrica de graficos provisionales (rectangulos)
     niveles/
       nivel1.js         mapa del nivel 1 como texto editable a mano
+  herramientas/
+    validar-nivel.mjs   comprueba que el nivel es jugable (node)
+```
+
+Comprobar un nivel despues de editarlo a mano:
+
+```
+node herramientas/validar-nivel.mjs
 ```
 
 **Regla de oro:** lo visual esta centralizado (`config/estilo.js` y `sistemas/dibujo.js`)
@@ -185,3 +193,14 @@ grupo de enemigos donde luce la katana de Martin.
   un plataformas clasico.
 - **2026-09-22** — Los niveles se escriben como mapas de texto en vez de Tiled, para
   que Daniel pueda editarlos con el bloc de notas. Tiled queda para la fase 3.
+- **2026-09-22** — Los graficos provisionales no son imagenes sueltas: se generan por
+  codigo en `src/sistemas/dibujo.js` y se registran con las claves de `TEXTURAS`.
+  Al pasar a pixel art solo hay que cambiar ese archivo por uno que cargue PNG con
+  las mismas claves.
+- **2026-09-22** — Existe `herramientas/validar-nivel.mjs`, que calcula la parabola
+  real del salto a partir de `ajustes.js` y comprueba que la meta se alcanza sin usar
+  habilidades. Se ejecuta despues de tocar un nivel o los valores de movimiento.
+- **2026-09-22** — Los efectos (estrellitas, polvo, brillos) se hacen con tweens y no
+  con el sistema de particulas: menos dependencias y mas facil de sustituir.
+- **2026-09-22** — `window.juego` expone la instancia de Phaser para depurar desde la
+  consola del navegador y para las pruebas automaticas con Playwright.
