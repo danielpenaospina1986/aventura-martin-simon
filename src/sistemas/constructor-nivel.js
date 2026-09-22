@@ -82,6 +82,52 @@ export function construirNivel(escena, nivel, opciones = {}) {
     pozo.fillRect(col * C, desde * C, C, alto - desde * C);
   }
 
+  // --- terreno y plataformas, agrupados en tramos ---------------------------
+  //
+  // Antes se creaba un sprite con su cuerpo por cada casilla: en un nivel largo
+  // salian mas de 500 cuerpos de fisica y el juego bajaba a 20 fotogramas por
+  // segundo. Ahora cada fila de casillas seguidas es UN solo rectangulo, con un
+  // unico cuerpo, y el dibujo se repite con un tileSprite. De 500 cuerpos a 20.
+  const tramosDe = (simbolo) => {
+    const tramos = [];
+    for (let fila = 0; fila < filas; fila += 1) {
+      let inicio = null;
+      for (let col = 0; col <= columnas; col += 1) {
+        const esteEs = col < columnas && mapa[fila][col] === simbolo;
+        if (esteEs && inicio === null) inicio = col;
+        if (!esteEs && inicio !== null) {
+          tramos.push({ fila, desde: inicio, hasta: col - 1 });
+          inicio = null;
+        }
+      }
+    }
+    return tramos;
+  };
+
+  tramosDe(SIMBOLOS.SOLIDO).forEach(({ fila, desde, hasta }) => {
+    const ancho = (hasta - desde + 1) * C;
+    // solo la franja de mas arriba lleva hierba
+    const alAire = fila === 0 || mapa[fila - 1][desde] !== SIMBOLOS.SOLIDO;
+    const trozo = escena.add
+      .tileSprite(desde * C, fila * C, ancho, C, alAire ? TEXTURAS.suelo : TEXTURAS.tierra)
+      .setOrigin(0, 0);
+    escena.physics.add.existing(trozo, true);
+    solidos.add(trozo);
+  });
+
+  tramosDe(SIMBOLOS.PLATAFORMA).forEach(({ fila, desde, hasta }) => {
+    const ancho = (hasta - desde + 1) * C;
+    const trozo = escena.add
+      .tileSprite(desde * C, fila * C, ancho, 12, TEXTURAS.plataforma)
+      .setOrigin(0, 0);
+    escena.physics.add.existing(trozo, true);
+    // se atraviesa desde abajo y por los lados: solo frena al caer encima
+    trozo.body.checkCollision.down = false;
+    trozo.body.checkCollision.left = false;
+    trozo.body.checkCollision.right = false;
+    plataformas.add(trozo);
+  });
+
   for (let fila = 0; fila < filas; fila += 1) {
     for (let col = 0; col < columnas; col += 1) {
       const simbolo = mapa[fila][col];
@@ -89,21 +135,9 @@ export function construirNivel(escena, nivel, opciones = {}) {
       const y = centroY(fila);
 
       switch (simbolo) {
-        case SIMBOLOS.SOLIDO: {
-          // solo la casilla de mas arriba lleva hierba
-          const alAire = fila === 0 || mapa[fila - 1][col] !== SIMBOLOS.SOLIDO;
-          solidos.create(x, y, alAire ? TEXTURAS.suelo : TEXTURAS.tierra);
-          break;
-        }
-
-        case SIMBOLOS.PLATAFORMA: {
-          // se dibuja pegada al techo de la casilla y solo frena desde arriba
-          const p = plataformas.create(x, fila * C + 6, TEXTURAS.plataforma);
-          p.body.checkCollision.down = false;
-          p.body.checkCollision.left = false;
-          p.body.checkCollision.right = false;
-          break;
-        }
+        case SIMBOLOS.SOLIDO:
+        case SIMBOLOS.PLATAFORMA:
+          break; // el terreno se monta por tramos, mas abajo
 
         case SIMBOLOS.MONEDA: {
           const moneda = monedas.create(x, y, texturaMoneda);

@@ -9,6 +9,7 @@
 
 import Phaser from 'phaser';
 import { PUNTOS } from '../config/ajustes.js';
+import { TOTAL_NIVELES } from '../niveles/index.js';
 import { COLORES, FONDO, FUENTE } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { pintarFondo, panelDeco } from '../sistemas/dibujo.js';
@@ -28,6 +29,9 @@ export class EscenaVictoria extends Phaser.Scene {
     this.recogidas = d.recogidas || 0;
     this.golpes = d.golpes || 0;
     this.jefesDerrotados = d.jefesDerrotados || 0;
+    this.indiceNivel = d.indiceNivel || 0;
+    this.nombreNivel = d.nombreNivel || '';
+    this.hayOtroNivel = this.indiceNivel + 1 < TOTAL_NIVELES;
   }
 
   create() {
@@ -36,7 +40,7 @@ export class EscenaVictoria extends Phaser.Scene {
     pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
 
     this.add
-      .text(ancho / 2, 58, '¡Lo lograste!', {
+      .text(ancho / 2, 58, this.hayOtroNivel ? '¡Nivel superado!' : '¡Lo lograste!', {
         fontFamily: FUENTE.familia,
         fontSize: '54px',
         color: COLORES.textoAcento,
@@ -45,8 +49,12 @@ export class EscenaVictoria extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const subtitulo = this.hayOtroNivel
+      ? `${datos.nombre} se ha pasado "${this.nombreNivel}"`
+      : `${datos.nombre} se ha pasado los ${TOTAL_NIVELES} niveles`;
+
     this.add
-      .text(ancho / 2, 104, `${datos.nombre} ha llegado a la meta`, {
+      .text(ancho / 2, 104, subtitulo, {
         fontFamily: FUENTE.familia,
         fontSize: '22px',
         color: COLORES.textoClaro,
@@ -73,17 +81,38 @@ export class EscenaVictoria extends Phaser.Scene {
 
     this.pintarMarcador(ancho / 2 + 90, 300);
 
-    new Menu(
-      this,
-      [
-        {
-          etiqueta: 'Jugar otra vez',
-          alElegir: () => this.scene.start('nivel', { personajeId: this.personajeId }),
-        },
-        { etiqueta: 'Cambiar personaje', alElegir: () => this.scene.start('seleccion') },
-      ],
-      { x: ancho / 2, y: 448, separacion: 46, tamano: 27 },
-    );
+    // Lo que se arrastra al siguiente nivel: la partida es de los cinco.
+    const partida = {
+      personajeId: this.personajeId,
+      monedas: this.monedas,
+      recogidas: this.recogidas,
+      golpes: this.golpes,
+      jefesDerrotados: this.jefesDerrotados,
+    };
+
+    const opciones = [];
+    if (this.hayOtroNivel) {
+      opciones.push({
+        etiqueta: `Siguiente nivel  (${this.indiceNivel + 2} de ${TOTAL_NIVELES})`,
+        alElegir: () => this.scene.start('nivel', { ...partida, indiceNivel: this.indiceNivel + 1 }),
+      });
+    }
+    opciones.push({
+      etiqueta: this.hayOtroNivel ? 'Repetir este nivel' : 'Jugar otra vez',
+      alElegir: () =>
+        this.scene.start('nivel', {
+          personajeId: this.personajeId,
+          indiceNivel: this.hayOtroNivel ? this.indiceNivel : 0,
+        }),
+    });
+    opciones.push({ etiqueta: 'Cambiar personaje', alElegir: () => this.scene.start('seleccion') });
+
+    new Menu(this, opciones, {
+      x: ancho / 2,
+      y: this.hayOtroNivel ? 434 : 448,
+      separacion: 40,
+      tamano: 24,
+    });
   }
 
   // --- el desglose del marcador ---------------------------------------------
@@ -172,6 +201,7 @@ export class EscenaVictoria extends Phaser.Scene {
   }
 
   mensaje() {
+    if (!this.hayOtroNivel) return '¡Te has pasado el juego entero!';
     if (this.golpes === 0) return '¡Sin un solo golpe! Eso tiene mucho mérito.';
     if (this.recogidas >= this.total) return '¡No se te ha escapado ni uno!';
     const otro = this.personajeId === 'martin' ? PERSONAJES.simon : PERSONAJES.martin;

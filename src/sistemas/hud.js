@@ -10,7 +10,7 @@ import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 const FILA = { ancho: 286, alto: 44, margen: 12, separacion: 8 };
 
 export class Hud {
-  constructor(escena, jugadores, totalMonedas) {
+  constructor(escena, jugadores, totalMonedas, nivel = null) {
     this.escena = escena;
     this.jugadores = jugadores;
     this.totalMonedas = totalMonedas;
@@ -69,6 +69,32 @@ export class Hud {
       // animar la carita sin deformarla.
       this.filas.push({ panel, disco, cara, nombre, icono, contador, escalaCara: cara.scaleX });
     });
+
+    if (nivel) {
+      escena.add
+        .text(escena.scale.width - 14, 16, `Nivel ${nivel.numero} de ${nivel.total}`, {
+          fontFamily: FUENTE.familia,
+          fontSize: '18px',
+          color: COLORES.textoAcento,
+          stroke: '#1b1410',
+          strokeThickness: 5,
+        })
+        .setOrigin(1, 0)
+        .setScrollFactor(0)
+        .setDepth(101);
+
+      escena.add
+        .text(escena.scale.width - 14, 40, nivel.nombre, {
+          fontFamily: FUENTE.familia,
+          fontSize: '16px',
+          color: COLORES.textoClaro,
+          stroke: '#1b1410',
+          strokeThickness: 4,
+        })
+        .setOrigin(1, 0)
+        .setScrollFactor(0)
+        .setDepth(101);
+    }
 
     this.ayuda = escena.add
       .text(

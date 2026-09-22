@@ -1,24 +1,28 @@
 // ---------------------------------------------------------------------------
-// NIVEL 1 - "El primer paseo"
+// NIVEL 1 - "El barrio"
 //
 // El mapa es texto puro: cada caracter es una casilla de 32x32 px.
 // Se puede editar con el bloc de notas. Leyenda:
 //
 //   #  suelo solido
 //   =  plataforma que se atraviesa desde abajo
-//   C  moneda
+//   C  moneda (sushi para Martin, bloque para Simon)
 //   E  enemigo
+//   J  jefe
 //   K  checkpoint
 //   M  meta
 //   P  inicio del jugador
 //   .  vacio
 //
+// Este archivo lo genera herramientas/generar-niveles.mjs. Se puede retocar a
+// mano, pero si se vuelve a ejecutar la herramienta se sobrescribe.
+//
 // Despues de editar, comprobar que sigue siendo jugable con:
-//   node herramientas/validar-nivel.mjs
+//   npm run validar
 // ---------------------------------------------------------------------------
 
 export const NIVEL_1 = {
-  nombre: 'El primer paseo',
+  nombre: 'El barrio',
   mapa: [
 // col:  0         10        20        30        40        50        60        70        80        90    
   '................................................................................................', //  0
@@ -31,9 +35,9 @@ export const NIVEL_1 = {
   '..........................................===.............................CCCCCC................', //  7
   '......................................C...................................######................', //  8
   '.....................................===........................................................', //  9
-  '..............CC.................C.............................................................#', // 10
-  '.............====..........C....===.....................................==.....................#', // 11
-  '..........................C.C.........................................CC.......................#', // 12
+  '..............CC...........C.....C.............................................................#', // 10
+  '.............====.........C.C...===.....................................==.....................#', // 11
+  '......................................................................CC.......................#', // 12
   '...P....CCC.........E.CC........................K.......CCE..E..E.CC............K.CCC..J......M#', // 13
   '##########################...#######################...###############..########################', // 14
   '##########################...#######################...###############..########################', // 15
@@ -43,10 +47,10 @@ export const NIVEL_1 = {
   // Carteles de ayuda que aparecen flotando en el mundo (columna, fila, texto).
   pistas: [
     { col: 5, fila: 11, texto: '← →  para moverte' },
-    { col: 12, fila: 9, texto: 'Espacio para saltar\n(si lo sueltas antes, saltas menos)' },
+    { col: 12, fila: 9, texto: 'Espacio para saltar' },
     { col: 31, fila: 10, texto: 'Sube por las plataformas' },
-    { col: 57, fila: 11, texto: 'Pulsa X para atacar\n(Martín corta, Simón lanza bloques)' },
-    { col: 75, fila: 11, texto: 'Ahí arriba hay monedas' },
+    { col: 57, fila: 11, texto: 'Pulsa X para atacar' },
+    { col: 75, fila: 11, texto: 'Ahí arriba hay premios' },
     { col: 84, fila: 9, texto: '¡El jefe!' },
     { col: 84, fila: 10, texto: 'Sáltale encima o atácale: aguanta 3 golpes' },
   ],

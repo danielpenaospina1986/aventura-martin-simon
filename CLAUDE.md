@@ -23,7 +23,8 @@ Simon (los hijos de Daniel). Titulo provisional: **"Las aventuras de Martin y Si
 | Lenguaje | JavaScript (ES modules), sin TypeScript |
 | Resolucion interna | **960 x 540** |
 | Escalado | `Phaser.Scale.FIT` + `CENTER_BOTH` (se adapta a la ventana sin deformarse) |
-| Modo | `pixelArt: true`, `roundPixels: true`, antialias apagado |
+| Modo | antialias **encendido** (el estilo es dibujo animado, no pixel art) |
+| Tipografia | Chailce Noggin, completada a mano (ver seccion 10) |
 | Grilla | **32 x 32 px** |
 | Fisica | Arcade Physics |
 | Node | v24 LTS |
@@ -76,11 +77,14 @@ aventura-martin-simon/
       cara-simon.png            carita de Simon, limpia y recortada
       caras-origen/             dibujos de partida (NO se versionan)
     niveles/
-      nivel1.js         mapa del nivel 1 como texto editable a mano
+      index.js          la lista de niveles, en orden
+      nivel1.js .. nivel5.js   un mapa de texto por tablero
   herramientas/
-    validar-nivel.mjs   comprueba que el nivel es jugable (node)
+    validar-niveles.mjs comprueba que los cinco niveles son terminables
+    generar-niveles.mjs escribe los mapas de src/niveles/
     tratar-fondo.mjs    suaviza la ilustracion de fondo
     preparar-caras.mjs  limpia y recorta las caritas de los ninos
+    completar-fuente.mjs anade acentos y signos a la tipografia
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
   capturas/             imagenes que generan las pruebas (no se versionan)
@@ -156,6 +160,20 @@ Valores en `src/config/ajustes.js`:
 - **Buffer de salto** ~100 ms: si pulsas salto justo antes de aterrizar, salta igual.
 - Cajas de colision **algo mas pequenas** que el dibujo del personaje (perdona roces).
 
+## 6bis. El marcador
+
+| Cosa | Puntos |
+|---|---|
+| Recoger un premio | **+1** |
+| Que te toque un enemigo o caerte a un hueco | **-3** |
+| Derrotar a un jefe | **+10** |
+
+El marcador nunca baja de cero. Se arrastra de un nivel al siguiente, asi que al
+final refleja la partida entera: lo que ganaste menos lo que costo llegar.
+
+Cada personaje recoge lo suyo: **Martin rollos de sushi** y **Simon bloques de
+armar** con seis cilindros encima. Es solo el dibujo; puntuan igual.
+
 ## 6. Reglas amables
 
 Filosofia: juego **generoso y sin castigos fuertes**.
@@ -211,6 +229,22 @@ es una casilla de 32 x 32.
 | `P` | posicion de inicio |
 | `.` | vacio |
 
+### Los cinco tableros
+
+| # | Nombre | Tamano | Premios | Enemigos |
+|---|---|---|---|---|
+| 1 | El barrio | 96 x 17 | 28 | 4 |
+| 2 | Los tejados | 104 x 17 | 31 | 5 |
+| 3 | El mercado | 108 x 17 | 42 | 8 |
+| 4 | La quebrada | 112 x 17 | 42 | 5 |
+| 5 | La cima | 116 x 17 | 48 | 7 |
+
+Todos tienen **dos checkpoints** y **un jefe** antes de la meta. Se juegan en
+orden y el marcador se arrastra de uno a otro: la partida son los cinco.
+
+Los mapas se escriben en `herramientas/generar-niveles.mjs` y se generan con
+`npm run niveles`. La historia y el arte de cada tablero estan por decidir.
+
 **Nivel 1:** unas 3 pantallas de largo (96 x 17 casillas). Arranque tranquilo para
 aprender, escalera de plataformas, tres huecos, **28 monedas**, **4 enemigos**,
 **dos checkpoints** (uno a la mitad y otro antes del jefe), una repisa alta con 6
@@ -224,6 +258,11 @@ katana de Martin, y al final la **arena del jefe** con la meta detras.
   franquicias conocidas.
 - **Fondo actual:** ilustracion de un barrio de ladera con metrocable, aportada por
   Daniel el 2026-09-22. No contiene marcas ni personajes de franquicias.
+- **Tipografia:** Chailce Noggin, de ripoof (2021), que da el aire de dibujo
+  animado de los anos 30. No declara licencia en sus metadatos: si algun dia hay
+  que sustituirla, es cambiar un archivo. Venia con 81 glifos y **sin acentos,
+  sin ene y sin signos de apertura**; como todo el juego esta en espanol, se
+  completa con `herramientas/completar-fuente.mjs` hasta 105 glifos.
 - **Caritas de los ninos:** dibujos de Martin y Simon generados con Gemini a peticion
   de Daniel, pidiendo un aire de dibujo animado antiguo. Un estilo de dibujo se puede
   usar libremente, pero el generador colo dos marcas registradas: un emblema en la
@@ -315,6 +354,18 @@ baja.
   el orden de los dos objetos**: cuando enfrenta un grupo con un sprite suelto, los
   invierte. Por fiarse del orden, el bloque lanzado destruia al jefe en vez de
   romperse el. Ahora siempre se comprueba cual de los dos es el proyectil.
+- **2026-09-22** — El juego pasa de cinco a **cinco tableros encadenados**, cada
+  uno con su jefe, y el marcador se arrastra entre ellos. Los mapas se escriben
+  por tramos en una herramienta, porque alinear a ojo una rejilla de 116 x 17
+  caracteres no es razonable.
+- **2026-09-22** — El terreno ya no se monta casilla a casilla, sino por tramos:
+  cada fila de casillas seguidas es un solo rectangulo con un unico cuerpo de
+  fisica. Se paso de mas de 500 cuerpos por nivel a unos 60.
+- **2026-09-22** — Las pruebas de movimiento **no miden distancia contra reloj**,
+  sino la velocidad que alcanza el jugador y el punto mas alto del salto. Medir
+  contra reloj las hacia fallar en maquinas lentas sin que el juego estuviese mal.
+  (El entorno de pruebas dibuja por software, sin tarjeta grafica, y va a 20-40
+  fotogramas por segundo; en un equipo normal el juego va suelto.)
 - **2026-09-22** — `vite.config.js` usa `base: './'` (rutas relativas). Es lo que
   permite que el juego funcione en una subcarpeta como
   `usuario.github.io/aventura-martin-simon/`.

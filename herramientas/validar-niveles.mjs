@@ -1,15 +1,15 @@
 // ---------------------------------------------------------------------------
 // VALIDADOR DE NIVELES
 //
-// Comprueba que un nivel es jugable SIN habilidades, es decir, que tanto
-// Martin como Simon pueden llegar de la P a la M solo corriendo y saltando.
-// Usa los valores reales de src/config/ajustes.js, asi que si algun dia
-// cambiamos la gravedad o el salto, basta con volver a ejecutarlo:
+// Comprueba que TODOS los niveles son jugables SIN habilidades, es decir, que
+// tanto Martin como Simon pueden llegar de la P a la M solo corriendo y
+// saltando. Usa los valores reales de src/config/ajustes.js, asi que si algun
+// dia cambiamos la gravedad o el salto, basta con volver a ejecutarlo:
 //
-//   node herramientas/validar-nivel.mjs
+//   npm run validar
 // ---------------------------------------------------------------------------
 
-import { NIVEL_1 } from '../src/niveles/nivel1.js';
+import { NIVELES } from '../src/niveles/index.js';
 import { MUNDO, FISICA, JUGADOR, ALCANCE } from '../src/config/ajustes.js';
 
 const C = MUNDO.casilla;
@@ -169,6 +169,7 @@ function analizar(nivel) {
 
   // 9. monedas fuera de alcance
   let monedasExtra = 0;
+  const dondeExtra = [];
   mapa.forEach((fila, f) => {
     [...fila].forEach((ch, c) => {
       if (ch !== 'C') return;
@@ -176,7 +177,10 @@ function analizar(nivel) {
       // una moneda flotando en el aire (sobre un hueco) se pilla en pleno salto
       const enElAire = !s || s.fila - f > 4;
       if (enElAire) return;
-      if (!visitadas.has(s.id)) monedasExtra += 1;
+      if (!visitadas.has(s.id)) {
+        monedasExtra += 1;
+        dondeExtra.push(`col ${c} fila ${f} (se apoya en la superficie de la fila ${s.fila})`);
+      }
     });
   });
 
@@ -191,59 +195,50 @@ function analizar(nivel) {
     if (!visitadas.has(supJefe.id)) errores.push('No se puede llegar hasta el jefe');
   }
 
-  return { errores, avisos, cuenta, superficies, visitadas, extra, monedasExtra, supJefe };
+  return { errores, avisos, cuenta, superficies, visitadas, extra, monedasExtra, dondeExtra, supJefe };
 }
 
 // --- informe ----------------------------------------------------------------
 
-const nivel = NIVEL_1;
-const r = analizar(nivel);
-
-console.log('');
-console.log(`  NIVEL: ${nivel.nombre}`);
-console.log(`  Tamano: ${nivel.mapa[0].length} x ${nivel.mapa.length} casillas`);
-console.log(
-  `  Mundo:  ${nivel.mapa[0].length * C} x ${nivel.mapa.length * C} px  (${(
-    (nivel.mapa[0].length * C) /
-    MUNDO.ancho
-  ).toFixed(1)} pantallas de ancho)`,
-);
 console.log('');
 console.log('  SALTO (calculado con los valores de ajustes.js)');
 console.log(`    altura maxima .......... ${h.toFixed(1)} px = ${(h / C).toFixed(2)} casillas`);
 console.log(
   `    distancia en llano ..... ${ALCANCE.distanciaSaltoPx.toFixed(1)} px = ${ALCANCE.distanciaSaltoCasillas.toFixed(2)} casillas`,
 );
-console.log(`    tiempo de vuelo ........ ${ALCANCE.tiempoVueloS.toFixed(3)} s`);
 console.log('');
-console.log('  CONTENIDO');
-console.log(`    monedas ................ ${r.cuenta.C || 0}`);
-console.log(`    enemigos ............... ${r.cuenta.E || 0}`);
-console.log(`    checkpoints ............ ${r.cuenta.K || 0}`);
-console.log(`    jefe ................... ${r.cuenta.J ? 'si' : 'no'}${r.supJefe ? ` (arena de ${r.supJefe.hasta - r.supJefe.desde + 1} casillas)` : ''}`);
-console.log(`    superficies pisables ... ${r.superficies.length}`);
-console.log('');
-console.log('  ALCANCE SIN HABILIDADES');
-console.log(`    superficies alcanzables. ${r.visitadas.size} de ${r.superficies.length}`);
-console.log(`    monedas solo con habilidad: ${r.monedasExtra}`);
-r.extra.forEach((s) => {
-  console.log(`      · repisa en fila ${s.fila}, columnas ${s.desde}-${s.hasta} (contenido extra)`);
+
+let fallidos = 0;
+
+NIVELES.forEach((nivel, indice) => {
+  const r = analizar(nivel);
+  const ancho = nivel.mapa[0].length;
+  const pantallas = ((ancho * C) / MUNDO.ancho).toFixed(1);
+
+  console.log(`  ${indice + 1}. ${nivel.nombre.toUpperCase()}`);
+  console.log(
+    `     ${ancho}x${nivel.mapa.length} casillas (${pantallas} pantallas) · ` +
+      `${r.cuenta.C || 0} premios · ${r.cuenta.E || 0} enemigos · ` +
+      `${r.cuenta.K || 0} checkpoints · jefe ${r.cuenta.J ? 'si' : 'NO'}` +
+      (r.supJefe ? ` (arena de ${r.supJefe.hasta - r.supJefe.desde + 1} casillas)` : ''),
+  );
+  console.log(
+    `     alcanzable sin habilidades: ${r.visitadas.size} de ${r.superficies.length} superficies` +
+      (r.monedasExtra ? ` · ${r.monedasExtra} premios fuera de alcance` : ''),
+  );
+
+  r.dondeExtra.slice(0, 6).forEach((d) => console.log(`     · premio inalcanzable en ${d}`));
+  r.avisos.forEach((a) => console.log(`     ! ${a}`));
+  r.errores.forEach((e) => console.log(`     X ${e}`));
+  if (r.errores.length) fallidos += 1;
+  if (r.monedasExtra > 0) fallidos += 1;
+  console.log('');
 });
-console.log('');
 
-if (r.avisos.length) {
-  console.log('  AVISOS');
-  r.avisos.forEach((a) => console.log(`    ! ${a}`));
-  console.log('');
-}
-
-if (r.errores.length) {
-  console.log('  ERRORES');
-  r.errores.forEach((e) => console.log(`    X ${e}`));
-  console.log('');
-  console.log('  RESULTADO: el nivel NO es jugable.');
+if (fallidos) {
+  console.log(`  RESULTADO: ${fallidos} nivel(es) con problemas.`);
   process.exit(1);
 }
 
-console.log('  RESULTADO: nivel valido y terminable con los dos personajes.');
+console.log('  RESULTADO: los cinco niveles se pueden terminar con los dos personajes.');
 console.log('');

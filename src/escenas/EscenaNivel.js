@@ -16,7 +16,7 @@ import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
 import { pintarFondo } from '../sistemas/dibujo.js';
 import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
-import { NIVEL_1 } from '../niveles/nivel1.js';
+import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
 
 const C = MUNDO.casilla;
@@ -27,8 +27,18 @@ export class EscenaNivel extends Phaser.Scene {
   }
 
   init(datos) {
-    this.personajeId = (datos && datos.personajeId) || 'martin';
-    this.datosNivel = NIVEL_1;
+    const d = datos || {};
+    this.personajeId = d.personajeId || 'martin';
+    this.indiceNivel = d.indiceNivel || 0;
+    this.datosNivel = nivelPorIndice(this.indiceNivel);
+
+    // El marcador se arrastra de un nivel al siguiente: es la partida entera.
+    this.acumulado = {
+      monedas: d.monedas || 0,
+      recogidas: d.recogidas || 0,
+      golpes: d.golpes || 0,
+      jefesDerrotados: d.jefesDerrotados || 0,
+    };
   }
 
   create() {
@@ -53,7 +63,11 @@ export class EscenaNivel extends Phaser.Scene {
     this.crearJugadores();
     this.conectarColisiones();
 
-    this.hud = new Hud(this, this.jugadores, this.nivel.totalMonedas);
+    this.hud = new Hud(this, this.jugadores, this.nivel.totalMonedas, {
+      numero: this.indiceNivel + 1,
+      total: TOTAL_NIVELES,
+      nombre: this.datosNivel.nombre,
+    });
 
     const principal = this.jugadores[0];
     this.cameras.main.startFollow(principal, true, CAMARA.suavizado, CAMARA.suavizado, 0, CAMARA.desfaseY);
@@ -82,6 +96,12 @@ export class EscenaNivel extends Phaser.Scene {
     const jugador = new Jugador(this, x, y, datos, controles);
     jugador.setDepth(10);
     jugador.fijarReaparicion(x, y);
+
+    // arranca con lo que traiga de los niveles anteriores
+    jugador.monedas = this.acumulado.monedas;
+    jugador.recogidas = this.acumulado.recogidas;
+    jugador.golpes = this.acumulado.golpes;
+    jugador.jefesDerrotados = this.acumulado.jefesDerrotados;
 
     this.jugadores = [jugador];
   }
@@ -253,6 +273,8 @@ export class EscenaNivel extends Phaser.Scene {
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.scene.start('victoria', {
         personajeId: this.personajeId,
+        indiceNivel: this.indiceNivel,
+        nombreNivel: this.datosNivel.nombre,
         monedas: jugador.monedas,
         total: this.nivel.totalMonedas,
         recogidas: jugador.recogidas,
@@ -387,7 +409,11 @@ export class EscenaNivel extends Phaser.Scene {
   pausar() {
     if (this.terminado) return;
     this.scene.pause();
-    this.scene.launch('pausa', { personajeId: this.personajeId });
+    this.scene.launch('pausa', {
+      personajeId: this.personajeId,
+      indiceNivel: this.indiceNivel,
+      nombreNivel: this.datosNivel.nombre,
+    });
   }
 
   alternarCajas() {

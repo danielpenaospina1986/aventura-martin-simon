@@ -76,6 +76,8 @@ const estadoJugador = (page) =>
       personaje: j.datos.id,
       enemigos: n.enemigos.getChildren().filter((e) => e.active).length,
       proyectiles: n.proyectilesVivos(),
+      recogidas: j.recogidas,
+      golpes: j.golpes,
       vidasJefe: n.jefe && n.jefe.active ? n.jefe.vidas : 0,
       totalMonedas: n.nivel.totalMonedas,
     };
@@ -110,25 +112,40 @@ test('el jugador corre y salta con la altura prevista', async ({ page }) => {
   const inicio = await estadoJugador(page);
   expect(inicio.enSuelo).toBe(true);
 
-  // correr a la derecha
+  // Correr a la derecha. Se mira la velocidad que alcanza, no cuanto recorre en
+  // un tiempo de reloj: en una maquina lenta el juego va a menos fotogramas por
+  // segundo y recorreria menos, y la prueba fallaria sin que el juego este mal.
   await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(700);
-  const corriendo = await estadoJugador(page);
-  expect(corriendo.x - inicio.x).toBeGreaterThan(90);
+  await page.waitForTimeout(500);
+  const corriendo = await page.evaluate(() => {
+    const j = window.juego.scene.getScene('nivel').jugadores[0];
+    return { x: Math.round(j.x), velocidad: Math.round(j.body.velocity.x) };
+  });
+  expect(corriendo.velocidad).toBe(210); // la velocidad de ajustes.js
+  expect(corriendo.x).toBeGreaterThan(inicio.x);
 
-  // saltar sin soltar: debe acercarse a la altura maxima calculada (114,6 px)
   await page.keyboard.up('ArrowRight');
-  await page.waitForTimeout(200);
-  const antes = await estadoJugador(page);
-  await page.keyboard.down('Space');
-  await page.waitForTimeout(330);
-  const pico = await estadoJugador(page);
-  await page.keyboard.up('Space');
-  const altura = antes.y - pico.y;
-  expect(altura).toBeGreaterThan(95);
-  expect(altura).toBeLessThan(125);
+  await page.waitForTimeout(300);
 
-  await page.waitForTimeout(700);
+  // Saltar sin soltar: se sigue la subida hasta el punto mas alto, en vez de
+  // mirar la altura en un instante fijo.
+  await page.keyboard.down('Space');
+  const altura = await page.evaluate(async () => {
+    const j = window.juego.scene.getScene('nivel').jugadores[0];
+    const partida = j.y;
+    let masAlto = j.y;
+    for (let i = 0; i < 120 && !(j.body.velocity.y >= 0 && j.y < partida - 10); i += 1) {
+      masAlto = Math.min(masAlto, j.y);
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    return partida - masAlto;
+  });
+  await page.keyboard.up('Space');
+
+  expect(altura).toBeGreaterThan(95);
+  expect(altura).toBeLessThan(130);
+
+  await page.waitForTimeout(1200);
   const alAterrizar = await estadoJugador(page);
   expect(alAterrizar.enSuelo).toBe(true);
 
@@ -139,14 +156,22 @@ test('el salto corto sube menos que el salto largo', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
   const medir = async (ms) => {
-    const antes = await estadoJugador(page);
     await page.keyboard.down('Space');
+    const alturaPromesa = page.evaluate(async () => {
+      const j = window.juego.scene.getScene('nivel').jugadores[0];
+      const partida = j.y;
+      let masAlto = j.y;
+      for (let i = 0; i < 150 && !(j.body.velocity.y >= 0 && j.y < partida - 5); i += 1) {
+        masAlto = Math.min(masAlto, j.y);
+        await new Promise((r) => setTimeout(r, 10));
+      }
+      return partida - masAlto;
+    });
     await page.waitForTimeout(ms);
     await page.keyboard.up('Space');
-    await page.waitForTimeout(340 - ms);
-    const pico = await estadoJugador(page);
-    await page.waitForTimeout(900);
-    return antes.y - pico.y;
+    const altura = await alturaPromesa;
+    await page.waitForTimeout(1200);
+    return altura;
   };
 
   const corto = await medir(70);
@@ -378,7 +403,7 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   expect(despues.vidas).toBe(2);
 });
 
-test('caer a un hueco devuelve al checkpoint sin perder monedas', async ({ page }) => {
+test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
   const monedas = await page.evaluate(() => {
@@ -394,9 +419,99 @@ test('caer a un hueco devuelve al checkpoint sin perder monedas', async ({ page 
 
   await page.waitForTimeout(1600);
   const despues = await estadoJugador(page);
-  expect(despues.monedas).toBe(7); // no se pierde nada
+  expect(despues.monedas).toBe(4); // 7 - 3
+  expect(despues.golpes).toBe(1);
   expect(despues.y).toBeLessThan(500); // ha vuelto arriba
   expect(despues.x).toBeLessThan(27 * 32); // ha vuelto al principio
+});
+
+test('el marcador nunca baja de cero', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.monedas = 2;
+    j.invulnerableHasta = 0;
+    n.herirJugador(j);
+    return { monedas: j.monedas, golpes: j.golpes };
+  });
+
+  expect(resultado.monedas).toBe(0); // 2 - 3 se queda en 0, no en -1
+  expect(resultado.golpes).toBe(1);
+});
+
+test('derrotar al jefe da diez monedas', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.monedas = 5;
+    while (n.jefe && n.jefe.active) {
+      n.jefe.invulnerableHasta = 0;
+      n.golpearJefe(j.x);
+    }
+    return { monedas: j.monedas, jefes: j.jefesDerrotados };
+  });
+
+  expect(resultado.monedas).toBe(15); // 5 + 10
+  expect(resultado.jefes).toBe(1);
+});
+
+test('los cinco niveles cargan con su jefe y sus dos checkpoints', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+
+  for (let indice = 0; indice < 5; indice += 1) {
+    const datos = await page.evaluate(async (i) => {
+      window.juego.scene.stop('nivel');
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      await new Promise((r) => setTimeout(r, 1100));
+      const n = window.juego.scene.getScene('nivel');
+      return {
+        indice: n.indiceNivel,
+        nombre: n.datosNivel.nombre,
+        jefe: !!n.jefe,
+        checkpoints: n.nivel.checkpoints.getChildren().length,
+        premios: n.nivel.totalMonedas,
+        meta: !!n.nivel.meta,
+      };
+    }, indice);
+
+    expect(datos.indice).toBe(indice);
+    expect(datos.nombre.length).toBeGreaterThan(0);
+    expect(datos.jefe).toBe(true);
+    expect(datos.checkpoints).toBe(2);
+    expect(datos.premios).toBeGreaterThan(20);
+    expect(datos.meta).toBe(true);
+  }
+
+  expect(errores).toEqual([]);
+});
+
+test('el marcador se arrastra de un nivel al siguiente', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const datos = await page.evaluate(async () => {
+    window.juego.scene.stop('nivel');
+    window.juego.scene.start('nivel', {
+      personajeId: 'simon',
+      indiceNivel: 2,
+      monedas: 41,
+      recogidas: 38,
+      golpes: 2,
+      jefesDerrotados: 2,
+    });
+    await new Promise((r) => setTimeout(r, 1100));
+    const j = window.juego.scene.getScene('nivel').jugadores[0];
+    return { monedas: j.monedas, recogidas: j.recogidas, golpes: j.golpes, jefes: j.jefesDerrotados };
+  });
+
+  expect(datos.monedas).toBe(41);
+  expect(datos.recogidas).toBe(38);
+  expect(datos.golpes).toBe(2);
+  expect(datos.jefes).toBe(2);
 });
 
 test('el checkpoint se activa aunque se pase saltando por encima', async ({ page }) => {
@@ -525,6 +640,7 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
       xMaxima: Math.round(xMaxima),
       metaX: Math.round(metaX),
       monedas: j.monedas,
+      recogidas: j.recogidas,
       totalMonedas: n.nivel.totalMonedas,
       checkpointActivo: n.nivel.checkpoints.getChildren()[0].activo,
       jefeDerrotado: !n.jefe,
@@ -538,6 +654,6 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
   expect(recorrido.terminado).toBe(true);
   expect(recorrido.checkpointActivo).toBe(true);
   expect(recorrido.jefeDerrotado).toBe(true);
-  expect(recorrido.monedas).toBeGreaterThan(10);
+  expect(recorrido.recogidas).toBeGreaterThan(10);
   expect(errores).toEqual([]);
 });
