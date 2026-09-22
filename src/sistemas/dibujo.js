@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, TEXTURAS } from '../config/estilo.js';
+import { COLORES, FONDO, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { MUNDO } from '../config/ajustes.js';
 
@@ -175,8 +175,57 @@ export function generarTexturas(escena) {
   Object.values(PERSONAJES).forEach((datos) => generarPersonaje(escena, datos));
 }
 
-// Fondo de cielo con montanas y nubes. Se usa en todas las pantallas.
-export function pintarFondo(escena, ancho, alto, conNubes = true) {
+// Fondo de todas las pantallas. Si la ilustracion esta cargada se usa esa; si
+// no (por ejemplo si fallase la carga), se dibuja el cielo de siempre.
+export function pintarFondo(escena, ancho, alto, opciones = {}) {
+  const { veloExtra = 0, conNubes = true } = opciones;
+  if (escena.textures.exists(TEXTURAS.fondo)) {
+    return pintarFondoIlustrado(escena, ancho, alto, veloExtra);
+  }
+  pintarFondoDibujado(escena, ancho, alto, conNubes);
+  return { ajustarParallax() {} };
+}
+
+function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0) {
+  const fuente = escena.textures.get(TEXTURAS.fondo).getSourceImage();
+  const escala = Math.max(ancho / fuente.width, alto / fuente.height) * FONDO.sobreancho;
+
+  const imagen = escena.add
+    .image(ancho / 2, alto / 2, TEXTURAS.fondo)
+    .setScale(escala)
+    .setScrollFactor(0)
+    .setDepth(-100);
+
+  // Velo: apaga el dibujo para que se sigan viendo bien el personaje, las
+  // monedas y los enemigos. Va en degradado, mas fuerte abajo.
+  const arriba = Math.min(1, FONDO.veloArriba + veloExtra);
+  const abajo = Math.min(1, FONDO.veloAbajo + veloExtra);
+  const velo = escena.add.graphics().setScrollFactor(0).setDepth(-99);
+  velo.fillGradientStyle(
+    FONDO.velo,
+    FONDO.velo,
+    FONDO.velo,
+    FONDO.velo,
+    arriba,
+    arriba,
+    abajo,
+    abajo,
+  );
+  velo.fillRect(0, 0, ancho, alto);
+
+  return {
+    imagen,
+    // El fondo acompana un poco a la camara, pero nunca tanto como para que se
+    // asome el borde: el margen que sobra es el que manda.
+    ajustarParallax(anchoMundo) {
+      const recorrido = Math.max(1, anchoMundo - ancho);
+      const margen = Math.max(0, (imagen.displayWidth - ancho) / 2) * 0.95;
+      imagen.setScrollFactor(Math.min(FONDO.parallaxMaximo, margen / recorrido), 0);
+    },
+  };
+}
+
+function pintarFondoDibujado(escena, ancho, alto, conNubes = true) {
   const fondo = escena.add.graphics();
   fondo.fillGradientStyle(
     COLORES.cieloArriba,

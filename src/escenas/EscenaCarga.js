@@ -6,10 +6,18 @@
 
 import Phaser from 'phaser';
 import { generarTexturas } from '../sistemas/dibujo.js';
+import { TEXTURAS } from '../config/estilo.js';
+// Importado asi para que Vite le ponga la ruta correcta tambien al publicarlo
+// en una subcarpeta (GitHub Pages).
+import fondoBarrio from '../assets/fondo-barrio.jpg';
 
 export class EscenaCarga extends Phaser.Scene {
   constructor() {
     super('carga');
+  }
+
+  preload() {
+    this.load.image(TEXTURAS.fondo, fondoBarrio);
   }
 
   create() {

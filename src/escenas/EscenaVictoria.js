@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
+import { COLORES, FONDO, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { pintarFondo } from '../sistemas/dibujo.js';
 import { estrellitas } from '../sistemas/efectos.js';
@@ -24,7 +24,7 @@ export class EscenaVictoria extends Phaser.Scene {
   create() {
     const { width: ancho, height: alto } = this.scale;
     const datos = PERSONAJES[this.personajeId];
-    pintarFondo(this, ancho, alto);
+    pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
 
     this.add.rectangle(0, alto - 60, ancho, 60, COLORES.tierra).setOrigin(0, 0);
     this.add.rectangle(0, alto - 60, ancho, 10, COLORES.hierba).setOrigin(0, 0);

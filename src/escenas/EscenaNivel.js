@@ -30,9 +30,10 @@ export class EscenaNivel extends Phaser.Scene {
 
   create() {
     const { width: ancho, height: alto } = this.scale;
-    pintarFondo(this, ancho, alto);
+    this.fondo = pintarFondo(this, ancho, alto);
 
     this.nivel = construirNivel(this, this.datosNivel);
+    this.fondo.ajustarParallax(this.nivel.ancho);
     this.casillasOcupadas = new Map();
     this.bloques = this.physics.add.staticGroup();
     this.enemigos = this.nivel.enemigos;

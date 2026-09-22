@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FUENTE } from '../config/estilo.js';
+import { COLORES, FONDO, FUENTE } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { pintarFondo } from '../sistemas/dibujo.js';
 
@@ -14,7 +14,7 @@ export class EscenaTitulo extends Phaser.Scene {
 
   create() {
     const { width: ancho, height: alto } = this.scale;
-    pintarFondo(this, ancho, alto);
+    pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
 
     // suelo decorativo
     this.add.rectangle(0, alto - 60, ancho, 60, COLORES.tierra).setOrigin(0, 0);
@@ -95,7 +95,7 @@ export class EscenaTitulo extends Phaser.Scene {
 
     this.tweens.add({
       targets: empezar,
-      alpha: { from: 1, to: 0.35 },
+      alpha: { from: 1, to: 0.6 },
       duration: 700,
       yoyo: true,
       repeat: -1,

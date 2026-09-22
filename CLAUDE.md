@@ -69,10 +69,14 @@ aventura-martin-simon/
       constructor-nivel.js  convierte el mapa de texto en objetos del mundo
       hud.js            monedas y nombre del personaje
       dibujo.js         fabrica de graficos provisionales (rectangulos)
+    assets/
+      fondo-barrio.jpg          fondo del juego (version tratada, la que se carga)
+      fondo-barrio-original.jpg ilustracion original, solo como fuente
     niveles/
       nivel1.js         mapa del nivel 1 como texto editable a mano
   herramientas/
     validar-nivel.mjs   comprueba que el nivel es jugable (node)
+    tratar-fondo.mjs    suaviza la ilustracion de fondo
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
   capturas/             imagenes que generan las pruebas (no se versionan)
@@ -192,6 +196,23 @@ grupo de enemigos donde luce la katana de Martin.
 - Todo el arte es **100% original** o de paquetes con **licencia libre** (Kenney, CC0).
 - **Prohibido** usar personajes, sprites, disenos, tipografias o musica de marcas o
   franquicias conocidas.
+- **Fondo actual:** ilustracion de un barrio de ladera con metrocable, aportada por
+  Daniel el 2026-09-22. No contiene marcas ni personajes de franquicias.
+
+### El fondo y la legibilidad
+
+La ilustracion tiene mucho detalle y lineas oscuras por toda la pantalla. Tal cual,
+el personaje, las monedas y los enemigos se pierden dentro del dibujo. Por eso:
+
+1. Se trata una vez con `node herramientas/tratar-fondo.mjs` (desenfoque suave y
+   menos color) y el juego carga la version tratada.
+2. Encima lleva un **velo blanco en degradado**: suave arriba (se ve el cielo y el
+   metrocable) y mas fuerte abajo, que es donde se juega.
+3. En los menus se suma un velo extra, porque hay mucho texto.
+
+Todo se gradua en `FONDO`, dentro de `src/config/estilo.js`. Si algun dia el fondo
+tapa demasiado el juego, se sube `veloAbajo`; si se quiere ver mejor el dibujo, se
+baja.
 
 ## 11. Hoja de ruta (no implementar todavia)
 
@@ -229,6 +250,13 @@ grupo de enemigos donde luce la katana de Martin.
   encima y el nivel se volvia injusto.
 - **2026-09-22** — Los huecos se pintan con un fondo oscuro para que se lean como
   precipicios: con el paisaje de fondo a la vista no se distinguian.
+- **2026-09-22** — El fondo pasa de ser un cielo dibujado por codigo a una
+  ilustracion de un barrio con metrocable. El cielo dibujado se conserva como
+  respaldo por si la imagen no cargase.
+- **2026-09-22** — La ilustracion se usa **tratada**, no tal cual: se comprobo con
+  capturas que sin tratar el personaje rojo desaparecia entre las casas rojas y las
+  monedas se confundian con las fachadas amarillas. El tratamiento ademas la deja en
+  157 KB en vez de 364 KB.
 - **2026-09-22** — El juego se publica en GitHub Pages desde un repositorio
   **publico** (`danielpenaospina1986/aventura-martin-simon`), para que los ninos
   puedan jugar desde cualquier equipo sin instalar nada. Pages solo es gratuito en

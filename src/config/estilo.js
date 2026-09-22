@@ -70,8 +70,24 @@ export const TEXTURAS = {
   estrella: 'tex-estrella',
   arcoKatana: 'tex-arco-katana',
   nube: 'tex-nube',
+  fondo: 'tex-fondo',
   martin: 'tex-martin',
   simon: 'tex-simon',
+};
+
+// Fondo ilustrado (src/assets/fondo-barrio.jpg).
+// El velo lo apaga un poco para que el personaje, las monedas y los enemigos
+// se sigan viendo bien: el dibujo tiene mucho detalle.
+export const FONDO = {
+  velo: 0xffffff,
+  // El velo va en degradado: suave arriba (para que se vea el cielo y el
+  // metrocable) y mas fuerte abajo, que es donde se juega.
+  veloArriba: 0.2,
+  veloAbajo: 0.58,
+  // En los menus hay mucho texto: se calma un poco mas el fondo.
+  veloMenus: 0.18,
+  sobreancho: 1.2,      // se dibuja mas grande que la pantalla, para el parallax
+  parallaxMaximo: 0.06, // cuanto se mueve con la camara, como mucho
 };
 
 export function estiloTexto(tamano, color = COLORES.textoClaro, extra = {}) {

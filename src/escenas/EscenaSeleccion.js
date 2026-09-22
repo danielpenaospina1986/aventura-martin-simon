@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FUENTE } from '../config/estilo.js';
+import { COLORES, FONDO, FUENTE } from '../config/estilo.js';
 import { PERSONAJES, ORDEN_PERSONAJES } from '../config/personajes.js';
 import { pintarFondo } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
@@ -16,7 +16,7 @@ export class EscenaSeleccion extends Phaser.Scene {
 
   create() {
     const { width: ancho, height: alto } = this.scale;
-    pintarFondo(this, ancho, alto);
+    pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
 
     this.add.rectangle(0, alto - 50, ancho, 50, COLORES.tierra).setOrigin(0, 0);
     this.add.rectangle(0, alto - 50, ancho, 9, COLORES.hierba).setOrigin(0, 0);
