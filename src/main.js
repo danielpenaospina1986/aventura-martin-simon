@@ -16,8 +16,10 @@ const configuracion = {
   type: Phaser.AUTO,
   parent: 'juego',
   backgroundColor: '#10131c',
-  pixelArt: true,
-  roundPixels: true,
+  // Nada de pixel art: el juego va hacia dibujo animado de los anos 30, con
+  // curvas y contornos suaves.
+  antialias: true,
+  roundPixels: false,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,

@@ -60,9 +60,23 @@ export function construirNivel(escena, nivel) {
   };
   const filasSuelo = [];
   for (let col = 0; col < columnas; col += 1) filasSuelo.push(filaSueloDe(col));
-  const filaPorDefecto = Math.min(...filasSuelo.filter((f) => f !== null));
+
+  // En un hueco no hay terreno del que tomar la altura, asi que se copia la de
+  // la columna con terreno mas cercana. Antes se usaba la fila mas alta de todo
+  // el mapa, y bastaba una pared alta en cualquier sitio para que el negro de
+  // los huecos subiera por toda la pantalla.
+  const filaDelHueco = (col) => {
+    for (let d = 1; d < columnas; d += 1) {
+      const izquierda = filasSuelo[col - d];
+      if (izquierda !== null && izquierda !== undefined) return izquierda;
+      const derecha = filasSuelo[col + d];
+      if (derecha !== null && derecha !== undefined) return derecha;
+    }
+    return filas - 1;
+  };
+
   for (let col = 0; col < columnas; col += 1) {
-    const desde = filasSuelo[col] === null ? filaPorDefecto : filasSuelo[col];
+    const desde = filasSuelo[col] === null ? filaDelHueco(col) : filasSuelo[col];
     pozo.fillRect(col * C, desde * C, C, alto - desde * C);
   }
 

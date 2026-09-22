@@ -53,8 +53,12 @@ export const COLORES = {
   panelBorde: 0x3d5a7a,
 };
 
+// La tipografia del juego. Se carga en sistemas/fuente.js antes de dibujar
+// nada; si fallase, se cae a una de sistema con parecido aire.
+export const NOMBRE_FUENTE = 'JuegoDeco';
+
 export const FUENTE = {
-  familia: '"Trebuchet MS", "Segoe UI", Verdana, sans-serif',
+  familia: `"${NOMBRE_FUENTE}", "Trebuchet MS", "Segoe UI", sans-serif`,
   titulo: 54,
   subtitulo: 26,
   opcion: 28,

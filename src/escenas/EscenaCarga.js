@@ -6,6 +6,7 @@
 
 import Phaser from 'phaser';
 import { generarTexturas } from '../sistemas/dibujo.js';
+import { cargarFuente } from '../sistemas/fuente.js';
 import { TEXTURAS } from '../config/estilo.js';
 // Importado asi para que Vite le ponga la ruta correcta tambien al publicarlo
 // en una subcarpeta (GitHub Pages).
@@ -26,7 +27,8 @@ export class EscenaCarga extends Phaser.Scene {
 
   create() {
     generarTexturas(this);
-    this.scene.start('titulo');
+    // La tipografia tiene que estar lista antes del primer cartel.
+    cargarFuente().then(() => this.scene.start('titulo'));
   }
 }
 
