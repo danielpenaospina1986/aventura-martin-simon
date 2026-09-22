@@ -15,8 +15,11 @@ nivel se puede terminar con cualquiera de los dos.
 ![Selección de personaje](imagenes/seleccion.png)
 
 - **Martín** — samurái. Su katana elimina a los enemigos que tenga delante.
-- **Simón** — constructor. Levanta bloques de 32×32 para subir donde no se llega
-  saltando. Puede tener tres a la vez; al poner el cuarto desaparece el más viejo.
+- **Simón** — constructor. Lanza bloques de 32×32 que derriban a los enemigos.
+  Puede tener tres volando a la vez.
+
+Al final del nivel espera **el jefe**: aguanta tres golpes y, mientras siga en pie,
+la meta está cerrada. Se le puede saltar encima o atacarle con la habilidad.
 
 ## Controles
 
@@ -58,7 +61,7 @@ Los niveles son mapas de texto editables a mano en
 ```
 
 `#` suelo · `=` plataforma que se atraviesa desde abajo · `C` moneda ·
-`E` enemigo · `K` punto de control · `M` meta · `P` inicio · `.` vacío
+`E` enemigo · `J` jefe · `K` punto de control · `M` meta · `P` inicio · `.` vacío
 
 Después de editar un nivel, `npm run validar` calcula la parábola real del salto
 a partir de [`src/config/ajustes.js`](src/config/ajustes.js) y comprueba que se

@@ -4,15 +4,17 @@
 // Es el unico sitio que sabe que significa cada simbolo.
 // ---------------------------------------------------------------------------
 
-import { MUNDO } from '../config/ajustes.js';
+import { JEFE, MUNDO } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { Enemigo } from '../entidades/Enemigo.js';
+import { Jefe } from '../entidades/Jefe.js';
 
 export const SIMBOLOS = {
   SOLIDO: '#',
   PLATAFORMA: '=',
   MONEDA: 'C',
   ENEMIGO: 'E',
+  JEFE: 'J',
   CHECKPOINT: 'K',
   META: 'M',
   INICIO: 'P',
@@ -20,6 +22,7 @@ export const SIMBOLOS = {
 };
 
 const C = MUNDO.casilla;
+const JEFE_ALTO = JEFE.alto;
 
 // centro de una casilla
 export const centroX = (col) => col * C + C / 2;
@@ -40,6 +43,7 @@ export function construirNivel(escena, nivel) {
   const checkpoints = escena.physics.add.staticGroup();
   const enemigos = escena.physics.add.group({ allowGravity: true, collideWorldBounds: false });
   let meta = null;
+  let jefe = null;
   let inicio = { col: 1, fila: filas - 4 };
 
   // Fondo oscuro bajo la linea del terreno: hace que los huecos se lean como
@@ -106,6 +110,12 @@ export function construirNivel(escena, nivel) {
           break;
         }
 
+        case SIMBOLOS.JEFE: {
+          // se le coloca apoyado en el suelo de su casilla
+          jefe = new Jefe(escena, x, baseY(fila) - JEFE_ALTO / 2, -1);
+          break;
+        }
+
         case SIMBOLOS.CHECKPOINT: {
           const bandera = checkpoints.create(
             x,
@@ -139,6 +149,9 @@ export function construirNivel(escena, nivel) {
       }
     }
   }
+
+  // Con jefe, la meta empieza apagada: no se puede pasar hasta derrotarlo.
+  if (meta && jefe) meta.setAlpha(0.4);
 
   // carteles de ayuda flotando en el mundo
   (nivel.pistas || []).forEach((pista) => {
@@ -174,6 +187,7 @@ export function construirNivel(escena, nivel) {
     checkpoints,
     enemigos,
     meta,
+    jefe,
     inicio,
     casillaEn,
     totalMonedas: mapa.join('').split(SIMBOLOS.MONEDA).length - 1,

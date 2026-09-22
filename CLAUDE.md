@@ -126,10 +126,25 @@ es la habilidad.
 - Pelo: negro largo (franja arriba del rectangulo).
 - Arte final: casco de obra con el pelo largo saliendo por debajo, overol y cinturon
   de herramientas.
-- **Habilidad:** construir bloques de **32 x 32** alineados a la grilla.
-  - En el piso: en la casilla de adelante.
-  - En el aire: justo debajo de el.
-  - Maximo **3 bloques** a la vez; al poner el cuarto desaparece el mas viejo.
+- **Habilidad:** lanzar bloques de **32 x 32** hacia adelante. El bloque sale casi
+  recto y va cayendo; alcanza unos **167 px** (5 casillas) antes de tocar el suelo.
+  Derriba a los enemigos que toque y se deshace al chocar con algo.
+  - Maximo **3 bloques** volando a la vez.
+  - Antes construia bloques para subir. Se cambio para que los dos personajes
+    tengan un golpe y los dos puedan pelear con el jefe.
+
+### El jefe
+
+Al final del nivel espera un bicho grande (**72 x 72 px**) con **3 vidas**. Camina de
+un lado a otro de su arena y da la vuelta en los bordes; no persigue.
+
+- Se le hace dano de tres maneras, para que los dos ninos puedan con el:
+  saltandole encima, con la katana de Martin o con un bloque de Simon.
+- Tras cada golpe parpadea y no se le puede volver a dar durante un momento.
+- Lleva **tres puntitos encima de la cabeza** que se van apagando.
+- **Mientras viva, la meta esta cerrada** y se dibuja apagada. Al derrotarlo se
+  enciende y ya se puede terminar el nivel.
+- Hay un **checkpoint justo antes de su arena**: morir peleando no castiga.
 
 ## 5. Sensacion de movimiento
 
@@ -150,6 +165,8 @@ Filosofia: juego **generoso y sin castigos fuertes**.
   ultimo checkpoint. **No pierde monedas.**
 - Saltar encima de un enemigo lo elimina.
 - Los enemigos eliminados desaparecen en una **nube de estrellitas**.
+- El jefe es el unico que aguanta mas de un golpe (tres), y tocarle de lado tampoco
+  castiga mas que un enemigo normal: se vuelve al checkpoint de al lado.
 - Todo nivel se puede terminar con **cualquiera de los dos**. Las habilidades abren
   atajos y monedas extra, nunca son obligatorias para llegar a la meta.
 
@@ -188,15 +205,17 @@ es una casilla de 32 x 32.
 | `=` | plataforma que se atraviesa desde abajo |
 | `C` | moneda |
 | `E` | enemigo |
+| `J` | jefe (ocupa mas de una casilla; se apoya en la suya) |
 | `K` | checkpoint |
 | `M` | meta |
 | `P` | posicion de inicio |
 | `.` | vacio |
 
-**Nivel 1:** unas 3 pantallas de largo. Arranque tranquilo para aprender, plataformas,
-un par de huecos, 25-30 monedas, 4-5 enemigos, un checkpoint a la mitad y la meta al
-final. Incluye una repisa alta con monedas a la que Simon llega construyendo, y un
-grupo de enemigos donde luce la katana de Martin.
+**Nivel 1:** unas 3 pantallas de largo (96 x 17 casillas). Arranque tranquilo para
+aprender, escalera de plataformas, tres huecos, **28 monedas**, **4 enemigos**,
+**dos checkpoints** (uno a la mitad y otro antes del jefe), una repisa alta con 6
+monedas a la que se sube por una plataforma, un grupo de enemigos donde luce la
+katana de Martin, y al final la **arena del jefe** con la meta detras.
 
 ## 10. Arte y licencias
 
@@ -285,6 +304,17 @@ baja.
   Ajustes > Pages > Source: "GitHub Actions". Se intento que lo hiciera el propio
   workflow con `enablement: true`, pero el token de Actions no tiene permiso para
   crear el sitio y la ejecucion fallaba.
+- **2026-09-22** — Simon deja de construir bloques y pasa a **lanzarlos**. La idea es
+  que los dos personajes tengan un golpe, para que cualquiera de los dos pueda
+  derrotar al jefe. Al perder la habilidad de subir, la repisa alta dejo de ser
+  exclusiva suya: ahora se llega con una plataforma nueva, y `npm run validar`
+  confirma que no queda ninguna moneda inalcanzable.
+- **2026-09-22** — El bloque lanzado sale **casi recto** y no en arco alto: con mas
+  impulso hacia arriba pasaba por encima de los enemigos, que son bajitos.
+- **2026-09-22** — En los callbacks de colision de Phaser **no se puede dar por hecho
+  el orden de los dos objetos**: cuando enfrenta un grupo con un sprite suelto, los
+  invierte. Por fiarse del orden, el bloque lanzado destruia al jefe en vez de
+  romperse el. Ahora siempre se comprueba cual de los dos es el proyectil.
 - **2026-09-22** — `vite.config.js` usa `base: './'` (rutas relativas). Es lo que
   permite que el juego funcione en una subcarpeta como
   `usuario.github.io/aventura-martin-simon/`.

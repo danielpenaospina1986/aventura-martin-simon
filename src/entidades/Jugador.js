@@ -48,7 +48,6 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.invulnerableHasta = 0;
     this.congeladoHasta = 0;
     this.recargaHabilidad = 0;
-    this.bloques = [];
     this.reaparicion = { x, y };
     this.monedas = 0;
   }
@@ -200,11 +199,6 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
       repeat: Math.max(1, Math.floor(duracion / (ciclo * 2)) - 1),
       onComplete: () => this.setAlpha(1),
     });
-  }
-
-  limpiarBloques() {
-    this.bloques.forEach((bloque) => bloque.destroy());
-    this.bloques = [];
   }
 }
 

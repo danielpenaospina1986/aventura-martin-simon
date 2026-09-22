@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { KATANA, CONSTRUCCION, MUNDO } from '../config/ajustes.js';
+import { KATANA, LANZAMIENTO } from '../config/ajustes.js';
 import { TEXTURAS } from '../config/estilo.js';
 
 // --- Martin: golpe de katana ------------------------------------------------
@@ -49,32 +49,24 @@ function katana(jugador, escena) {
       }
     });
 
+  // el jefe tambien se lleva lo suyo
+  if (escena.jefe && escena.jefe.active) {
+    if (Phaser.Geom.Intersects.RectangleToRectangle(zona, escena.jefe.getBounds())) {
+      escena.golpearJefe(jugador.x);
+    }
+  }
+
   return KATANA.recargaMs;
 }
 
-// --- Simon: construir bloques -----------------------------------------------
+// --- Simon: lanzar bloques ---------------------------------------------------
 
-function construir(jugador, escena) {
-  const c = MUNDO.casilla;
-  let col;
-  let fila;
-
-  if (jugador.enSuelo) {
-    // en el piso: la casilla de adelante, a la altura de sus pies
-    col = Math.floor((jugador.x + jugador.mirando * c) / c);
-    fila = Math.floor((jugador.body.bottom - 1) / c);
-  } else {
-    // en el aire: justo debajo de el
-    col = Math.floor(jugador.x / c);
-    fila = Math.ceil(jugador.body.bottom / c);
-  }
-
-  if (!escena.casillaLibre(col, fila, jugador)) return 120;
-
-  escena.colocarBloque(col, fila, jugador);
-  return CONSTRUCCION.recargaMs;
+function lanzar(jugador, escena) {
+  if (escena.proyectilesVivos() >= LANZAMIENTO.maximo) return 120;
+  escena.lanzarBloque(jugador);
+  return LANZAMIENTO.recargaMs;
 }
 
-export const HABILIDADES = { katana, construir };
+export const HABILIDADES = { katana, lanzar };
 
 export default HABILIDADES;

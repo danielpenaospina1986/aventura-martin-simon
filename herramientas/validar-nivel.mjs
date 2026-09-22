@@ -60,7 +60,7 @@ function analizar(nivel) {
   if (anchos.length !== 1) errores.push(`Las filas no miden lo mismo: ${anchos.join(', ')}`);
 
   // 2. simbolos validos
-  const validos = new Set([SOLIDO, PLATAFORMA, 'C', 'E', 'K', 'M', 'P', '.']);
+  const validos = new Set([SOLIDO, PLATAFORMA, 'C', 'E', 'J', 'K', 'M', 'P', '.']);
   mapa.forEach((fila, f) => {
     [...fila].forEach((ch, c) => {
       if (!validos.has(ch)) errores.push(`Simbolo desconocido "${ch}" en columna ${c}, fila ${f}`);
@@ -75,6 +75,7 @@ function analizar(nivel) {
   if ((cuenta.P || 0) !== 1) errores.push(`Debe haber exactamente un inicio P (hay ${cuenta.P || 0})`);
   if ((cuenta.M || 0) !== 1) errores.push(`Debe haber exactamente una meta M (hay ${cuenta.M || 0})`);
   if ((cuenta.K || 0) < 1) avisos.push('El nivel no tiene ningun checkpoint');
+  if ((cuenta.J || 0) > 1) errores.push(`Solo puede haber un jefe J (hay ${cuenta.J})`);
 
   // 4. superficies: tramos horizontales pisables
   const superficies = [];
@@ -125,10 +126,14 @@ function analizar(nivel) {
 
   const inicio = posicion('P');
   const meta = posicion('M');
+  const jefe = posicion('J');
   const supInicio = inicio && superficieBajo(inicio.col, inicio.fila);
   const supMeta = meta && superficieBajo(meta.col, meta.fila);
   if (!supInicio) errores.push('El inicio P no esta sobre ninguna superficie');
   if (!supMeta) errores.push('La meta M no esta sobre ninguna superficie');
+
+  const supJefe = jefe && superficieBajo(jefe.col, jefe.fila);
+  if (jefe && !supJefe) errores.push('El jefe J no esta sobre ninguna superficie');
 
   // 7. conectividad por saltos reales
   const separacion = (a, b) => {
@@ -175,7 +180,18 @@ function analizar(nivel) {
     });
   });
 
-  return { errores, avisos, cuenta, superficies, visitadas, extra, monedasExtra };
+  // El jefe necesita sitio para caminar y para que se le pueda esquivar.
+  if (supJefe) {
+    const anchoArena = (supJefe.hasta - supJefe.desde + 1) * C;
+    if (anchoArena < 8 * C) {
+      avisos.push(
+        `La arena del jefe mide ${anchoArena} px (${supJefe.hasta - supJefe.desde + 1} casillas): se queda corta para esquivarlo`,
+      );
+    }
+    if (!visitadas.has(supJefe.id)) errores.push('No se puede llegar hasta el jefe');
+  }
+
+  return { errores, avisos, cuenta, superficies, visitadas, extra, monedasExtra, supJefe };
 }
 
 // --- informe ----------------------------------------------------------------
@@ -204,6 +220,7 @@ console.log('  CONTENIDO');
 console.log(`    monedas ................ ${r.cuenta.C || 0}`);
 console.log(`    enemigos ............... ${r.cuenta.E || 0}`);
 console.log(`    checkpoints ............ ${r.cuenta.K || 0}`);
+console.log(`    jefe ................... ${r.cuenta.J ? 'si' : 'no'}${r.supJefe ? ` (arena de ${r.supJefe.hasta - r.supJefe.desde + 1} casillas)` : ''}`);
 console.log(`    superficies pisables ... ${r.superficies.length}`);
 console.log('');
 console.log('  ALCANCE SIN HABILIDADES');

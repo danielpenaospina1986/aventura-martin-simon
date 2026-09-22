@@ -45,10 +45,30 @@ export const KATANA = {
   desfaseY: -2,
 };
 
-export const CONSTRUCCION = {
-  maximo: 3,        // bloques simultaneos; el cuarto borra el mas viejo
-  recargaMs: 200,
-  aparecerMs: 120,
+// Simon lanza bloques hacia adelante. Antes los construia para subir; ahora es
+// un golpe, como la katana de Martin, para que los dos puedan pelear con el jefe.
+export const LANZAMIENTO = {
+  velocidad: 480,      // a que velocidad sale el bloque
+  // Sale casi recto y va cayendo. Con mas impulso hacia arriba describia un
+  // arco alto y pasaba por encima de los enemigos, que son bajitos.
+  elevacion: -30,
+  gravedad: 700,       // cae mas despacio que el jugador
+  maximo: 3,           // bloques a la vez en el aire
+  recargaMs: 300,
+  duracionMs: 2200,    // si no da a nada, se deshace
+  giro: 260,           // grados por segundo, para que de vueltas
+  aparecerMs: 110,
+};
+
+export const JEFE = {
+  vidas: 3,
+  velocidad: 46,
+  invulnerableMs: 900,
+  parpadeoMs: 110,
+  reboteJugador: 470,   // impulso del jugador al saltarle encima
+  empujonAlHerir: 90,   // cuanto retrocede el jefe al recibir un golpe
+  ancho: 72,
+  alto: 72,
 };
 
 export const ENEMIGO = {

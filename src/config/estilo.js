@@ -31,6 +31,12 @@ export const COLORES = {
   enemigoOscuro: 0x5e2d75,
   enemigoOjo: 0xffffff,
 
+  jefe: 0x7b2d8f,
+  jefeOscuro: 0x4a1a5c,
+  jefeCuerno: 0xf4d03f,
+  jefeVida: 0xe74c3c,
+  jefeVidaVacia: 0x3d5a7a,
+
   banderaApagada: 0x9aa7b4,
   banderaEncendida: 0x38c172,
   mastil: 0xd8dee6,
@@ -64,6 +70,8 @@ export const TEXTURAS = {
   bloque: 'tex-bloque',
   moneda: 'tex-moneda',
   enemigo: 'tex-enemigo',
+  jefe: 'tex-jefe',
+  jefeEnfadado: 'tex-jefe-enfadado',
   checkpointApagado: 'tex-checkpoint-apagado',
   checkpointEncendido: 'tex-checkpoint-encendido',
   meta: 'tex-meta',

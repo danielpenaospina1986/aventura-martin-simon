@@ -34,10 +34,10 @@ export const PERSONAJES = {
     colorPelo: 0x1b1b22,    // negro
     altoPelo: 10,
     caja: { ancho: 22, alto: 48 },
-    habilidad: 'construir',
-    nombreHabilidad: 'Construir bloques',
-    descripcion: 'Grande y fuerte.\nConstruye bloques\npara subir más alto.',
-    pistaHabilidad: 'Pulsa X para construir',
+    habilidad: 'lanzar',
+    nombreHabilidad: 'Lanzar bloques',
+    descripcion: 'Grande y fuerte.\nLanza bloques que\nderriban enemigos.',
+    pistaHabilidad: 'Pulsa X para lanzar un bloque',
   },
 };
 

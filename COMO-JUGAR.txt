@@ -37,9 +37,8 @@ Corren y saltan exactamente igual. Lo único que cambia es la habilidad.
            Habilidad: golpe de katana. Elimina a los enemigos que tenga delante.
 
   SIMÓN    Grande y fuerte, pelo negro.
-           Habilidad: construir bloques. En el suelo los pone delante; en el
-           aire, justo debajo de él. Puede tener 3 a la vez; al poner el cuarto
-           desaparece el más viejo.
+           Habilidad: lanzar bloques. Salen hacia adelante y van cayendo;
+           derriban a los enemigos que tocan. Puede tener 3 volando a la vez.
 
 
 REGLAS
@@ -48,6 +47,9 @@ REGLAS
 - Si te toca un enemigo de lado o te caes a un agujero, parpadeas y vuelves al
   último punto de control. NO pierdes monedas.
 - Si saltas encima de un enemigo, lo eliminas.
+- Al final del nivel hay un JEFE. Aguanta tres golpes: sáltale encima o atácale
+  con la X. Mientras siga en pie, la meta está cerrada. Justo antes hay un punto
+  de control, así que si te pilla no pierdes casi nada.
 - El nivel se puede terminar con cualquiera de los dos. Las habilidades sirven
   para atajos y monedas extra.
 

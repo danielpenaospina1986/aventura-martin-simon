@@ -45,7 +45,20 @@ async function entrarAlNivel(page, personaje = 'martin') {
   await abrirJuego(page);
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'seleccion');
-  if (personaje === 'simon') await page.keyboard.press('ArrowRight');
+
+  if (personaje === 'simon') {
+    // Hay que esperar a que el menu este escuchando: si la flecha llega antes,
+    // se entra con Martin y la prueba mide otra cosa.
+    await page.waitForFunction(() => {
+      const e = window.juego.scene.getScene('seleccion');
+      return e && e.menu;
+    }, null, { timeout: 10000 });
+    await page.keyboard.press('ArrowRight');
+    await page.waitForFunction(() => window.juego.scene.getScene('seleccion').menu.indice === 1, null, {
+      timeout: 10000,
+    });
+  }
+
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'nivel');
   await page.waitForTimeout(600); // fundido de entrada
@@ -62,7 +75,8 @@ const estadoJugador = (page) =>
       enSuelo: j.enSuelo,
       personaje: j.datos.id,
       enemigos: n.enemigos.getChildren().filter((e) => e.active).length,
-      bloques: j.bloques.length,
+      proyectiles: n.proyectilesVivos(),
+      vidasJefe: n.jefe && n.jefe.active ? n.jefe.vidas : 0,
       totalMonedas: n.nivel.totalMonedas,
     };
   });
@@ -154,13 +168,13 @@ test('las monedas se recogen y suman en el HUD', async ({ page }) => {
 
   const estado = await estadoJugador(page);
   expect(estado.monedas).toBeGreaterThanOrEqual(3);
-  expect(estado.totalMonedas).toBe(29);
+  expect(estado.totalMonedas).toBe(28);
 });
 
 test('Martín elimina enemigos con la katana', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
   const antes = await estadoJugador(page);
-  expect(antes.enemigos).toBe(5);
+  expect(antes.enemigos).toBe(4);
 
   // el enemigo se queda quieto para que la prueba sea siempre igual
   await page.evaluate(() => {
@@ -179,7 +193,7 @@ test('Martín elimina enemigos con la katana', async ({ page }) => {
   await page.waitForTimeout(250);
 
   const despues = await estadoJugador(page);
-  expect(despues.enemigos).toBe(4);
+  expect(despues.enemigos).toBe(3);
   expect(await page.evaluate(() => window.__enemigoDePrueba.active)).toBe(false);
 });
 
@@ -198,42 +212,170 @@ test('saltar encima de un enemigo lo elimina', async ({ page }) => {
   await page.waitForTimeout(700);
 
   const despues = await estadoJugador(page);
-  expect(despues.enemigos).toBe(4);
+  expect(despues.enemigos).toBe(3);
   expect(despues.monedas).toBe(0);
 });
 
-test('Simón construye bloques y nunca tiene más de tres', async ({ page }) => {
+test('Simón lanza bloques y derriban a los enemigos', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
   expect((await estadoJugador(page)).personaje).toBe('simon');
 
-  // con la tecla, tal como lo hara un nino
-  await page.keyboard.press('KeyX');
-  await page.waitForTimeout(300);
-  expect((await estadoJugador(page)).bloques).toBe(1);
-
-  // la regla del maximo: al poner el cuarto desaparece el mas viejo
-  const resultado = await page.evaluate(() => {
+  // un enemigo quieto a unos pasos, para que la prueba sea siempre igual
+  await page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
-    const puestos = [];
-    for (let i = 0; i < 4; i += 1) {
-      const col = 40 + i;
-      const fila = 10;
-      if (n.casillaLibre(col, fila, j)) {
-        n.colocarBloque(col, fila, j);
-        puestos.push(`${col},${fila}`);
-      }
+    const enemigo = n.enemigos.getChildren()[0];
+    enemigo.direccion = 0;
+    enemigo.body.setVelocity(0, 0);
+    window.__enemigoDePrueba = enemigo;
+    j.setPosition(enemigo.x - 110, enemigo.y - 14);
+    j.body.setVelocity(0, 0);
+    j.mirando = 1;
+  });
+  await page.waitForTimeout(200);
+
+  // con la tecla, tal como lo hara un nino
+  await page.keyboard.press('KeyX');
+  await page.waitForTimeout(80);
+  expect((await estadoJugador(page)).proyectiles).toBe(1);
+
+  await page.waitForTimeout(600);
+  expect(await page.evaluate(() => window.__enemigoDePrueba.active)).toBe(false);
+  expect((await estadoJugador(page)).enemigos).toBe(3);
+});
+
+test('no puede haber más de tres bloques volando a la vez', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const maximo = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    let pico = 0;
+    for (let i = 0; i < 6; i += 1) {
+      j.recargaHabilidad = 0;
+      j.controles.pulsada.habilidad = true;
+      j.gestionarHabilidad();
+      j.controles.pulsada.habilidad = false;
+      pico = Math.max(pico, n.proyectilesVivos());
+      await new Promise((r) => setTimeout(r, 40));
     }
-    return {
-      puestos,
-      bloquesDelJugador: j.bloques.length,
-      casillasOcupadas: n.casillasOcupadas.size,
-    };
+    return pico;
   });
 
-  expect(resultado.puestos.length).toBe(4);
-  expect(resultado.bloquesDelJugador).toBe(3);
-  expect(resultado.casillasOcupadas).toBe(3);
+  expect(maximo).toBe(3);
+});
+
+test('el bloque lanzado se deshace al chocar contra el suelo', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  await page.keyboard.press('KeyX');
+  await page.waitForTimeout(100);
+  expect((await estadoJugador(page)).proyectiles).toBe(1);
+
+  await page.waitForTimeout(1200);
+  expect((await estadoJugador(page)).proyectiles).toBe(0);
+});
+
+test('la meta está cerrada mientras el jefe siga vivo', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const antes = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return { vidasJefe: n.jefe.vidas, alphaMeta: n.nivel.meta.alpha };
+  });
+  expect(antes.vidasJefe).toBe(3);
+  expect(antes.alphaMeta).toBeLessThan(1); // se ve apagada
+
+  // plantarse encima de la meta con el jefe vivo: no debe pasar nada
+  await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    n.jugadores[0].setPosition(n.nivel.meta.x, n.nivel.meta.y);
+  });
+  await page.waitForTimeout(700);
+
+  expect(await page.evaluate(() => window.juego.scene.isActive('nivel'))).toBe(true);
+  expect(await page.evaluate(() => window.juego.scene.isActive('victoria'))).toBe(false);
+});
+
+test('al jefe se le quitan tres vidas saltándole encima', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+
+  const saltarEncima = () =>
+    page.evaluate(async () => {
+      const n = window.juego.scene.getScene('nivel');
+      const j = n.jugadores[0];
+      if (!n.jefe || !n.jefe.active) return;
+      n.jefe.direccion = 0;
+      n.jefe.body.setVelocity(0, 0);
+      n.jefe.invulnerableHasta = 0; // sin esperar el parpadeo
+      j.setPosition(n.jefe.x, n.jefe.y - 80);
+      j.body.setVelocity(0, 120);
+      await new Promise((r) => setTimeout(r, 500));
+    });
+
+  await saltarEncima();
+  expect((await estadoJugador(page)).vidasJefe).toBe(2);
+
+  await saltarEncima();
+  expect((await estadoJugador(page)).vidasJefe).toBe(1);
+
+  await saltarEncima();
+  await page.waitForTimeout(400);
+
+  // derrotado: desaparece y la meta se enciende
+  const despues = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return { jefe: !!n.jefe, alphaMeta: n.nivel.meta.alpha };
+  });
+  expect(despues.jefe).toBe(false);
+  expect(despues.alphaMeta).toBe(1);
+  expect(errores).toEqual([]);
+});
+
+test('la katana de Martín también hace daño al jefe', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    n.jefe.direccion = 0;
+    n.jefe.body.setVelocity(0, 0);
+    j.setPosition(n.jefe.x - 46, n.jefe.y);
+    j.body.setVelocity(0, 0);
+    j.mirando = 1;
+  });
+  await page.waitForTimeout(200);
+  await page.keyboard.press('KeyX');
+  await page.waitForTimeout(300);
+
+  expect((await estadoJugador(page)).vidasJefe).toBe(2);
+});
+
+test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    n.jefe.direccion = 0;
+    n.jefe.body.setVelocity(0, 0);
+    j.setPosition(n.jefe.x - 120, n.jefe.y);
+    j.body.setVelocity(0, 0);
+    j.mirando = 1;
+  });
+  await page.waitForTimeout(200);
+  await page.keyboard.press('KeyX');
+  await page.waitForTimeout(600);
+
+  // el jefe pierde una vida pero sigue en pie: lo que se rompe es el bloque
+  const despues = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return { existe: !!n.jefe, activo: n.jefe ? n.jefe.active : false, vidas: n.jefe ? n.jefe.vidas : 0 };
+  });
+  expect(despues.existe).toBe(true);
+  expect(despues.activo).toBe(true);
+  expect(despues.vidas).toBe(2);
 });
 
 test('caer a un hueco devuelve al checkpoint sin perder monedas', async ({ page }) => {
@@ -316,6 +458,11 @@ test('llegar a la meta lleva a la pantalla de victoria', async ({ page }) => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
     j.monedas = 22;
+    // primero el jefe: sin derrotarlo la meta no se abre
+    while (n.jefe && n.jefe.active) {
+      n.jefe.invulnerableHasta = 0;
+      n.golpearJefe(j.x);
+    }
     j.setPosition(n.nivel.meta.x, n.nivel.meta.y);
   });
 
@@ -355,6 +502,12 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
         quieto = 0;
       }
 
+      // al llegar al jefe, pelear: se le quitan las tres vidas
+      if (n.jefe && n.jefe.active && Math.abs(n.jefe.x - j.x) < 150) {
+        n.jefe.invulnerableHasta = 0;
+        n.golpearJefe(j.x);
+      }
+
       await esperar(32);
 
       if (j.x > xMaxima + 1) {
@@ -374,6 +527,7 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
       monedas: j.monedas,
       totalMonedas: n.nivel.totalMonedas,
       checkpointActivo: n.nivel.checkpoints.getChildren()[0].activo,
+      jefeDerrotado: !n.jefe,
       registro,
     };
   });
@@ -383,6 +537,7 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
 
   expect(recorrido.terminado).toBe(true);
   expect(recorrido.checkpointActivo).toBe(true);
+  expect(recorrido.jefeDerrotado).toBe(true);
   expect(recorrido.monedas).toBeGreaterThan(10);
   expect(errores).toEqual([]);
 });

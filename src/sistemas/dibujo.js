@@ -118,6 +118,32 @@ export function generarTexturas(escena) {
     g.strokeRect(0.5, 2.5, 27, 19);
   });
 
+  // el jefe: un bicho grande con cuernos (72 x 72)
+  const jefe = (colorCuerpo) => (g) => {
+    caja(g, 0, 14, 72, 58, colorCuerpo);
+    caja(g, 0, 62, 72, 10, COLORES.jefeOscuro);
+    caja(g, 5, 9, 62, 7, COLORES.jefeOscuro);
+    // cuernos
+    g.fillStyle(COLORES.jefeCuerno, 1);
+    g.fillTriangle(6, 15, 22, 15, 12, 0);
+    g.fillTriangle(50, 15, 66, 15, 60, 0);
+    // ojos grandes y cejas de enfadado
+    caja(g, 12, 26, 20, 18, COLORES.enemigoOjo);
+    caja(g, 40, 26, 20, 18, COLORES.enemigoOjo);
+    caja(g, 19, 32, 9, 12, 0x1b1b22);
+    caja(g, 47, 32, 9, 12, 0x1b1b22);
+    caja(g, 10, 20, 24, 6, COLORES.jefeOscuro);
+    caja(g, 38, 20, 24, 6, COLORES.jefeOscuro);
+    // boca con dientes
+    caja(g, 22, 52, 28, 8, COLORES.jefeOscuro);
+    caja(g, 27, 52, 5, 8, 0xffffff);
+    caja(g, 40, 52, 5, 8, 0xffffff);
+    g.lineStyle(2, 0x000000, 0.35);
+    g.strokeRect(1, 15, 70, 56);
+  };
+  generar(escena, TEXTURAS.jefe, 72, 72, jefe(COLORES.jefe));
+  generar(escena, TEXTURAS.jefeEnfadado, 72, 72, jefe(0xa63bbd));
+
   // checkpoint: banderin apagado y encendido
   const banderin = (color) => (g) => {
     caja(g, 8, 0, 4, 44, COLORES.mastil);
