@@ -253,6 +253,16 @@ katana de Martin, y al final la **arena del jefe** con la meta detras.
 
 ## 10. Arte y licencias
 
+### Estilo
+
+**Dibujo animado de los anos 30**, con aire art deco: contorno de tinta negra
+grueso, formas redondeadas, ojos grandes, zapatones, y una paleta de cremas,
+sepias y colores apagados. Nada de pixel art.
+
+Los pinceles de ese estilo (`tintaRedonda`, `tintaCirculo`, `brillo`) viven en
+`src/sistemas/dibujo.js`, y las cajas de dialogo en `panelDeco`. Todo lo que se
+dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
+
 - Todo el arte es **100% original** o de paquetes con **licencia libre** (Kenney, CC0).
 - **Prohibido** usar personajes, sprites, disenos, tipografias o musica de marcas o
   franquicias conocidas.
@@ -366,6 +376,13 @@ baja.
   contra reloj las hacia fallar en maquinas lentas sin que el juego estuviese mal.
   (El entorno de pruebas dibuja por software, sin tarjeta grafica, y va a 20-40
   fotogramas por segundo; en un equipo normal el juego va suelto.)
+- **2026-09-22** — Los graficos dejan de ser rectangulos planos y pasan al estilo
+  de dibujo animado de los anos 30: contorno de tinta, formas redondeadas y
+  paleta apagada. Los personajes tienen cabeza, cuerpo y zapatones; los enemigos
+  y el jefe son bichos redondos con ojos grandes.
+- **2026-09-22** — La casilla de suelo **no lleva marco completo**, solo una linea
+  arriba: como el terreno se dibuja repitiendo esa casilla, un marco entero
+  convertia el suelo en una cuadricula.
 - **2026-09-22** — `vite.config.js` usa `base: './'` (rutas relativas). Es lo que
   permite que el juego funcione en una subcarpeta como
   `usuario.github.io/aventura-martin-simon/`.

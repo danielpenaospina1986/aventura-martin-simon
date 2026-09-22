@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FONDO, TEXTURAS } from '../config/estilo.js';
+import { COLORES, FONDO, TEXTURAS, TINTA } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { MUNDO } from '../config/ajustes.js';
 
@@ -26,26 +26,96 @@ function caja(g, x, y, ancho, alto, color, alpha = 1) {
   g.fillRect(x, y, ancho, alto);
 }
 
+// --- pinceles del estilo de los anos 30 -------------------------------------
+// Todo lleva contorno de tinta negra y formas redondeadas: es lo que separa un
+// dibujo animado antiguo de un juego de pixeles.
+
+function tintaRedonda(g, x, y, ancho, alto, radio, relleno, grosor = 3) {
+  g.fillStyle(relleno, 1);
+  g.fillRoundedRect(x, y, ancho, alto, radio);
+  g.lineStyle(grosor, TINTA, 1);
+  g.strokeRoundedRect(x, y, ancho, alto, radio);
+}
+
+function tintaCirculo(g, x, y, radio, relleno, grosor = 3) {
+  g.fillStyle(relleno, 1);
+  g.fillCircle(x, y, radio);
+  g.lineStyle(grosor, TINTA, 1);
+  g.strokeCircle(x, y, radio);
+}
+
+// Brillo tipo celuloide: una manchita clara arriba a la izquierda.
+function brillo(g, x, y, radio) {
+  g.fillStyle(0xffffff, 0.45);
+  g.fillCircle(x, y, radio);
+}
+
 // --- personajes -------------------------------------------------------------
 
 function generarPersonaje(escena, datos) {
   generar(escena, datos.textura, datos.ancho, datos.alto, (g) => {
-    const { ancho, alto, color, colorPelo, altoPelo } = datos;
-    // cuerpo
-    caja(g, 0, 0, ancho, alto, color);
-    // sombras para que no sea un rectangulo plano
-    caja(g, 0, alto - 4, ancho, 4, 0x000000, 0.18);
-    caja(g, ancho - 3, 0, 3, alto, 0x000000, 0.12);
-    // pelo: franja de arriba
-    caja(g, 0, 0, ancho, altoPelo, colorPelo);
-    caja(g, 0, altoPelo - 2, ancho, 2, 0x000000, 0.15);
-    // ojos (el sprite se voltea segun hacia donde mira)
-    const ojoY = altoPelo + 5;
-    caja(g, ancho - 9, ojoY, 3, 4, 0xffffff, 0.95);
-    caja(g, ancho - 15, ojoY, 3, 4, 0xffffff, 0.95);
-    // contorno
-    g.lineStyle(1, 0x000000, 0.35);
-    g.strokeRect(0.5, 0.5, ancho - 1, alto - 1);
+    const { ancho, alto, color, colorPelo } = datos;
+
+    const radioCabeza = ancho * 0.42;
+    const centroCabeza = radioCabeza + 3;
+    const cuelloY = centroCabeza + radioCabeza - 2;
+    const altoCuerpo = alto - cuelloY - 5;
+
+    // piernas, un poco separadas
+    const anchoPierna = ancho * 0.26;
+    tintaRedonda(g, ancho * 0.16, alto - 11, anchoPierna, 10, 4, COLORES.tinta, 2);
+    tintaRedonda(g, ancho * 0.58, alto - 11, anchoPierna, 10, 4, COLORES.tinta, 2);
+    // zapatones, que son la marca de la epoca
+    tintaRedonda(g, ancho * 0.06, alto - 7, anchoPierna + 5, 7, 3, COLORES.crema, 2);
+    tintaRedonda(g, ancho * 0.52, alto - 7, anchoPierna + 5, 7, 3, COLORES.crema, 2);
+
+    // cuerpo redondeado
+    tintaRedonda(g, 1, cuelloY - 4, ancho - 2, altoCuerpo, ancho * 0.3, color);
+    // peto mas claro, para que no sea una mancha plana
+    g.fillStyle(0xffffff, 0.18);
+    g.fillRoundedRect(4, cuelloY - 1, ancho - 8, altoCuerpo * 0.5, 5);
+
+    // brazo asomando por delante
+    tintaRedonda(g, ancho - 6, cuelloY + 2, 6, altoCuerpo * 0.55, 3, color, 2);
+
+    // cabeza
+    tintaCirculo(g, ancho / 2, centroCabeza, radioCabeza, COLORES.crema);
+    // pelo, como un casquete
+    g.fillStyle(colorPelo, 1);
+    g.slice(
+      ancho / 2,
+      centroCabeza,
+      radioCabeza,
+      Phaser.Math.DegToRad(180),
+      Phaser.Math.DegToRad(360),
+      false,
+    );
+    g.fillPath();
+    g.lineStyle(3, TINTA, 1);
+    g.strokeCircle(ancho / 2, centroCabeza, radioCabeza);
+
+    // ojos grandes de dibujo antiguo (mira a la derecha)
+    const ojoY = centroCabeza + 1;
+    tintaCirculo(g, ancho / 2 + radioCabeza * 0.12, ojoY, radioCabeza * 0.34, 0xffffff, 2);
+    tintaCirculo(g, ancho / 2 + radioCabeza * 0.62, ojoY, radioCabeza * 0.3, 0xffffff, 2);
+    g.fillStyle(TINTA, 1);
+    g.fillCircle(ancho / 2 + radioCabeza * 0.22, ojoY + 1, radioCabeza * 0.16);
+    g.fillCircle(ancho / 2 + radioCabeza * 0.68, ojoY + 1, radioCabeza * 0.14);
+
+    // sonrisa
+    g.lineStyle(2, TINTA, 1);
+    g.beginPath();
+    g.arc(
+      ancho / 2 + radioCabeza * 0.35,
+      centroCabeza + radioCabeza * 0.35,
+      radioCabeza * 0.4,
+      Phaser.Math.DegToRad(20),
+      Phaser.Math.DegToRad(130),
+      false,
+    );
+    g.strokePath();
+
+    brillo(g, ancho / 2 - radioCabeza * 0.45, centroCabeza - radioCabeza * 0.4, radioCabeza * 0.18);
   });
 }
 
@@ -54,34 +124,47 @@ function generarPersonaje(escena, datos) {
 export function generarTexturas(escena) {
   const c = MUNDO.casilla;
 
-  // suelo solido: tierra con hierba arriba
+  // suelo: tierra con una mata de hierba arriba, con contorno de tinta
   generar(escena, TEXTURAS.suelo, c, c, (g) => {
     caja(g, 0, 0, c, c, COLORES.tierra);
-    caja(g, 0, 0, c, 7, COLORES.hierba);
-    caja(g, 0, 7, c, 3, COLORES.hierbaOscura);
-    caja(g, 0, c - 3, c, 3, COLORES.tierraOscura);
-    g.lineStyle(1, 0x000000, 0.18);
-    g.strokeRect(0.5, 0.5, c - 1, c - 1);
+    // hierba ondulada
+    g.fillStyle(COLORES.hierba, 1);
+    g.fillRect(0, 0, c, 9);
+    g.fillCircle(8, 9, 4.5);
+    g.fillCircle(24, 9, 4);
+    g.fillStyle(COLORES.hierbaOscura, 1);
+    g.fillRect(0, 8, c, 2.5);
+    // motas de tierra
+    g.fillStyle(COLORES.tierraOscura, 0.5);
+    g.fillCircle(8, 20, 2.5);
+    g.fillCircle(23, 26, 2);
+    // solo una linea arriba: el suelo se dibuja repitiendo esta casilla, y un
+    // marco completo convertiria el terreno en una cuadricula
+    g.lineStyle(2.5, TINTA, 0.9);
+    g.beginPath();
+    g.moveTo(0, 1.2);
+    g.lineTo(c, 1.2);
+    g.strokePath();
   });
 
-  // tierra: igual que el suelo pero sin hierba (para las capas de debajo)
+  // tierra: las capas de debajo, sin hierba
   generar(escena, TEXTURAS.tierra, c, c, (g) => {
     caja(g, 0, 0, c, c, COLORES.tierra);
-    caja(g, 0, 0, c, 3, COLORES.tierraOscura);
-    caja(g, 0, c - 3, c, 3, COLORES.tierraOscura);
-    caja(g, 6, 10, 7, 5, COLORES.tierraOscura, 0.5);
-    caja(g, 19, 20, 8, 5, COLORES.tierraOscura, 0.5);
-    g.lineStyle(1, 0x000000, 0.12);
-    g.strokeRect(0.5, 0.5, c - 1, c - 1);
+    g.fillStyle(COLORES.tierraOscura, 0.45);
+    g.fillCircle(9, 11, 3);
+    g.fillCircle(22, 21, 2.6);
+    g.fillCircle(15, 28, 2);
+    g.fillCircle(27, 8, 2.2);
   });
 
-  // plataforma que se atraviesa desde abajo (mas fina)
+  // plataforma: un tablon de madera vieja
   generar(escena, TEXTURAS.plataforma, c, 12, (g) => {
-    caja(g, 0, 0, c, 12, COLORES.plataforma);
-    caja(g, 0, 0, c, 3, 0xffffff, 0.25);
-    caja(g, 0, 9, c, 3, COLORES.plataformaBorde);
-    g.lineStyle(1, 0x000000, 0.25);
-    g.strokeRect(0.5, 0.5, c - 1, 11);
+    tintaRedonda(g, 0.5, 0.5, c - 1, 11, 4, COLORES.plataforma, 2);
+    g.lineStyle(1.5, COLORES.plataformaBorde, 0.85);
+    g.beginPath();
+    g.moveTo(4, 7);
+    g.lineTo(c - 4, 7);
+    g.strokePath();
   });
 
   // bloque construido por Simon
@@ -145,44 +228,67 @@ export function generarTexturas(escena) {
     g.strokeRect(0.75, 10.75, 24.5, 9.5);
   });
 
-  // enemigo: bichito que camina
-  generar(escena, TEXTURAS.enemigo, 28, 22, (g) => {
-    caja(g, 0, 2, 28, 20, COLORES.enemigo);
-    caja(g, 0, 18, 28, 4, COLORES.enemigoOscuro);
-    caja(g, 4, 0, 20, 4, COLORES.enemigoOscuro);
-    caja(g, 5, 7, 6, 6, COLORES.enemigoOjo);
-    caja(g, 17, 7, 6, 6, COLORES.enemigoOjo);
-    caja(g, 7, 9, 3, 4, 0x1b1b22);
-    caja(g, 19, 9, 3, 4, 0x1b1b22);
-    g.lineStyle(1, 0x000000, 0.3);
-    g.strokeRect(0.5, 2.5, 27, 19);
+  // enemigo: un bichito redondo con ojos enormes
+  generar(escena, TEXTURAS.enemigo, 28, 24, (g) => {
+    // piececillos
+    tintaRedonda(g, 3, 18, 8, 6, 3, COLORES.enemigoOscuro, 2);
+    tintaRedonda(g, 17, 18, 8, 6, 3, COLORES.enemigoOscuro, 2);
+    // cuerpo
+    tintaCirculo(g, 14, 12, 11, COLORES.enemigo, 2.5);
+    // ojos
+    tintaCirculo(g, 10, 10, 5, 0xffffff, 2);
+    tintaCirculo(g, 20, 10, 4.4, 0xffffff, 2);
+    g.fillStyle(TINTA, 1);
+    g.fillCircle(11, 11, 2.4);
+    g.fillCircle(21, 11, 2.2);
+    // boquita
+    g.lineStyle(2, TINTA, 1);
+    g.beginPath();
+    g.arc(15, 16, 4, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160), false);
+    g.strokePath();
+    brillo(g, 8, 6, 2);
   });
 
-  // el jefe: un bicho grande con cuernos (72 x 72)
+  // el jefe: el mismo bicho pero enorme, con cuernos y mala cara (72 x 72)
   const jefe = (colorCuerpo) => (g) => {
-    caja(g, 0, 14, 72, 58, colorCuerpo);
-    caja(g, 0, 62, 72, 10, COLORES.jefeOscuro);
-    caja(g, 5, 9, 62, 7, COLORES.jefeOscuro);
+    // patas
+    tintaRedonda(g, 8, 58, 18, 14, 6, COLORES.jefeOscuro, 3);
+    tintaRedonda(g, 46, 58, 18, 14, 6, COLORES.jefeOscuro, 3);
     // cuernos
     g.fillStyle(COLORES.jefeCuerno, 1);
-    g.fillTriangle(6, 15, 22, 15, 12, 0);
-    g.fillTriangle(50, 15, 66, 15, 60, 0);
-    // ojos grandes y cejas de enfadado
-    caja(g, 12, 26, 20, 18, COLORES.enemigoOjo);
-    caja(g, 40, 26, 20, 18, COLORES.enemigoOjo);
-    caja(g, 19, 32, 9, 12, 0x1b1b22);
-    caja(g, 47, 32, 9, 12, 0x1b1b22);
-    caja(g, 10, 20, 24, 6, COLORES.jefeOscuro);
-    caja(g, 38, 20, 24, 6, COLORES.jefeOscuro);
+    g.fillTriangle(8, 22, 26, 20, 13, 1);
+    g.fillTriangle(64, 22, 46, 20, 59, 1);
+    g.lineStyle(3, TINTA, 1);
+    g.strokeTriangle(8, 22, 26, 20, 13, 1);
+    g.strokeTriangle(64, 22, 46, 20, 59, 1);
+    // cuerpo
+    tintaCirculo(g, 36, 38, 30, colorCuerpo, 3.5);
+    // cejas de enfado
+    g.lineStyle(4, TINTA, 1);
+    g.beginPath();
+    g.moveTo(14, 24);
+    g.lineTo(32, 31);
+    g.moveTo(58, 24);
+    g.lineTo(40, 31);
+    g.strokePath();
+    // ojos
+    tintaCirculo(g, 24, 38, 11, 0xffffff, 2.5);
+    tintaCirculo(g, 48, 38, 11, 0xffffff, 2.5);
+    g.fillStyle(TINTA, 1);
+    g.fillCircle(27, 39, 5);
+    g.fillCircle(51, 39, 5);
     // boca con dientes
-    caja(g, 22, 52, 28, 8, COLORES.jefeOscuro);
-    caja(g, 27, 52, 5, 8, 0xffffff);
-    caja(g, 40, 52, 5, 8, 0xffffff);
-    g.lineStyle(2, 0x000000, 0.35);
-    g.strokeRect(1, 15, 70, 56);
+    g.fillStyle(COLORES.jefeOscuro, 1);
+    g.fillRoundedRect(22, 52, 28, 10, 4);
+    g.lineStyle(2.5, TINTA, 1);
+    g.strokeRoundedRect(22, 52, 28, 10, 4);
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(27, 52, 5, 5);
+    g.fillRect(40, 52, 5, 5);
+    brillo(g, 18, 22, 3.5);
   };
   generar(escena, TEXTURAS.jefe, 72, 72, jefe(COLORES.jefe));
-  generar(escena, TEXTURAS.jefeEnfadado, 72, 72, jefe(0xa63bbd));
+  generar(escena, TEXTURAS.jefeEnfadado, 72, 72, jefe(0xb583cc));
 
   // checkpoint: banderin apagado y encendido
   const banderin = (color) => (g) => {

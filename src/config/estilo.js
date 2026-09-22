@@ -5,7 +5,19 @@
 // cargue imagenes con estas mismas claves: el resto del juego no se entera.
 // ---------------------------------------------------------------------------
 
+// Paleta de dibujo animado de los anos 30: tinta negra gruesa, cremas, sepias
+// y un rojo y un dorado apagados. Nada de colores de pantalla.
+export const TINTA = 0x1b1410;
+
 export const COLORES = {
+  tinta: TINTA,
+  crema: 0xf3e3c3,
+  cremaOscura: 0xd9c19a,
+  sepia: 0x8a6b4f,
+  sepiaOscuro: 0x5c4531,
+  rojoViejo: 0xc0392b,
+  doradoViejo: 0xd8b24a,
+
   cieloArriba: 0x4aa8e0,
   cieloAbajo: 0x9fd9f6,
   montana: 0x6f8fb0,
@@ -18,8 +30,8 @@ export const COLORES = {
   hierba: 0x4caf50,
   hierbaOscura: 0x3b8c3f,
 
-  plataforma: 0xc98f4e,
-  plataformaBorde: 0x8a5a33,
+  plataforma: 0xd9b57e,
+  plataformaBorde: 0x8a6b4f,
 
   bloque: 0xe0b060,
   bloqueBorde: 0x9c7430,
@@ -38,12 +50,12 @@ export const COLORES = {
   bloqueArmarClaro: 0xf4655f,
   bloqueArmarOscuro: 0xa8221f,
 
-  enemigo: 0x8e44ad,
-  enemigoOscuro: 0x5e2d75,
+  enemigo: 0x9b7bb5,
+  enemigoOscuro: 0x6b5184,
   enemigoOjo: 0xffffff,
 
-  jefe: 0x7b2d8f,
-  jefeOscuro: 0x4a1a5c,
+  jefe: 0x8e5fa8,
+  jefeOscuro: 0x5a3a6e,
   jefeCuerno: 0xf4d03f,
   jefeVida: 0xe74c3c,
   jefeVidaVacia: 0x3d5a7a,

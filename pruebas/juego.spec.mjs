@@ -134,7 +134,9 @@ test('el jugador corre y salta con la altura prevista', async ({ page }) => {
     const j = window.juego.scene.getScene('nivel').jugadores[0];
     const partida = j.y;
     let masAlto = j.y;
-    for (let i = 0; i < 120 && !(j.body.velocity.y >= 0 && j.y < partida - 10); i += 1) {
+    // margen largo a proposito: en una maquina lenta el salto tarda mas en
+      // tiempo de reloj, y si el bucle se corta antes se mide una altura falsa
+      for (let i = 0; i < 400 && !(j.body.velocity.y >= 0 && j.y < partida - 10); i += 1) {
       masAlto = Math.min(masAlto, j.y);
       await new Promise((r) => setTimeout(r, 10));
     }
@@ -161,7 +163,7 @@ test('el salto corto sube menos que el salto largo', async ({ page }) => {
       const j = window.juego.scene.getScene('nivel').jugadores[0];
       const partida = j.y;
       let masAlto = j.y;
-      for (let i = 0; i < 150 && !(j.body.velocity.y >= 0 && j.y < partida - 5); i += 1) {
+      for (let i = 0; i < 400 && !(j.body.velocity.y >= 0 && j.y < partida - 5); i += 1) {
         masAlto = Math.min(masAlto, j.y);
         await new Promise((r) => setTimeout(r, 10));
       }
@@ -187,12 +189,20 @@ test('las monedas se recogen y suman en el HUD', async ({ page }) => {
     const n = window.juego.scene.getScene('nivel');
     n.jugadores[0].setPosition(8 * 32, 13 * 32 + 10);
   });
+  // Se espera a que recoja tres, en vez de correr un tiempo fijo: si la maquina
+  // va lenta, en 900 ms no le habria dado tiempo y la prueba fallaria sin que el
+  // juego este mal.
   await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(900);
+  await page.waitForFunction(
+    () => window.juego.scene.getScene('nivel').jugadores[0].recogidas >= 3,
+    null,
+    { timeout: 15000 },
+  );
   await page.keyboard.up('ArrowRight');
 
   const estado = await estadoJugador(page);
   expect(estado.monedas).toBeGreaterThanOrEqual(3);
+  expect(estado.recogidas).toBeGreaterThanOrEqual(3);
   expect(estado.totalMonedas).toBe(28);
 });
 
