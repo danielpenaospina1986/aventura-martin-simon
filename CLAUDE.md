@@ -40,6 +40,8 @@ npm run preview   # servir dist/ compilado
 
 ```
 aventura-martin-simon/
+  JUGAR.bat             arranque con doble clic (Windows)
+  COMO-JUGAR.txt        controles y reglas, para tener a mano
   index.html            contenedor del canvas
   vite.config.js
   CLAUDE.md             esta biblia

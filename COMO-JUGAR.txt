@@ -1,0 +1,53 @@
+===========================================
+  LAS AVENTURAS DE MARTÍN Y SIMÓN
+===========================================
+
+CÓMO EMPEZAR
+------------
+Haz doble clic en JUGAR.bat
+
+Se abre una ventana negra (no la cierres) y, detrás, el juego en el navegador.
+Para terminar: cierra el navegador y después la ventana negra.
+
+
+CONTROLES
+---------
+  ← →   o   A D          moverse
+  ↑   W   o   Espacio    saltar
+  X   o   F              habilidad
+  Enter  o  clic          confirmar en los menús
+  Esc                     pausa
+  H                       ver las cajas de colisión
+
+
+LOS DOS PERSONAJES
+------------------
+Corren y saltan exactamente igual. Lo único que cambia es la habilidad.
+
+  MARTÍN   Delgado, pelo castaño claro.
+           Habilidad: golpe de katana. Elimina a los enemigos que tenga delante.
+
+  SIMÓN    Grande y fuerte, pelo negro.
+           Habilidad: construir bloques. En el suelo los pone delante; en el
+           aire, justo debajo de él. Puede tener 3 a la vez; al poner el cuarto
+           desaparece el más viejo.
+
+
+REGLAS
+------
+- No hay vidas ni "game over".
+- Si te toca un enemigo de lado o te caes a un agujero, parpadeas y vuelves al
+  último punto de control. NO pierdes monedas.
+- Si saltas encima de un enemigo, lo eliminas.
+- El nivel se puede terminar con cualquiera de los dos. Las habilidades sirven
+  para atajos y monedas extra.
+
+
+PARA LOS MAYORES
+----------------
+  npm run dev       abrir el juego (lo mismo que JUGAR.bat)
+  npm run validar   comprobar que el nivel sigue siendo jugable
+  npm run probar    pasar las pruebas automáticas
+
+El nivel se edita a mano en src/niveles/nivel1.js: es un dibujo hecho con
+letras. Los valores de salto, velocidad y gravedad están en src/config/ajustes.js
