@@ -234,6 +234,10 @@ grupo de enemigos donde luce la katana de Martin.
 - **2026-09-22** — El despliegue es automatico con GitHub Actions en cada push a
   `main`: instala, valida el nivel, compila y publica. No hay subida manual de
   archivos, al contrario que en el proyecto Pavas.
+- **2026-09-22** — GitHub Pages se activa **una sola vez a mano** en
+  Ajustes > Pages > Source: "GitHub Actions". Se intento que lo hiciera el propio
+  workflow con `enablement: true`, pero el token de Actions no tiene permiso para
+  crear el sitio y la ejecucion fallaba.
 - **2026-09-22** — `vite.config.js` usa `base: './'` (rutas relativas). Es lo que
   permite que el juego funcione en una subcarpeta como
   `usuario.github.io/aventura-martin-simon/`.

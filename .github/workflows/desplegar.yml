@@ -40,10 +40,10 @@ jobs:
       - name: Compilar
         run: npm run build
 
+      # Pages se activa una sola vez a mano, en Ajustes > Pages > Source:
+      # "GitHub Actions". El token de Actions no tiene permiso para crearlo.
       - name: Preparar GitHub Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Subir el resultado
         uses: actions/upload-pages-artifact@v3
