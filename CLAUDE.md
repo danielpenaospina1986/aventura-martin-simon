@@ -45,7 +45,6 @@ aventura-martin-simon/
   index.html            contenedor del canvas
   vite.config.js
   CLAUDE.md             esta biblia
-  JUGAR.bat             arranque con doble clic (Windows)
   src/
     main.js             arranque de Phaser y registro de escenas
     config/
