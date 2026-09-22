@@ -27,6 +27,8 @@ Simon (los hijos de Daniel). Titulo provisional: **"Las aventuras de Martin y Si
 | Grilla | **32 x 32 px** |
 | Fisica | Arcade Physics |
 | Node | v24 LTS |
+| Publicado en | https://danielpenaospina1986.github.io/aventura-martin-simon/ |
+| Repositorio | https://github.com/danielpenaospina1986/aventura-martin-simon (publico) |
 
 Comandos:
 

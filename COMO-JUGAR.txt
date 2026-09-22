@@ -4,6 +4,15 @@
 
 CÓMO EMPEZAR
 ------------
+Lo más fácil: abrir este enlace en cualquier navegador.
+
+  https://danielpenaospina1986.github.io/aventura-martin-simon/
+
+Funciona desde cualquier ordenador, sin instalar nada.
+
+
+Y SI NO HAY INTERNET
+--------------------
 Haz doble clic en JUGAR.bat
 
 Se abre una ventana negra (no la cierres) y, detrás, el juego en el navegador.
