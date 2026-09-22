@@ -27,6 +27,17 @@ export const COLORES = {
   moneda: 0xffd54a,
   monedaBorde: 0xe0a316,
 
+  // el sushi de Martin
+  sushiAlga: 0x2e3b2f,
+  sushiArroz: 0xfaf4e6,
+  sushiRelleno: 0xf2735a,
+  sushiRellenoClaro: 0xf9a68f,
+
+  // el bloque de armar de Simon
+  bloqueArmar: 0xe23b3b,
+  bloqueArmarClaro: 0xf4655f,
+  bloqueArmarOscuro: 0xa8221f,
+
   enemigo: 0x8e44ad,
   enemigoOscuro: 0x5e2d75,
   enemigoOjo: 0xffffff,
@@ -49,8 +60,14 @@ export const COLORES = {
   textoSuave: '#d7e3f0',
   textoOscuro: '#16202c',
   textoAcento: '#ffd54a',
-  panel: 0x16202c,
-  panelBorde: 0x3d5a7a,
+  panel: 0x1b1410,
+  panelBorde: 0xc9a227,
+
+  // paleta art deco de las cajas de dialogo
+  decoFondo: 0x1b1410,
+  decoMarco: 0xd8b24a,
+  decoMarcoOscuro: 0x8a6b1d,
+  decoCrema: 0xf3e3c3,
 };
 
 // La tipografia del juego. Se carga en sistemas/fuente.js antes de dibujar
@@ -73,6 +90,8 @@ export const TEXTURAS = {
   plataforma: 'tex-plataforma',
   bloque: 'tex-bloque',
   moneda: 'tex-moneda',
+  monedaMartin: 'tex-sushi',
+  monedaSimon: 'tex-bloque-armar',
   enemigo: 'tex-enemigo',
   jefe: 'tex-jefe',
   jefeEnfadado: 'tex-jefe-enfadado',

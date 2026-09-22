@@ -60,6 +60,15 @@ export const LANZAMIENTO = {
   aparecerMs: 110,
 };
 
+// Como se puntua. La idea: las monedas suman, los golpes restan, y el marcador
+// final es lo que ganaste menos lo que te costo llegar.
+export const PUNTOS = {
+  porMoneda: 1,
+  porGolpe: -3,   // te toca un enemigo o te caes a un hueco
+  porJefe: 10,
+  minimo: 0,      // el marcador nunca baja de aqui
+};
+
 export const JEFE = {
   vidas: 3,
   velocidad: 46,

@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { CAMARA, JEFE, LANZAMIENTO, MUNDO } from '../config/ajustes.js';
+import { CAMARA, JEFE, LANZAMIENTO, MUNDO, PUNTOS } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -35,7 +35,10 @@ export class EscenaNivel extends Phaser.Scene {
     const { width: ancho, height: alto } = this.scale;
     this.fondo = pintarFondo(this, ancho, alto);
 
-    this.nivel = construirNivel(this, this.datosNivel);
+    this.datosPersonaje = PERSONAJES[this.personajeId] || PERSONAJES.martin;
+    this.nivel = construirNivel(this, this.datosNivel, {
+      texturaMoneda: this.datosPersonaje.moneda,
+    });
     this.fondo.ajustarParallax(this.nivel.ancho);
     this.enemigos = this.nivel.enemigos;
     this.jefe = this.nivel.jefe;
@@ -71,7 +74,7 @@ export class EscenaNivel extends Phaser.Scene {
   crearJugadores() {
     // Un solo jugador por ahora. Para el modo de dos jugadores basta con
     // repetir este bloque con PERFILES.jugador2 y otro personaje.
-    const datos = PERSONAJES[this.personajeId] || PERSONAJES.martin;
+    const datos = this.datosPersonaje;
     const controles = new Controles(this, PERFILES.jugador1);
     const x = centroX(this.nivel.inicio.col);
     const y = baseY(this.nivel.inicio.fila) - datos.alto / 2;
@@ -150,7 +153,7 @@ export class EscenaNivel extends Phaser.Scene {
 
       // caer por un hueco: no se pierde nada, se vuelve al checkpoint
       if (jugador.y > this.nivel.alto + 60) {
-        if (!jugador.herir()) jugador.reaparecer();
+        if (!this.herirJugador(jugador)) jugador.reaparecer();
       }
     });
 
@@ -174,9 +177,10 @@ export class EscenaNivel extends Phaser.Scene {
   recogerMoneda(jugador, moneda) {
     if (!moneda.active) return;
     this.tweens.killTweensOf(moneda);
-    brilloMoneda(this, moneda.x, moneda.y);
+    brilloMoneda(this, moneda.x, moneda.y, this.datosPersonaje.moneda);
     moneda.destroy();
-    jugador.monedas += 1;
+    jugador.monedas += PUNTOS.porMoneda;
+    jugador.recogidas += 1;
   }
 
   tocarEnemigo(jugador, enemigo) {
@@ -189,8 +193,25 @@ export class EscenaNivel extends Phaser.Scene {
       this.eliminarEnemigo(enemigo);
       jugador.rebotar();
     } else {
-      jugador.herir();
+      this.herirJugador(jugador);
     }
+  }
+
+  // Un golpe no quita vidas (no hay), pero cuesta monedas. El marcador final es
+  // lo que has ganado menos lo que te ha costado llegar.
+  herirJugador(jugador) {
+    if (!jugador.herir()) return false;
+
+    jugador.golpes += 1;
+    const antes = jugador.monedas;
+    jugador.monedas = Math.max(PUNTOS.minimo, jugador.monedas + PUNTOS.porGolpe);
+    const perdidas = antes - jugador.monedas;
+
+    if (perdidas > 0) {
+      textoFlotante(this, jugador.x, jugador.y - 40, `-${perdidas}`, '#ff6b6b');
+    }
+    this.hud.animarCara(jugador);
+    return true;
   }
 
   eliminarEnemigo(enemigo) {
@@ -234,6 +255,9 @@ export class EscenaNivel extends Phaser.Scene {
         personajeId: this.personajeId,
         monedas: jugador.monedas,
         total: this.nivel.totalMonedas,
+        recogidas: jugador.recogidas,
+        golpes: jugador.golpes,
+        jefesDerrotados: jugador.jefesDerrotados,
       });
     });
   }
@@ -251,7 +275,7 @@ export class EscenaNivel extends Phaser.Scene {
       jugador.saltoRecortado = false;
       this.golpearJefe(jugador.x);
     } else {
-      jugador.herir();
+      this.herirJugador(jugador);
     }
   }
 
@@ -284,7 +308,13 @@ export class EscenaNivel extends Phaser.Scene {
     this.jefe.destroy();
     this.jefe = null;
 
+    const jugador = this.jugadores[0];
+    jugador.monedas += PUNTOS.porJefe;
+    jugador.jefesDerrotados += 1;
+
     textoFlotante(this, x, y - 40, '¡Jefe derrotado!', COLORES.textoAcento);
+    textoFlotante(this, x, y - 8, `+${PUNTOS.porJefe}`, COLORES.textoAcento);
+    this.hud.animarCara(jugador);
     this.abrirMeta();
   }
 

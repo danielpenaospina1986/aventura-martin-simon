@@ -49,7 +49,11 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.congeladoHasta = 0;
     this.recargaHabilidad = 0;
     this.reaparicion = { x, y };
+    // marcador y su desglose, para poder contarlo al final
     this.monedas = 0;
+    this.recogidas = 0;
+    this.golpes = 0;
+    this.jefesDerrotados = 0;
   }
 
   get esInvulnerable() {

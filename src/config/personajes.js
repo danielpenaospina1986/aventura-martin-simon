@@ -12,6 +12,8 @@ export const PERSONAJES = {
     nombre: 'Martín',
     textura: TEXTURAS.martin,
     cara: TEXTURAS.caraMartin,
+    moneda: TEXTURAS.monedaMartin,
+    nombreMoneda: 'sushis',
     ancho: 22,
     alto: 44,
     color: 0xd93b3b,        // rojo
@@ -28,6 +30,8 @@ export const PERSONAJES = {
     nombre: 'Simón',
     textura: TEXTURAS.simon,
     cara: TEXTURAS.caraSimon,
+    moneda: TEXTURAS.monedaSimon,
+    nombreMoneda: 'bloques',
     ancho: 30,
     alto: 52,
     color: 0xef7d1e,        // naranja

@@ -51,12 +51,12 @@ export class Hud {
         .setDepth(101);
 
       const icono = escena.add
-        .image(FILA.margen + 176, centroY, TEXTURAS.moneda)
+        .image(FILA.margen + 176, centroY, jugador.datos.moneda)
         .setScrollFactor(0)
         .setDepth(101);
 
       const contador = escena.add
-        .text(FILA.margen + 194, centroY, `0 / ${totalMonedas}`, {
+        .text(FILA.margen + 196, centroY, '0', {
           fontFamily: FUENTE.familia,
           fontSize: `${FUENTE.hud}px`,
           color: COLORES.textoAcento,
@@ -91,7 +91,7 @@ export class Hud {
     this.jugadores.forEach((jugador, i) => {
       const fila = this.filas[i];
       if (!fila) return;
-      const texto = `${jugador.monedas} / ${this.totalMonedas}`;
+      const texto = String(jugador.monedas);
       if (fila.contador.text !== texto) {
         fila.contador.setText(texto);
         this.escena.tweens.add({

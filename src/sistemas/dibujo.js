@@ -105,6 +105,46 @@ export function generarTexturas(escena) {
     g.fillCircle(6, 6, 2);
   });
 
+  // El premio de Martin: un rollo de sushi visto desde arriba.
+  generar(escena, TEXTURAS.monedaMartin, 22, 22, (g) => {
+    g.fillStyle(COLORES.sushiAlga, 1);
+    g.fillCircle(11, 11, 11);
+    g.fillStyle(COLORES.sushiArroz, 1);
+    g.fillCircle(11, 11, 8.5);
+    g.fillStyle(COLORES.sushiRelleno, 1);
+    g.fillCircle(11, 11, 4.5);
+    g.fillStyle(COLORES.sushiRellenoClaro, 1);
+    g.fillCircle(9.5, 9.5, 2);
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(7, 6.5, 1.6);
+  });
+
+  // El premio de Simon: un bloque de armar con seis cilindros encima.
+  generar(escena, TEXTURAS.monedaSimon, 26, 22, (g) => {
+    // cilindros de la fila de atras
+    for (let i = 0; i < 3; i += 1) {
+      const cx = 7 + i * 6.5;
+      g.fillStyle(COLORES.bloqueArmarOscuro, 1);
+      g.fillEllipse(cx, 5.5, 5.4, 3.4);
+      g.fillStyle(COLORES.bloqueArmar, 1);
+      g.fillEllipse(cx, 4.6, 5.4, 3.4);
+    }
+    // cilindros de la fila de delante
+    for (let i = 0; i < 3; i += 1) {
+      const cx = 4.5 + i * 6.5;
+      g.fillStyle(COLORES.bloqueArmarOscuro, 1);
+      g.fillEllipse(cx, 10, 5.8, 3.6);
+      g.fillStyle(COLORES.bloqueArmarClaro, 1);
+      g.fillEllipse(cx, 9, 5.8, 3.6);
+    }
+    // cuerpo del bloque
+    caja(g, 0, 10, 26, 11, COLORES.bloqueArmar);
+    caja(g, 0, 10, 26, 3, COLORES.bloqueArmarClaro);
+    caja(g, 0, 18, 26, 3, COLORES.bloqueArmarOscuro);
+    g.lineStyle(1.5, 0x000000, 0.4);
+    g.strokeRect(0.75, 10.75, 24.5, 9.5);
+  });
+
   // enemigo: bichito que camina
   generar(escena, TEXTURAS.enemigo, 28, 22, (g) => {
     caja(g, 0, 2, 28, 20, COLORES.enemigo);
@@ -199,6 +239,62 @@ export function generarTexturas(escena) {
   });
 
   Object.values(PERSONAJES).forEach((datos) => generarPersonaje(escena, datos));
+}
+
+// Caja de dialogo con aire art deco: fondo oscuro, marco doble dorado y las
+// esquinas escalonadas. Se usa en todos los paneles del juego para que las
+// pantallas tengan el mismo lenguaje.
+export function panelDeco(escena, x, y, ancho, alto, opciones = {}) {
+  const { alpha = 0.92, escalon = 14 } = opciones;
+  const g = escena.add.graphics().setScrollFactor(0);
+  const x0 = x - ancho / 2;
+  const y0 = y - alto / 2;
+
+  // cuerpo con las esquinas cortadas en diagonal
+  const esquinas = [
+    x0 + escalon, y0,
+    x0 + ancho - escalon, y0,
+    x0 + ancho, y0 + escalon,
+    x0 + ancho, y0 + alto - escalon,
+    x0 + ancho - escalon, y0 + alto,
+    x0 + escalon, y0 + alto,
+    x0, y0 + alto - escalon,
+    x0, y0 + escalon,
+  ];
+  g.fillStyle(COLORES.decoFondo, alpha);
+  g.fillPoints(
+    esquinas.reduce((puntos, valor, i) => {
+      if (i % 2 === 0) puntos.push({ x: valor, y: esquinas[i + 1] });
+      return puntos;
+    }, []),
+    true,
+  );
+
+  // marco doble
+  const marco = (margen, grosor, color, transparencia) => {
+    g.lineStyle(grosor, color, transparencia);
+    g.strokeRect(x0 + margen, y0 + margen, ancho - margen * 2, alto - margen * 2);
+  };
+  marco(4, 3, COLORES.decoMarco, 0.95);
+  marco(11, 1.5, COLORES.decoMarcoOscuro, 0.9);
+
+  // remates en las esquinas, como los frisos de los anos 30
+  g.lineStyle(3, COLORES.decoMarco, 0.95);
+  const remate = 20;
+  [
+    [x0 + 4, y0 + 4, 1, 1],
+    [x0 + ancho - 4, y0 + 4, -1, 1],
+    [x0 + 4, y0 + alto - 4, 1, -1],
+    [x0 + ancho - 4, y0 + alto - 4, -1, -1],
+  ].forEach(([px, py, sx, sy]) => {
+    g.beginPath();
+    g.moveTo(px + sx * remate, py + sy * 10);
+    g.lineTo(px + sx * 10, py + sy * 10);
+    g.lineTo(px + sx * 10, py + sy * remate);
+    g.strokePath();
+  });
+
+  return g;
 }
 
 // Fondo de todas las pantallas. Si la ilustracion esta cargada se usa esa; si

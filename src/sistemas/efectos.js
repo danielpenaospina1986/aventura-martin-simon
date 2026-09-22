@@ -31,9 +31,9 @@ export function estrellitas(escena, x, y, cantidad = 9) {
   }
 }
 
-// Destello al recoger una moneda.
-export function brilloMoneda(escena, x, y) {
-  const brillo = escena.add.image(x, y, TEXTURAS.moneda).setDepth(40);
+// Destello al recoger una moneda (sushi o bloque, segun el personaje).
+export function brilloMoneda(escena, x, y, textura = TEXTURAS.moneda) {
+  const brillo = escena.add.image(x, y, textura).setDepth(40);
   escena.tweens.add({
     targets: brillo,
     y: y - 34,

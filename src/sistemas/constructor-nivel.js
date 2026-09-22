@@ -30,7 +30,9 @@ export const centroY = (fila) => fila * C + C / 2;
 // suelo de una casilla (donde se apoyan las cosas)
 export const baseY = (fila) => (fila + 1) * C;
 
-export function construirNivel(escena, nivel) {
+export function construirNivel(escena, nivel, opciones = {}) {
+  // Cada personaje recoge lo suyo: sushi para Martin, bloques para Simon.
+  const texturaMoneda = opciones.texturaMoneda || TEXTURAS.moneda;
   const mapa = nivel.mapa;
   const filas = mapa.length;
   const columnas = mapa[0].length;
@@ -104,7 +106,7 @@ export function construirNivel(escena, nivel) {
         }
 
         case SIMBOLOS.MONEDA: {
-          const moneda = monedas.create(x, y, TEXTURAS.moneda);
+          const moneda = monedas.create(x, y, texturaMoneda);
           moneda.setDepth(5);
           escena.tweens.add({
             targets: moneda,
