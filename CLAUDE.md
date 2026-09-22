@@ -69,12 +69,22 @@ aventura-martin-simon/
       nivel1.js         mapa del nivel 1 como texto editable a mano
   herramientas/
     validar-nivel.mjs   comprueba que el nivel es jugable (node)
+  pruebas/
+    juego.spec.mjs      pruebas automaticas con Playwright
+  capturas/             imagenes que generan las pruebas (no se versionan)
 ```
 
 Comprobar un nivel despues de editarlo a mano:
 
 ```
-node herramientas/validar-nivel.mjs
+npm run validar
+```
+
+Pasar las pruebas automaticas (abren el juego en un navegador de verdad,
+comprueban que no hay errores y guardan capturas en `capturas/`):
+
+```
+npm run probar
 ```
 
 **Regla de oro:** lo visual esta centralizado (`config/estilo.js` y `sistemas/dibujo.js`)
@@ -204,3 +214,11 @@ grupo de enemigos donde luce la katana de Martin.
   con el sistema de particulas: menos dependencias y mas facil de sustituir.
 - **2026-09-22** — `window.juego` expone la instancia de Phaser para depurar desde la
   consola del navegador y para las pruebas automaticas con Playwright.
+- **2026-09-22** — Los controles no se leen muestreando la tecla una vez por
+  fotograma, sino escuchando sus eventos. Un toque muy corto (mas rapido que un
+  fotograma) se perdia, y los ninos dan toques muy cortos.
+- **2026-09-22** — El checkpoint y la meta tienen una zona de contacto alta (10
+  casillas). Con la zona pegada al suelo se podian pasar de largo saltando por
+  encima y el nivel se volvia injusto.
+- **2026-09-22** — Los huecos se pintan con un fondo oscuro para que se lean como
+  precipicios: con el paisaje de fondo a la vista no se distinguian.

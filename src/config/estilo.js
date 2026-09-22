@@ -14,6 +14,7 @@ export const COLORES = {
 
   tierra: 0x8a5a33,
   tierraOscura: 0x6d4527,
+  abismo: 0x241a14,
   hierba: 0x4caf50,
   hierbaOscura: 0x3b8c3f,
 

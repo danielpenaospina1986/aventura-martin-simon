@@ -42,6 +42,7 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.coyote = 0;
     this.buffer = 0;
     this.saltoRecortado = false;
+    this.puedeRecortar = true;
     this.enSuelo = false;
     this.reloj = 0;
     this.invulnerableHasta = 0;
@@ -114,15 +115,20 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
       this.saltar();
     }
 
-    // salto variable: al soltar el boton, la subida se recorta
+    // salto variable: al soltar el boton, la subida se recorta.
+    // No se recorta en el mismo fotograma en que se ha saltado: asi un toque
+    // muy corto sigue dando un saltito de verdad.
     if (
       this.controles.recienSoltada('saltar') &&
       cuerpo.velocity.y < 0 &&
-      !this.saltoRecortado
+      !this.saltoRecortado &&
+      this.puedeRecortar
     ) {
       cuerpo.velocity.y *= JUGADOR.recorteSalto;
       this.saltoRecortado = true;
     }
+
+    this.puedeRecortar = true;
   }
 
   saltar() {
@@ -130,6 +136,7 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.buffer = 0;
     this.coyote = 0;
     this.saltoRecortado = false;
+    this.puedeRecortar = false;
     this.escena.events.emit('jugador-salta', this);
   }
 

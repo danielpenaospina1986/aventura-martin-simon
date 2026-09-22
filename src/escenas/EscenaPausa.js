@@ -45,7 +45,7 @@ export class EscenaPausa extends Phaser.Scene {
     );
 
     this.add
-      .text(ancho / 2, alto / 2 + 118, 'Esc  seguir jugando', {
+      .text(ancho / 2, alto / 2 + 130, 'Esc  seguir jugando', {
         fontFamily: FUENTE.familia,
         fontSize: '15px',
         color: COLORES.textoSuave,

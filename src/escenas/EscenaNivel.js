@@ -270,8 +270,13 @@ export class EscenaNivel extends Phaser.Scene {
 
   alternarCajas() {
     const mundo = this.physics.world;
-    if (!mundo.debugGraphic) mundo.createDebugGraphic();
-    mundo.drawDebug = !mundo.drawDebug;
+    if (!mundo.debugGraphic) {
+      // createDebugGraphic ya deja drawDebug encendido: no hay que invertirlo
+      mundo.createDebugGraphic();
+      mundo.drawDebug = true;
+    } else {
+      mundo.drawDebug = !mundo.drawDebug;
+    }
     mundo.debugGraphic.setVisible(mundo.drawDebug);
     if (!mundo.drawDebug) mundo.debugGraphic.clear();
 

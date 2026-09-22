@@ -51,10 +51,10 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(0.5);
 
     // el personaje dando saltos de alegria
-    const figura = this.add.image(ancho / 2, 268, datos.textura).setOrigin(0.5, 1).setScale(2.6);
+    const figura = this.add.image(ancho / 2, 280, datos.textura).setOrigin(0.5, 1).setScale(2.2);
     this.tweens.add({
       targets: figura,
-      y: figura.y - 26,
+      y: figura.y - 22,
       duration: 380,
       yoyo: true,
       repeat: -1,
@@ -64,7 +64,7 @@ export class EscenaVictoria extends Phaser.Scene {
     this.time.addEvent({
       delay: 520,
       loop: true,
-      callback: () => estrellitas(this, ancho / 2, 200, 7),
+      callback: () => estrellitas(this, ancho / 2, 215, 7),
     });
 
     // monedas

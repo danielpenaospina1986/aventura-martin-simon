@@ -42,6 +42,26 @@ export function construirNivel(escena, nivel) {
   let meta = null;
   let inicio = { col: 1, fila: filas - 4 };
 
+  // Fondo oscuro bajo la linea del terreno: hace que los huecos se lean como
+  // precipicios en vez de dejar ver el paisaje del fondo.
+  const pozo = escena.add.graphics().setDepth(-10);
+  pozo.fillStyle(COLORES.abismo, 1);
+  // La fila donde empieza el terreno de esa columna: se busca desde abajo, para
+  // no confundir una repisa flotante con el suelo.
+  const filaSueloDe = (col) => {
+    let f = filas - 1;
+    if (mapa[f][col] !== SIMBOLOS.SOLIDO) return null; // aqui hay un hueco
+    while (f > 0 && mapa[f - 1][col] === SIMBOLOS.SOLIDO) f -= 1;
+    return f;
+  };
+  const filasSuelo = [];
+  for (let col = 0; col < columnas; col += 1) filasSuelo.push(filaSueloDe(col));
+  const filaPorDefecto = Math.min(...filasSuelo.filter((f) => f !== null));
+  for (let col = 0; col < columnas; col += 1) {
+    const desde = filasSuelo[col] === null ? filaPorDefecto : filasSuelo[col];
+    pozo.fillRect(col * C, desde * C, C, alto - desde * C);
+  }
+
   for (let fila = 0; fila < filas; fila += 1) {
     for (let col = 0; col < columnas; col += 1) {
       const simbolo = mapa[fila][col];
@@ -96,12 +116,17 @@ export function construirNivel(escena, nivel) {
           bandera.activo = false;
           bandera.col = col;
           bandera.fila = fila;
+          // La zona de contacto es una columna alta: asi no se puede pasar de
+          // largo saltando por encima y quedarse sin checkpoint.
+          bandera.body.setSize(C, C * 10, true);
           break;
         }
 
         case SIMBOLOS.META: {
           meta = escena.physics.add.staticSprite(x, baseY(fila) - 31, TEXTURAS.meta);
           meta.setDepth(4);
+          // igual que el checkpoint: alta, para que no se pueda saltar por encima
+          meta.body.setSize(C, C * 10, true);
           break;
         }
 
