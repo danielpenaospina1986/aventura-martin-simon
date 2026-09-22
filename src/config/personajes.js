@@ -11,6 +11,7 @@ export const PERSONAJES = {
     id: 'martin',
     nombre: 'Martín',
     textura: TEXTURAS.martin,
+    cara: TEXTURAS.caraMartin,
     ancho: 22,
     alto: 44,
     color: 0xd93b3b,        // rojo
@@ -26,6 +27,7 @@ export const PERSONAJES = {
     id: 'simon',
     nombre: 'Simón',
     textura: TEXTURAS.simon,
+    cara: TEXTURAS.caraSimon,
     ancho: 30,
     alto: 52,
     color: 0xef7d1e,        // naranja

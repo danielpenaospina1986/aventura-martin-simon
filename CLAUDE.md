@@ -72,11 +72,15 @@ aventura-martin-simon/
     assets/
       fondo-barrio.jpg          fondo del juego (version tratada, la que se carga)
       fondo-barrio-original.jpg ilustracion original, solo como fuente
+      cara-martin.png           carita de Martin, limpia y recortada
+      cara-simon.png            carita de Simon, limpia y recortada
+      caras-origen/             dibujos de partida (NO se versionan)
     niveles/
       nivel1.js         mapa del nivel 1 como texto editable a mano
   herramientas/
     validar-nivel.mjs   comprueba que el nivel es jugable (node)
     tratar-fondo.mjs    suaviza la ilustracion de fondo
+    preparar-caras.mjs  limpia y recorta las caritas de los ninos
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
   capturas/             imagenes que generan las pruebas (no se versionan)
@@ -106,6 +110,9 @@ reescribir la logica del juego.
 
 Ambos tienen **exactamente la misma velocidad y el mismo salto**. La unica diferencia
 es la habilidad.
+
+> Cada personaje tiene ademas su **carita** (`datos.cara`), que sale en la pantalla
+> de seleccion y arriba, junto al contador de monedas, mientras se juega.
 
 ### Martin — el samurai
 - Fisico: delgado. Rectangulo provisional de **22 x 44 px**, color rojo.
@@ -198,6 +205,12 @@ grupo de enemigos donde luce la katana de Martin.
   franquicias conocidas.
 - **Fondo actual:** ilustracion de un barrio de ladera con metrocable, aportada por
   Daniel el 2026-09-22. No contiene marcas ni personajes de franquicias.
+- **Caritas de los ninos:** dibujos de Martin y Simon generados con Gemini a peticion
+  de Daniel, pidiendo un aire de dibujo animado antiguo. Un estilo de dibujo se puede
+  usar libremente, pero el generador colo dos marcas registradas: un emblema en la
+  gorra de Martin y un texto en el hombro de Simon. Las dos se tapan con
+  `herramientas/preparar-caras.mjs`, y los dibujos de partida **no se suben al
+  repositorio** (van en `.gitignore`). Lo que se publica son los PNG ya limpios.
 
 ### El fondo y la legibilidad
 
@@ -253,6 +266,10 @@ baja.
 - **2026-09-22** — El fondo pasa de ser un cielo dibujado por codigo a una
   ilustracion de un barrio con metrocable. El cielo dibujado se conserva como
   respaldo por si la imagen no cargase.
+- **2026-09-22** — Las caritas de los ninos salen en la seleccion de personaje y en
+  el HUD. Se guardan como PNG cuadrados de 256x256 con fondo transparente y se
+  dibujan sobre un disco claro, porque el pelo oscuro y la gorra negra se perdian
+  sobre el panel del HUD.
 - **2026-09-22** — La ilustracion se usa **tratada**, no tal cual: se comprobo con
   capturas que sin tratar el personaje rojo desaparecia entre las casas rojas y las
   monedas se confundian con las fachadas amarillas. El tratamiento ademas la deja en

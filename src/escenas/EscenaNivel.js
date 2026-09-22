@@ -173,6 +173,7 @@ export class EscenaNivel extends Phaser.Scene {
       bandera.x,
       baseY(bandera.fila) - jugador.datos.alto / 2,
     );
+    this.hud.animarCara(jugador);
   }
 
   llegarMeta(jugador) {

@@ -10,6 +10,8 @@ import { TEXTURAS } from '../config/estilo.js';
 // Importado asi para que Vite le ponga la ruta correcta tambien al publicarlo
 // en una subcarpeta (GitHub Pages).
 import fondoBarrio from '../assets/fondo-barrio.jpg';
+import caraMartin from '../assets/cara-martin.png';
+import caraSimon from '../assets/cara-simon.png';
 
 export class EscenaCarga extends Phaser.Scene {
   constructor() {
@@ -18,6 +20,8 @@ export class EscenaCarga extends Phaser.Scene {
 
   preload() {
     this.load.image(TEXTURAS.fondo, fondoBarrio);
+    this.load.image(TEXTURAS.caraMartin, caraMartin);
+    this.load.image(TEXTURAS.caraSimon, caraSimon);
   }
 
   create() {

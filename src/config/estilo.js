@@ -71,6 +71,8 @@ export const TEXTURAS = {
   arcoKatana: 'tex-arco-katana',
   nube: 'tex-nube',
   fondo: 'tex-fondo',
+  caraMartin: 'tex-cara-martin',
+  caraSimon: 'tex-cara-simon',
   martin: 'tex-martin',
   simon: 'tex-simon',
 };

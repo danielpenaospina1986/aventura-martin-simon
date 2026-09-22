@@ -52,13 +52,23 @@ export class EscenaSeleccion extends Phaser.Scene {
         .rectangle(x, y, 264, 316, COLORES.panel, 0.55)
         .setStrokeStyle(3, COLORES.panelBorde, 0.9);
 
+      // La carita del nino, sobre un disco claro para que destaque
+      const disco = this.add.circle(x, y - 76, 74, 0xfdf3e0, 0.95);
+      disco.setStrokeStyle(4, 0xffffff, 0.9);
+
       const figura = this.add
-        .image(x, y - 76, datos.textura)
+        .image(x, y - 76, datos.cara)
         .setOrigin(0.5, 0.5)
-        .setScale(2.4);
+        .setDisplaySize(148, 148);
+
+      // el munequito con el que se juega, pequeno, para que se asocien
+      const munequito = this.add
+        .image(x + 92, y - 22, datos.textura)
+        .setOrigin(0.5, 1)
+        .setScale(1.1);
 
       this.tweens.add({
-        targets: figura,
+        targets: [figura, disco],
         y: figura.y - 10,
         duration: 820,
         yoyo: true,
@@ -94,7 +104,7 @@ export class EscenaSeleccion extends Phaser.Scene {
         })
         .setOrigin(0.5);
 
-      return { datos, marco, figura, nombre, habilidad, descripcion };
+      return { datos, marco, disco, figura, munequito, nombre, habilidad, descripcion };
     });
 
     // --- menu de eleccion ---
@@ -127,7 +137,10 @@ export class EscenaSeleccion extends Phaser.Scene {
       const elegida = i === indice;
       tarjeta.marco.setStrokeStyle(elegida ? 4 : 3, elegida ? 0xffd54a : COLORES.panelBorde, 0.95);
       tarjeta.marco.setFillStyle(COLORES.panel, elegida ? 0.75 : 0.45);
-      tarjeta.figura.setScale(elegida ? 2.7 : 2.2);
+      tarjeta.figura.setDisplaySize(elegida ? 158 : 140, elegida ? 158 : 140);
+      tarjeta.disco.setRadius(elegida ? 79 : 70);
+      tarjeta.disco.setStrokeStyle(4, elegida ? 0xffd54a : 0xffffff, 0.9);
+      tarjeta.munequito.setAlpha(elegida ? 1 : 0.65);
       tarjeta.nombre.setColor(elegida ? COLORES.textoAcento : COLORES.textoClaro);
     });
   }

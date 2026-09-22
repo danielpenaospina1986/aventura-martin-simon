@@ -25,6 +25,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# dibujos de partida de las caritas: llevan las marcas que quitamos,
+# asi que no se publican. Lo que se versiona son los PNG ya limpios.
+src/assets/caras-origen/
+
 # ajustes locales de Claude Code
 .claude/settings.local.json
 
