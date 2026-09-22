@@ -40,6 +40,7 @@ npm run preview   # servir dist/ compilado
 
 ```
 aventura-martin-simon/
+  README.md             portada del repositorio publico
   JUGAR.bat             arranque con doble clic (Windows)
   COMO-JUGAR.txt        controles y reglas, para tener a mano
   index.html            contenedor del canvas
@@ -73,6 +74,9 @@ aventura-martin-simon/
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
   capturas/             imagenes que generan las pruebas (no se versionan)
+  imagenes/             capturas del README (si se versionan)
+  .github/workflows/
+    desplegar.yml       compila y publica en GitHub Pages en cada push a main
 ```
 
 Comprobar un nivel despues de editarlo a mano:
@@ -223,3 +227,13 @@ grupo de enemigos donde luce la katana de Martin.
   encima y el nivel se volvia injusto.
 - **2026-09-22** — Los huecos se pintan con un fondo oscuro para que se lean como
   precipicios: con el paisaje de fondo a la vista no se distinguian.
+- **2026-09-22** — El juego se publica en GitHub Pages desde un repositorio
+  **publico** (`danielpenaospina1986/aventura-martin-simon`), para que los ninos
+  puedan jugar desde cualquier equipo sin instalar nada. Pages solo es gratuito en
+  repositorios publicos.
+- **2026-09-22** — El despliegue es automatico con GitHub Actions en cada push a
+  `main`: instala, valida el nivel, compila y publica. No hay subida manual de
+  archivos, al contrario que en el proyecto Pavas.
+- **2026-09-22** — `vite.config.js` usa `base: './'` (rutas relativas). Es lo que
+  permite que el juego funcione en una subcarpeta como
+  `usuario.github.io/aventura-martin-simon/`.

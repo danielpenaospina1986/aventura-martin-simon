@@ -11,6 +11,7 @@ test-results/
 playwright-report/
 blob-report/
 capturas/
+# (imagenes/ si se versiona: son las capturas del README)
 
 # entorno
 .env
