@@ -67,6 +67,41 @@ const PERSONAJES = [
         extension: 'webp',
         nombres: ['vuela1', 'vuela2', 'vuela3', 'vuela4', 'vuela5', 'suelta1', 'suelta2', 'vuela6'],
       },
+      // Las poses de cuando le dan van en el MISMO personaje a proposito: asi
+      // comparten altura con las de vuelo y la paloma no cambia de tamano al
+      // recibir el golpe.
+      //
+      // Aqui las zonas van a mano: en esta hoja los dibujos se tocan unos con
+      // otros y cualquier deteccion automatica junta dos palomas en una. De las
+      // diez que trae solo hacen falta estas cinco.
+      {
+        archivo: 'paloma-golpe',
+        nombres: ['mareada', 'cae1', 'cae2', 'cae3', 'suelo'],
+        zonas: [
+          { x: 738, y: 102, ancho: 258, alto: 202 },   // aturdida, con estrellitas
+          { x: 1068, y: 34, ancho: 252, alto: 250 },   // empieza a caer
+          { x: 596, y: 276, ancho: 256, alto: 252 },   // cayendo de espaldas
+          { x: 1062, y: 275, ancho: 215, alto: 265 },  // cabeza abajo
+          { x: 1013, y: 609, ancho: 321, alto: 123 },  // tumbada en el suelo
+        ],
+      },
+    ],
+  },
+  {
+    nombre: 'objetos',
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/objetos',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'objetos',
+        porManchas: true,
+        separacion: 6,
+        // cada objeto va a lo suyo: un lego y una puerta no tienen por que
+        // medir lo mismo, asi que no comparten escala
+        porPieza: true,
+        nombres: ['lego', 'sushi', 'bandera-co', 'puerta', 'bandera-co2', 'bandera-us'],
+      },
     ],
   },
   {
@@ -118,36 +153,62 @@ await pagina.evaluate(() => {
       const i = (y * ancho + x) * 4;
       return [p[i], p[i + 1], p[i + 2]];
     };
-    const esquinas = [en(2, 2), en(ancho - 3, 2), en(2, alto - 3), en(ancho - 3, alto - 3)];
-    const [r0, g0, b0] = esquinas[0];
-    const parecidas = esquinas.every(
-      ([r, g, b]) => Math.abs(r - r0) < 22 && Math.abs(g - g0) < 22 && Math.abs(b - b0) < 22,
-    );
-    const casiGris = Math.abs(r0 - g0) < 22 && Math.abs(g0 - b0) < 22 && Math.abs(r0 - b0) < 22;
 
-    if (parecidas && !casiGris) {
-      // Fondo de color liso. Se compara por TONO y no por color exacto, porque
-      // la sombra que el dibujante pone bajo el bicho es ese mismo verde pero
-      // mas oscuro, y tiene que irse con el fondo. Lo que no tiene color (la
-      // porcelana, el metal, el contorno negro) se queda siempre.
-      const tonoFondo = tonoDe(r0, g0, b0);
-      const comoElFondo = (i, margen, satMinima) => {
-        const r = p[i];
-        const g = p[i + 1];
-        const b = p[i + 2];
+    // Se mira TODO el borde, no solo las cuatro esquinas. Una hoja puede traer
+    // dos fondos a la vez: el verde de la lamina y el verde mas oscuro del
+    // marco de cada recuadro. Con una sola muestra, el recorte tomaba el marco
+    // por fondo y dejaba dentro el verde de la lamina, o al reves.
+    const muestras = [];
+    const paso = Math.max(2, Math.round(Math.min(ancho, alto) / 14));
+    for (let x = 1; x < ancho - 1; x += paso) muestras.push(en(x, 1), en(x, alto - 2));
+    for (let y = 1; y < alto - 1; y += paso) muestras.push(en(1, y), en(ancho - 2, y));
+
+    const conTono = muestras
+      .map(([r, g, b]) => {
         const max = Math.max(r, g, b);
-        if (max === 0) return false;
-        if ((max - Math.min(r, g, b)) / max < satMinima) return false;
-        const t = tonoDe(r, g, b);
-        if (t < 0) return false;
-        const dif = Math.abs(t - tonoFondo);
-        return Math.min(dif, 360 - dif) < margen;
-      };
-      return {
-        esFondo: (i) => comoElFondo(i, 34, 0.17),
-        // mas ancho, para el halo que deja la compresion del JPG en el contorno
-        esResiduo: (i) => comoElFondo(i, 52, 0.10),
-      };
+        const min = Math.min(r, g, b);
+        return { tono: tonoDe(r, g, b), sat: max === 0 ? 0 : (max - min) / max };
+      })
+      .filter((m) => m.sat >= 0.17 && m.tono >= 0);
+
+    if (conTono.length >= muestras.length * 0.4) {
+      // Se toma el tono de en medio y se descartan los que se salen: en un
+      // recorte ajustado, parte del borde la ocupa el propio dibujo (un ala que
+      // llega hasta la esquina) y esas muestras no son fondo. Con exigir que
+      // TODAS las muestras fueran del mismo tono, esas poses se tomaban por
+      // damero y el verde se quedaba pegado.
+      const ordenados = conTono.map((m) => m.tono).sort((a, b) => a - b);
+      const mediana = ordenados[Math.floor(ordenados.length / 2)];
+      const cerca = ordenados.filter((t) => {
+        const dif = Math.abs(t - mediana);
+        return Math.min(dif, 360 - dif) < 40;
+      });
+
+      const desde = cerca.length ? cerca[0] : 0;
+      const hasta = cerca.length ? cerca[cerca.length - 1] : 0;
+
+      // la mayoria del borde tiene que ser de ese tono; si no, no hay fondo de
+      // color que valga, es un dibujo que llega hasta el borde
+      if (cerca.length >= conTono.length * 0.55 && cerca.length >= muestras.length * 0.3) {
+        const margen = 16;
+        const comoElFondo = (i, extra, satMinima) => {
+          const r = p[i];
+          const g = p[i + 1];
+          const b = p[i + 2];
+          const max = Math.max(r, g, b);
+          if (max === 0) return false;
+          if ((max - Math.min(r, g, b)) / max < satMinima) return false;
+          const t = tonoDe(r, g, b);
+          if (t < 0) return false;
+          return t >= desde - margen - extra && t <= hasta + margen + extra;
+        };
+        window.__modoFondo = `liso tonos ${Math.round(desde)}-${Math.round(hasta)}`;
+        return {
+          esFondo: (i) => comoElFondo(i, 0, 0.17),
+          // mas ancho, para el halo que deja la compresion del JPG en el contorno
+          esResiduo: (i) => comoElFondo(i, 14, 0.10),
+        };
+      }
     }
 
     // Damero gris y blanco, como hasta ahora.
@@ -158,6 +219,7 @@ await pagina.evaluate(() => {
       const b = p[i + 2];
       return r > minimo && Math.abs(r - g) < t && Math.abs(g - b) < t && Math.abs(r - b) < t;
     };
+    window.__modoFondo = 'damero';
     return {
       esFondo: (i) => gris(i, tol, 92),
       esResiduo: (i) => gris(i, 26, 120),
@@ -194,14 +256,22 @@ for (const personaje of PERSONAJES) {
       continue;
     }
     const datos = comoDatos(origen);
-    const zonas = await buscarPoses(pagina, datos, personaje.tolerancia);
+    // Una hoja puede traer sus zonas escritas a mano cuando los dibujos se
+    // tocan entre si y ningun detector los separa bien.
+    const zonas = hoja.zonas
+      ? hoja.zonas
+      : hoja.porManchas
+        ? await buscarPorManchas(pagina, datos, personaje.tolerancia, hoja.separacion)
+        : await buscarPoses(pagina, datos, personaje.tolerancia);
     console.log(`  ${hoja.archivo}: encontradas ${zonas.length} poses`);
     for (let i = 0; i < zonas.length && i < hoja.nombres.length; i += 1) {
       trabajos.push({
         nombre: hoja.nombres[i],
         origen: datos,
         zona: zonas[i],
-        grupo: `hoja:${hoja.archivo}`,
+        // porPieza: cada dibujo se escala por su cuenta. Se usa con objetos
+        // sueltos, donde no hay animacion que conservar.
+        grupo: hoja.porPieza ? `pieza:${hoja.archivo}:${i}` : `hoja:${hoja.archivo}`,
       });
     }
   }
@@ -278,7 +348,7 @@ for (const personaje of PERSONAJES) {
     writeFileSync(`${personaje.destino}/${trabajo.nombre}.png`, contenido);
     console.log(
       `  ${personaje.nombre}/${trabajo.nombre.padEnd(9)} ${(contenido.length / 1024).toFixed(0).padStart(3)} KB` +
-        `  · ${resultado.recorte}`,
+        `  · ${resultado.recorte} · ${resultado.modo}`,
     );
   }
   const detalle = [...factores]
@@ -358,6 +428,117 @@ async function buscarPoses(pagina, origen, tolerancia) {
     }
     return zonas;
   }, { origen, tolerancia });
+}
+
+// Busca los dibujos de una hoja por MANCHAS, no por filas y columnas.
+//
+// El metodo de bandas funciona cuando los dibujos estan en una rejilla limpia,
+// pero se atraganta cuando llevan estrellitas, lineas de movimiento o polvo,
+// que rellenan los huecos entre uno y otro. Aqui se buscan las manchas de
+// tinta, se juntan las que estan cerca (una estrellita pertenece a su paloma) y
+// cada grupo resultante es un dibujo.
+async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34) {
+  return pagina.evaluate(
+    async ({ origen, tolerancia, separacion }) => {
+      const imagen = new Image();
+      imagen.src = origen;
+      await imagen.decode();
+
+      const ancho = imagen.naturalWidth;
+      const alto = imagen.naturalHeight;
+      const lienzo = document.createElement('canvas');
+      lienzo.width = ancho;
+      lienzo.height = alto;
+      const ctx = lienzo.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(imagen, 0, 0);
+
+      const p = ctx.getImageData(0, 0, ancho, alto).data;
+      const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia);
+
+      // 1. las manchas, por vecindad de 4
+      const visto = new Uint8Array(ancho * alto);
+      const manchas = [];
+      for (let y0 = 0; y0 < alto; y0 += 1) {
+        for (let x0 = 0; x0 < ancho; x0 += 1) {
+          const raiz = y0 * ancho + x0;
+          if (visto[raiz] || esFondo(raiz * 4)) continue;
+          let n = 0;
+          let x1 = x0;
+          let x2 = x0;
+          let y1 = y0;
+          let y2 = y0;
+          const pila = [raiz];
+          visto[raiz] = 1;
+          while (pila.length) {
+            const idx = pila.pop();
+            const x = idx % ancho;
+            const y = (idx - x) / ancho;
+            n += 1;
+            if (x < x1) x1 = x;
+            if (x > x2) x2 = x;
+            if (y < y1) y1 = y;
+            if (y > y2) y2 = y;
+            const vecinos = [idx + 1, idx - 1, idx + ancho, idx - ancho];
+            for (let k = 0; k < 4; k += 1) {
+              const v = vecinos[k];
+              if (v < 0 || v >= ancho * alto || visto[v]) continue;
+              if (k < 2 && Math.floor(v / ancho) !== y) continue;
+              if (esFondo(v * 4)) continue;
+              visto[v] = 1;
+              pila.push(v);
+            }
+          }
+          // el polvillo de la compresion no cuenta
+          if (n > 60) manchas.push({ x1, y1, x2, y2, n });
+        }
+      }
+
+      // 2. se juntan las que casi se tocan
+      const cerca = (a, b) =>
+        a.x1 - separacion < b.x2 &&
+        b.x1 - separacion < a.x2 &&
+        a.y1 - separacion < b.y2 &&
+        b.y1 - separacion < a.y2;
+
+      let grupos = manchas.map((m) => ({ ...m }));
+      let cambio = true;
+      while (cambio) {
+        cambio = false;
+        for (let i = 0; i < grupos.length && !cambio; i += 1) {
+          for (let j = i + 1; j < grupos.length; j += 1) {
+            if (!cerca(grupos[i], grupos[j])) continue;
+            grupos[i] = {
+              x1: Math.min(grupos[i].x1, grupos[j].x1),
+              y1: Math.min(grupos[i].y1, grupos[j].y1),
+              x2: Math.max(grupos[i].x2, grupos[j].x2),
+              y2: Math.max(grupos[i].y2, grupos[j].y2),
+              n: grupos[i].n + grupos[j].n,
+            };
+            grupos.splice(j, 1);
+            cambio = true;
+            break;
+          }
+        }
+      }
+
+      // 3. fuera los restos y en orden de lectura
+      const minimo = alto * 0.06;
+      grupos = grupos.filter((g) => g.y2 - g.y1 > minimo && g.x2 - g.x1 > minimo);
+      grupos.sort((a, b) => {
+        const filaA = Math.round(a.y1 / (alto / 6));
+        const filaB = Math.round(b.y1 / (alto / 6));
+        return filaA === filaB ? a.x1 - b.x1 : filaA - filaB;
+      });
+
+      return grupos.map((g) => ({
+        x: g.x1,
+        y: g.y1,
+        ancho: g.x2 - g.x1 + 1,
+        alto: g.y2 - g.y1 + 1,
+      }));
+    },
+    { origen, tolerancia, separacion },
+  );
 }
 
 // Mide una pose sin escribirla: sirve para calcular el factor comun.
@@ -552,6 +733,7 @@ async function recortarPose(pagina, opciones) {
 
         return {
           url: salida.toDataURL('image/png'),
+          modo: window.__modoFondo,
           recorte: `${anchoUtil}x${altoUtil}`,
           ancho: anchoUtil,
           alto: altoUtil,

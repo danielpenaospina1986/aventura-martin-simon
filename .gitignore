@@ -36,6 +36,7 @@ src/assets/simon-origen/
 src/assets/martin-origen/
 src/assets/bichos-origen/
 src/assets/portada-origen/
+src/assets/objetos-origen/
 
 # ajustes locales de Claude Code
 .claude/settings.local.json
