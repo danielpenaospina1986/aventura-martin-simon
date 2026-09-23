@@ -4,23 +4,33 @@
 // Por cada ilustracion de partida (src/assets/fondos-origen/) hace dos cosas:
 //
 //   1. Tapa las marcas registradas que traiga. Una ciudad se puede dibujar sin
-//      problema, pero un logotipo o un simbolo de marca no se publican: el
-//      repositorio es publico. Donde habia una marca se pone un motivo art deco.
-//   2. La trata para que funcione como fondo: desenfoque suave y menos color.
-//      Sin eso, el dibujo tiene tanto detalle que el personaje, los premios y
-//      los enemigos se pierden dentro.
-//
-// Se ejecuta con el servidor de desarrollo levantado (npm run dev):
+//      problema, pero un logotipo o un nombre de marca, mejor no. En vez de
+//      difuminarlos (que deja borrones feos, y mas ahora que los fondos van sin
+//      velo), se posa una PALOMA encima, de las que ya vuelan por el juego. Se
+//      come unas letras, el rotulo deja de leerse y ademas tiene su gracia.
+//   2. La desenfoca, que es lo que la manda al fondo: el detalle de la
+//      ilustracion competia con el personaje y los premios. El color no se
+//      toca.
 //
 //   node herramientas/preparar-fondos.mjs
 // ---------------------------------------------------------------------------
 
 import { chromium } from '@playwright/test';
-import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 
-const FILTRO = 'blur(2.5px) saturate(0.72) brightness(1.06)';
+// Solo desenfoque. El color se deja intacto a proposito: antes se bajaba la
+// saturacion y se subia el brillo para que el personaje no se perdiera dentro
+// del dibujo, pero eso dejaba las ciudades lavadas. Ahora el fondo se distingue
+// por estar LEJOS (desenfocado y moviendose despacio), no por estar apagado.
+const FILTRO = 'blur(3px)';
 const CALIDAD = 0.86;
-const SERVIDOR = 'http://127.0.0.1:5173';
+
+// Las palomas que hacen de parche. Son las mismas que cruzan los tableros.
+const PALOMAS = [
+  'src/assets/bichos/paloma/vuela4.png',
+  'src/assets/bichos/paloma/vuela5.png',
+  'src/assets/bichos/paloma/suelta1.png',
+];
 
 const CIUDADES = [
   { nombre: 'space-coast', parches: [] },
@@ -29,27 +39,34 @@ const CIUDADES = [
     nombre: 'atlanta',
     // Esta ilustracion venia con marcas registradas bien visibles.
     parches: [
-      // los aros: se sustituyen por un sol art deco, que pega con el estilo
+      // los aros son cinco y muy grandes: ahi si va un sol art deco
       { tipo: 'sol', zona: [872, 368, 330, 165], muestra: [840, 300] },
+      // el emblema del acuario sobre la banda azul
+      { tipo: 'paloma', zona: [456, 406, 92, 60], pose: 0 },
       // el rotulo rojo de la marca de refrescos
-      { tipo: 'relleno', zona: [238, 512, 162, 48], muestra: [210, 575] },
+      { tipo: 'paloma', zona: [238, 512, 162, 48], pose: 1 },
       // la botella con su logotipo
-      { tipo: 'relleno', zona: [222, 328, 66, 160], muestra: [300, 400] },
+      { tipo: 'paloma', zona: [226, 344, 66, 140], pose: 2 },
       // "world of ..." sobre el edificio
-      { tipo: 'relleno', zona: [52, 498, 196, 68], muestra: [150, 600] },
+      { tipo: 'paloma', zona: [52, 498, 196, 68], pose: 0 },
       // el nombre del acuario
-      { tipo: 'relleno', zona: [440, 522, 240, 40], muestra: [420, 600] },
+      { tipo: 'paloma', zona: [440, 522, 240, 40], pose: 2 },
       // el pie del monumento
-      { tipo: 'relleno', zona: [930, 686, 218, 40], muestra: [900, 740] },
+      { tipo: 'paloma', zona: [930, 686, 218, 40], pose: 1 },
     ],
   },
   {
     nombre: 'miami',
     // nombres de hoteles reales en los rotulos
     parches: [
-      { tipo: 'relleno', zona: [28, 350, 350, 75], muestra: [200, 300] },
-      { tipo: 'relleno', zona: [905, 220, 130, 120], muestra: [880, 200] },
-      { tipo: 'relleno', zona: [1030, 225, 90, 60], muestra: [1010, 200] },
+      // el nombre del hotel, escrito dos veces: en el toldo y en el rotulo
+      // vertical de la fachada
+      { tipo: 'paloma', zona: [196, 352, 200, 52], pose: 2 },
+      { tipo: 'paloma', zona: [238, 62, 74, 280], pose: 0 },
+      // los rotulos del fondo
+      { tipo: 'paloma', zona: [700, 218, 150, 44], pose: 1 },
+      { tipo: 'paloma', zona: [905, 220, 130, 120], pose: 0 },
+      { tipo: 'paloma', zona: [1030, 225, 90, 60], pose: 1 },
     ],
   },
   { nombre: 'cartagena', parches: [] },
@@ -57,16 +74,12 @@ const CIUDADES = [
 
 if (!existsSync('src/assets/fondos')) mkdirSync('src/assets/fondos', { recursive: true });
 
+// El navegador solo hace de lienzo: las imagenes se le pasan ya leidas, no por
+// el servidor. Asi la herramienta no depende de que el servidor este levantado
+// y, sobre todo, no se corta cuando Vite recarga la pagina a media faena.
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage();
-
-try {
-  await pagina.goto(SERVIDOR, { timeout: 15000 });
-} catch {
-  console.error(`No responde ${SERVIDOR}. Arranca antes el servidor con: npm run dev`);
-  await navegador.close();
-  process.exit(1);
-}
+await pagina.goto('about:blank');
 
 for (const ciudad of CIUDADES) {
   const origen = `src/assets/fondos-origen/${ciudad.nombre}.jpg`;
@@ -76,9 +89,9 @@ for (const ciudad of CIUDADES) {
   }
 
   const url = await pagina.evaluate(
-    async ({ ciudad, origen, filtro, calidad }) => {
+    async ({ ciudad, origen, palomas, filtro, calidad }) => {
       const imagen = new Image();
-      imagen.src = `/${origen}`;
+      imagen.src = origen;
       await imagen.decode();
 
       const lienzo = document.createElement('canvas');
@@ -87,6 +100,14 @@ for (const ciudad of CIUDADES) {
       const ctx = lienzo.getContext('2d', { willReadFrequently: true });
       ctx.drawImage(imagen, 0, 0);
 
+      const aves = [];
+      for (const dato of palomas) {
+        const ave = new Image();
+        ave.src = dato;
+        await ave.decode();
+        aves.push(ave);
+      }
+
       const colorDe = (x, y) => {
         const d = ctx.getImageData(x, y, 1, 1).data;
         return `rgb(${d[0]},${d[1]},${d[2]})`;
@@ -94,13 +115,101 @@ for (const ciudad of CIUDADES) {
 
       for (const parche of ciudad.parches) {
         const [x, y, ancho, alto] = parche.zona;
-        const fondo = colorDe(parche.muestra[0], parche.muestra[1]);
 
-        ctx.save();
-        ctx.filter = 'blur(9px)';
-        ctx.fillStyle = fondo;
-        ctx.fillRect(x - 8, y - 8, ancho + 16, alto + 16);
-        ctx.restore();
+        if (parche.tipo === 'paloma') {
+          // Una bandada posada encima del rotulo. No hace falta borrar nada
+          // debajo: con que se coman las letras, el nombre deja de leerse. En
+          // los carteles largos se reparten varias, que una sola gigante queda
+          // rara.
+          // Los rotulos anchos llevan la bandada en fila; los verticales, en
+          // columna. Con una sola formula, un rotulo alto y estrecho pedia una
+          // paloma del tamano de media ilustracion.
+          const enColumna = alto > ancho;
+          const cuantas = enColumna
+            ? Math.max(1, Math.round(alto / 110))
+            : Math.max(1, Math.round(ancho / 150));
+          const anchoAve = Math.min(
+            210,
+            enColumna
+              ? Math.max(ancho * 1.8, (alto / cuantas) * 1.3)
+              : Math.max((ancho / cuantas) * 1.15, alto * 1.9),
+          );
+
+          for (let i = 0; i < cuantas; i += 1) {
+            const ave = aves[(parche.pose + i) % aves.length];
+            if (!ave) continue;
+            const escala = anchoAve / ave.naturalWidth;
+            const w = ave.naturalWidth * escala;
+            const h = ave.naturalHeight * escala;
+            // un poco de vaiven, que no parezcan clavadas en fila
+            const vaiven = i % 2 === 0 ? -1 : 1;
+            const cx = enColumna
+              ? x + ancho / 2 + vaiven * ancho * 0.18
+              : x + (ancho * (i + 0.5)) / cuantas;
+            const cy = enColumna
+              ? y + (alto * (i + 0.5)) / cuantas
+              : y + alto / 2 + vaiven * alto * 0.11;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + h * 0.3, w * 0.24, h * 0.045, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // las de en medio miran al otro lado
+            ctx.save();
+            if (i % 2 === 1) {
+              ctx.translate(cx, cy);
+              ctx.scale(-1, 1);
+              ctx.drawImage(ave, -w / 2, -h / 2, w, h);
+            } else {
+              ctx.drawImage(ave, cx - w / 2, cy - h / 2, w, h);
+            }
+            ctx.restore();
+          }
+        } else {
+          const fondo = colorDe(parche.muestra[0], parche.muestra[1]);
+          ctx.save();
+          ctx.filter = 'blur(9px)';
+          ctx.fillStyle = fondo;
+          ctx.fillRect(x - 8, y - 8, ancho + 16, alto + 16);
+          ctx.restore();
+        }
+
+        if (parche.tipo === 'emblema') {
+          // Un rombo art deco en el sitio donde habia un emblema de marca. Un
+          // relleno liso se lee como borron; un motivo geometrico se lee como
+          // parte del cartel, que es lo que habia.
+          const cx = x + ancho / 2;
+          const cy = y + alto / 2;
+          const rx = ancho * 0.3;
+          const ry = alto * 0.42;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - ry);
+          ctx.lineTo(cx + rx, cy);
+          ctx.lineTo(cx, cy + ry);
+          ctx.lineTo(cx - rx, cy);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(226,196,114,0.88)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(40,62,86,0.85)';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(40,62,86,0.55)';
+          ctx.lineWidth = 2;
+          [-0.35, 0, 0.35].forEach((t) => {
+            const semi = rx * (1 - Math.abs(t));
+            ctx.beginPath();
+            ctx.moveTo(cx - semi * 0.7, cy + ry * t);
+            ctx.lineTo(cx + semi * 0.7, cy + ry * t);
+            ctx.stroke();
+          });
+          ctx.restore();
+        }
 
         if (parche.tipo === 'sol') {
           // un sol naciente con rayos, de los que se ven en todos los carteles
@@ -140,7 +249,15 @@ for (const ciudad of CIUDADES) {
 
       return salida.toDataURL('image/jpeg', calidad);
     },
-    { ciudad, origen, filtro: FILTRO, calidad: CALIDAD },
+    {
+      ciudad,
+      origen: `data:image/jpeg;base64,${readFileSync(origen).toString('base64')}`,
+      palomas: PALOMAS.map((ruta) =>
+        existsSync(ruta) ? `data:image/png;base64,${readFileSync(ruta).toString('base64')}` : null,
+      ).filter(Boolean),
+      filtro: FILTRO,
+      calidad: CALIDAD,
+    },
   );
 
   const contenido = Buffer.from(url.split(',')[1], 'base64');

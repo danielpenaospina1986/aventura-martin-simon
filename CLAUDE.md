@@ -58,6 +58,7 @@ aventura-martin-simon/
                         coyote time, buffer, tiempos) en un solo lugar
       personajes.js     datos de Martin y Simon (medidas, colores, habilidad)
       estilo.js         paleta, tipografias y medidas visuales centralizadas
+      ciudades.js       el pavimento y las cornisas de cada ciudad
     escenas/
       EscenaTitulo.js
       EscenaSeleccion.js
@@ -70,6 +71,7 @@ aventura-martin-simon/
     sistemas/
       controles.js      mapeo de teclas por jugador (preparado para 2 jugadores)
       constructor-nivel.js  convierte el mapa de texto en objetos del mundo
+      planos.js         el plano de delante de la camara multiplanar
       hud.js            monedas y nombre del personaje
       dibujo.js         fabrica de graficos provisionales (rectangulos)
     assets/
@@ -322,6 +324,38 @@ aprender, escalera de plataformas, tres huecos, **28 monedas**, **4 enemigos**,
 monedas a la que se sube por una plataforma, un grupo de enemigos donde luce la
 katana de Martin, y al final la **arena del jefe** con la meta detras.
 
+## 9bis. La camara multiplanar
+
+La tecnica de los dibujos animados de los anos 30: el decorado se pinta en
+varias laminas separadas y la camara las mueve a distinta velocidad. Lo que esta
+cerca pasa deprisa, lo que esta lejos casi no se mueve, y de ahi sale la
+profundidad.
+
+| Plano | Que lleva | Velocidad | Donde vive |
+|---|---|---|---|
+| **Fondo** | la ilustracion de la ciudad, desenfocada | **0,16** | `dibujo.js`, `pintarFondo` |
+| **Medio** | el mundo: suelo, cornisas, bichos, premios | **1** | `constructor-nivel.js` |
+| **Frente** | ramas, faroles y matorrales pegados a la camara | **1,45** | `sistemas/planos.js` |
+
+Se gradua en `PLANOS`, dentro de `src/config/estilo.js`.
+
+- **El fondo va sin velo.** Antes llevaba encima un degradado blanco para que no
+  se comiera al personaje; el resultado eran ciudades lavadas. Ahora se lee como
+  fondo porque esta desenfocado y porque se mueve despacio, que es como se hace
+  de verdad. El color queda intacto.
+- El fondo se **ancla por la izquierda**. Centrado haria falta margen a los dos
+  lados, o sea el doble de ampliacion para el mismo recorrido, y ampliar de mas
+  emborrona el dibujo y recorta el cielo.
+- **El plano medio se viste de su ciudad** (`src/config/ciudades.js`): arena en
+  Space Coast, baldosa y ladrillo en Medellin, asfalto con su linea en Atlanta,
+  acera art deco en Miami y piedra colonial en Cartagena. La casilla se repite
+  en mosaico, asi que el dibujo casa consigo mismo por los cuatro lados y nunca
+  lleva marco.
+- **El plano de delante es provisional y el mismo en las cinco ciudades.** La
+  idea es que cada una tenga los suyos: un nivel solo tiene que traer su lista
+  en el campo `frente` y `planos.js` la usa en vez de la de serie. Los de abajo
+  van mas claros y separados, porque por ahi es por donde se camina.
+
 ## 10. Arte y licencias
 
 ### Estilo
@@ -487,6 +521,25 @@ baja.
   contraste al texto, mientras que el velo blanco dejaba la ilustracion lavada.
 - **2026-09-23** — Nada de flechas dibujadas en los textos: la tipografia no trae
   esos signos y salian rotos. Se dicen con palabras.
+- **2026-09-23** — El juego pasa a **camara multiplanar**, con tres planos a
+  0,16 / 1 / 1,45. Ver la seccion 9bis.
+- **2026-09-23** — **Fuera el velo blanco de los fondos.** Estaba ahi para que el
+  personaje no se perdiera dentro del dibujo, pero dejaba las cinco ciudades
+  lavadas. Lo que separa el fondo del juego ya no es apagarlo, sino el
+  desenfoque y la velocidad. El tratamiento de `preparar-fondos.mjs` se queda
+  solo en `blur(3px)`, sin tocar saturacion ni brillo.
+- **2026-09-23** — Cada ciudad estrena **su pavimento**. El suelo era el mismo
+  bloque de tierra con hierba en los cinco tableros, que es justo la estetica de
+  la que se queria salir.
+- **2026-09-23** — Las marcas registradas de los fondos ya no se difuminan: se
+  posa una **paloma** encima, de las que ya vuelan por el juego. Se come unas
+  letras, el rotulo deja de leerse y tiene su gracia. Difuminar dejaba borrones
+  que, sin el velo blanco, cantaban muchisimo. Ojo con **clonar** trozos de la
+  propia ilustracion para tapar: si el origen esta cerca de la marca se copia la
+  propia marca (paso con los aros, que reaparecieron al lado del sol).
+- **2026-09-23** — `preparar-fondos.mjs` deja de depender del servidor de
+  desarrollo, como ya se hizo con los sprites: Vite recargaba la pagina a media
+  faena y la cortaba.
 - **2026-09-22** — La ventana del juego baja a **640 x 360**. Es la forma limpia
   de que todo se vea al doble de grande sin tocar la casilla ni la fisica: solo
   se ve menos mundo, mas grande. Los textos y los paneles se reescalaron a mano.

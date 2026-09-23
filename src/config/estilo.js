@@ -68,6 +68,10 @@ export const COLORES = {
   estrella: 0xfff59d,
   katana: 0xffffff,
 
+  // primer plano: casi silueta, con el marron de tinta de la paleta
+  frenteOscuro: 0x2b211c,
+  frenteHoja: 0x4a3b2c,
+
   textoClaro: '#ffffff',
   textoSuave: '#d7e3f0',
   textoOscuro: '#16202c',
@@ -100,6 +104,10 @@ export const TEXTURAS = {
   suelo: 'tex-suelo',
   tierra: 'tex-tierra',
   plataforma: 'tex-plataforma',
+  // el plano medio cambia de pavimento segun la ciudad
+  sueloDe: (ciudad) => `tex-suelo-${ciudad}`,
+  tierraDe: (ciudad) => `tex-tierra-${ciudad}`,
+  plataformaDe: (ciudad) => `tex-plataforma-${ciudad}`,
   bloque: 'tex-bloque',
   moneda: 'tex-moneda',
   monedaMartin: 'tex-sushi',
@@ -125,6 +133,10 @@ export const TEXTURAS = {
   estrella: 'tex-estrella',
   arcoKatana: 'tex-arco-katana',
   nube: 'tex-nube',
+  // primer plano: siluetas que cruzan por delante de todo
+  frenteRama: 'tex-frente-rama',
+  frenteFarol: 'tex-frente-farol',
+  frenteMata: 'tex-frente-mata',
   fondo: 'tex-fondo',
   portada: 'tex-portada',
   portadaMenu: 'tex-portada-menu',
@@ -157,16 +169,34 @@ export const TEXTURAS = {
 // Fondo ilustrado (src/assets/fondo-barrio.jpg).
 // El velo lo apaga un poco para que el personaje, las monedas y los enemigos
 // se sigan viendo bien: el dibujo tiene mucho detalle.
+// Los tres planos de la camara multiplanar, de lejos a cerca. Lo que los
+// separa es a que velocidad pasan por delante de la camara: el fondo casi no se
+// mueve (esta a kilometros), el mundo se mueve con la camara y el primer plano
+// va mas rapido que ella, que es lo que lo pega a la cara.
+export const PLANOS = {
+  // FONDO: la ilustracion de la ciudad, ya desenfocada. Sin velo: se distingue
+  // por estar lejos, no por estar apagada.
+  fondo: {
+    velocidad: 0.16,     // 1 seria moverse con la camara
+    ampliacionMaxima: 2, // cuanto se puede agrandar para cubrir el recorrido
+    bajada: 0.18,        // se baja un poco, que abajo lo tapa el terreno
+  },
+  // PRIMER PLANO: ramas, postes y matas que cruzan por delante de todo.
+  frente: {
+    velocidad: 1.45,
+    profundidad: 60,
+    alpha: 0.9,
+  },
+};
+
 export const FONDO = {
   velo: 0xffffff,
-  // El velo va en degradado: suave arriba (para que se vea el cielo y el
-  // metrocable) y mas fuerte abajo, que es donde se juega.
+  // Solo queda para los menus, donde hay mucho texto encima.
+  veloMenus: 0.18,
   veloArriba: 0.2,
   veloAbajo: 0.58,
-  // En los menus hay mucho texto: se calma un poco mas el fondo.
-  veloMenus: 0.18,
-  sobreancho: 1.2,      // se dibuja mas grande que la pantalla, para el parallax
-  parallaxMaximo: 0.06, // cuanto se mueve con la camara, como mucho
+  sobreancho: 1.2,
+  parallaxMaximo: 0.06,
 };
 
 export function estiloTexto(tamano, color = COLORES.textoClaro, extra = {}) {

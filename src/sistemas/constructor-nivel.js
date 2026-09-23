@@ -33,6 +33,16 @@ export const baseY = (fila) => (fila + 1) * C;
 export function construirNivel(escena, nivel, opciones = {}) {
   // Cada personaje recoge lo suyo: sushi para Martin, bloques para Simon.
   const texturaMoneda = opciones.texturaMoneda || TEXTURAS.moneda;
+
+  // El plano medio se viste de la ciudad del tablero: el asfalto de Atlanta no
+  // se parece a la arena de Space Coast. Si la ciudad no tuviera pavimento
+  // propio, se cae al de siempre.
+  const ciudad = nivel.fondo || '';
+  const conTextura = (clave, respaldo) =>
+    escena.textures.exists(clave) ? clave : respaldo;
+  const texturaSuelo = conTextura(TEXTURAS.sueloDe(ciudad), TEXTURAS.suelo);
+  const texturaTierra = conTextura(TEXTURAS.tierraDe(ciudad), TEXTURAS.tierra);
+  const texturaPlataforma = conTextura(TEXTURAS.plataformaDe(ciudad), TEXTURAS.plataforma);
   const mapa = nivel.mapa;
   const filas = mapa.length;
   const columnas = mapa[0].length;
@@ -106,10 +116,10 @@ export function construirNivel(escena, nivel, opciones = {}) {
 
   tramosDe(SIMBOLOS.SOLIDO).forEach(({ fila, desde, hasta }) => {
     const ancho = (hasta - desde + 1) * C;
-    // solo la franja de mas arriba lleva hierba
+    // solo la franja de mas arriba lleva el canto de la calle
     const alAire = fila === 0 || mapa[fila - 1][desde] !== SIMBOLOS.SOLIDO;
     const trozo = escena.add
-      .tileSprite(desde * C, fila * C, ancho, C, alAire ? TEXTURAS.suelo : TEXTURAS.tierra)
+      .tileSprite(desde * C, fila * C, ancho, C, alAire ? texturaSuelo : texturaTierra)
       .setOrigin(0, 0);
     escena.physics.add.existing(trozo, true);
     solidos.add(trozo);
@@ -118,7 +128,7 @@ export function construirNivel(escena, nivel, opciones = {}) {
   tramosDe(SIMBOLOS.PLATAFORMA).forEach(({ fila, desde, hasta }) => {
     const ancho = (hasta - desde + 1) * C;
     const trozo = escena.add
-      .tileSprite(desde * C, fila * C, ancho, 12, TEXTURAS.plataforma)
+      .tileSprite(desde * C, fila * C, ancho, 12, texturaPlataforma)
       .setOrigin(0, 0);
     escena.physics.add.existing(trozo, true);
     // se atraviesa desde abajo y por los lados: solo frena al caer encima

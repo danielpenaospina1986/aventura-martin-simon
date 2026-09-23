@@ -15,6 +15,7 @@ import { Controles, PERFILES } from '../sistemas/controles.js';
 import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
 import { pintarFondo } from '../sistemas/dibujo.js';
+import { montarPrimerPlano } from '../sistemas/planos.js';
 import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
@@ -54,6 +55,10 @@ export class EscenaNivel extends Phaser.Scene {
       texturaMoneda: this.datosPersonaje.moneda,
     });
     this.fondo.ajustarParallax(this.nivel.ancho);
+
+    // El plano de delante: ramas, postes y matas que cruzan pegados a la
+    // camara. De momento son los mismos en las cinco ciudades.
+    montarPrimerPlano(this, ancho, alto, this.nivel.ancho, this.datosNivel.frente);
     this.enemigos = this.nivel.enemigos;
     this.jefe = this.nivel.jefe;
     this.terminado = false;

@@ -9,7 +9,8 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FONDO, TEXTURAS, TINTA } from '../config/estilo.js';
+import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
+import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { ENEMIGO, JEFE, MUNDO } from '../config/ajustes.js';
 
@@ -121,8 +122,152 @@ function generarPersonaje(escena, datos) {
 
 // --- escenario y objetos ----------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// EL PAVIMENTO DE CADA CIUDAD (plano medio)
+//
+// Cada patron se pinta dentro de una casilla que luego se repite en mosaico,
+// asi que todo tiene que casar consigo mismo por los cuatro lados: las juntas
+// que llegan a un borde continuan en el de enfrente, y nada de marcos, que
+// convierten el suelo en una cuadricula.
+// ---------------------------------------------------------------------------
+
+// arena de playa: ondas suaves y guijarros
+function patronArena(g, c, p) {
+  caja(g, 0, 0, c, c, p.medio);
+  g.fillStyle(p.claro, 0.55);
+  g.fillEllipse(8, 7, 18, 7);
+  g.fillEllipse(26, 18, 16, 6);
+  g.fillEllipse(14, 27, 20, 7);
+  g.fillStyle(p.oscuro, 0.6);
+  [[6, 14, 2], [20, 9, 1.6], [28, 26, 2.2], [13, 21, 1.4]].forEach(([x, y, r]) =>
+    g.fillCircle(x, y, r),
+  );
+}
+
+// adoquin: dos hiladas por casilla, trabadas entre si
+function patronAdoquin(g, c, p) {
+  caja(g, 0, 0, c, c, p.medio);
+  const junta = (x, y, ancho, alto) => {
+    g.fillStyle(p.claro, 1);
+    g.fillRect(x + 1, y + 1, ancho - 2, alto - 2);
+    g.fillStyle(p.oscuro, 0.55);
+    g.fillRect(x + 1, y + alto - 3, ancho - 2, 2);
+  };
+  // hilada de arriba: juntas en 0 y 16
+  junta(0, 0, 16, 16);
+  junta(16, 0, 16, 16);
+  // hilada de abajo: media pieza de desfase, para que trabe
+  junta(-8, 16, 16, 16);
+  junta(8, 16, 16, 16);
+  junta(24, 16, 16, 16);
+}
+
+// baldosa grande de acera, con la junta clara
+function patronBaldosa(g, c, p) {
+  caja(g, 0, 0, c, c, p.claro);
+  g.fillStyle(p.medio, 1);
+  g.fillRect(1.5, 1.5, c - 3, c - 3);
+  g.fillStyle(p.claro, 0.75);
+  g.fillRect(1.5, 1.5, c - 3, 2);
+  g.fillStyle(p.oscuro, 0.4);
+  g.fillRect(1.5, c - 4, c - 3, 2);
+}
+
+// asfalto: liso, con grietas y el trazo de la linea pintada
+function patronAsfalto(g, c, p) {
+  caja(g, 0, 0, c, c, p.medio);
+  g.fillStyle(p.oscuro, 0.5);
+  [[5, 6, 2.2], [24, 12, 1.8], [12, 24, 2], [29, 27, 1.6]].forEach(([x, y, r]) =>
+    g.fillCircle(x, y, r),
+  );
+  g.lineStyle(1.2, p.oscuro, 0.55);
+  g.beginPath();
+  g.moveTo(0, 22);
+  g.lineTo(11, 19);
+  g.lineTo(22, 23);
+  g.lineTo(c, 20);
+  g.strokePath();
+  if (p.linea) {
+    g.fillStyle(p.linea, 0.9);
+    g.fillRect(6, 13, 20, 3);
+  }
+}
+
+// piedra colonial: losas irregulares
+function patronPiedra(g, c, p) {
+  caja(g, 0, 0, c, c, p.oscuro);
+  const losa = (puntos, color) => {
+    g.fillStyle(color, 1);
+    g.fillPoints(puntos.map(([x, y]) => ({ x, y })), true);
+  };
+  losa([[1, 1], [15, 2], [17, 13], [2, 15]], p.claro);
+  losa([[17, 2], [31, 1], [30, 14], [19, 13]], p.medio);
+  losa([[2, 17], [13, 16], [15, 30], [1, 31]], p.medio);
+  losa([[15, 16], [30, 17], [31, 31], [17, 30]], p.claro);
+  g.fillStyle(p.oscuro, 0.4);
+  g.fillCircle(9, 9, 1.8);
+  g.fillCircle(24, 23, 1.6);
+}
+
+// capas de tierra apiladas, para el subsuelo
+function patronEstratos(g, c, p) {
+  caja(g, 0, 0, c, c, p.medio);
+  g.fillStyle(p.claro, 0.45);
+  g.fillRect(0, 6, c, 3);
+  g.fillRect(0, 21, c, 2);
+  g.fillStyle(p.oscuro, 0.5);
+  [[9, 12, 2.6], [23, 17, 2.2], [15, 28, 2], [28, 4, 1.8]].forEach(([x, y, r]) =>
+    g.fillCircle(x, y, r),
+  );
+}
+
+const PATRONES = {
+  arena: patronArena,
+  adoquin: patronAdoquin,
+  baldosa: patronBaldosa,
+  asfalto: patronAsfalto,
+  piedra: patronPiedra,
+  estratos: patronEstratos,
+};
+
+// Genera el pavimento, el subsuelo y la cornisa de una ciudad.
+export function generarSuelosDeCiudad(escena, nombre) {
+  const c = MUNDO.casilla;
+  const ciudad = ciudadDe(nombre);
+
+  // el que se ve: lleva la linea de tinta arriba, que es el canto de la calle
+  generar(escena, TEXTURAS.sueloDe(nombre), c, c, (g) => {
+    (PATRONES[ciudad.pavimento.patron] || patronArena)(g, c, ciudad.pavimento);
+    // Solo una linea arriba: es el canto por donde se camina. Un marco entero
+    // convertiria el terreno en una cuadricula.
+    g.lineStyle(2.5, TINTA, 0.9);
+    g.beginPath();
+    g.moveTo(0, 1.2);
+    g.lineTo(c, 1.2);
+    g.strokePath();
+  });
+
+  // lo de debajo: sin canto, que va tapado
+  generar(escena, TEXTURAS.tierraDe(nombre), c, c, (g) => {
+    (PATRONES[ciudad.subsuelo.patron] || patronEstratos)(g, c, ciudad.subsuelo);
+  });
+
+  // cornisa: la plataforma por la que se anda, con el color de la ciudad
+  generar(escena, TEXTURAS.plataformaDe(nombre), c, 12, (g) => {
+    tintaRedonda(g, 0.5, 0.5, c - 1, 11, 4, ciudad.cornisa.cuerpo, 2);
+    g.lineStyle(1.5, ciudad.cornisa.borde, 0.85);
+    g.beginPath();
+    g.moveTo(3, 7.5);
+    g.lineTo(c - 3, 7.5);
+    g.strokePath();
+  });
+}
+
 export function generarTexturas(escena) {
   const c = MUNDO.casilla;
+
+  // el pavimento de las cinco ciudades
+  Object.keys(CIUDADES).forEach((nombre) => generarSuelosDeCiudad(escena, nombre));
 
   // suelo: tierra con una mata de hierba arriba, con contorno de tinta
   generar(escena, TEXTURAS.suelo, c, c, (g) => {
@@ -375,6 +520,103 @@ export function generarTexturas(escena) {
   });
 
   // nube de decoracion
+  // --- primer plano ---------------------------------------------------------
+  //
+  // Van en silueta, sin detalle, por dos razones: asi se leen como algo que
+  // pasa pegado a la camara, y asi no compiten con el personaje, que es lo que
+  // hay que mirar. Son provisionales: cada ciudad tendra los suyos.
+  //
+  // El follaje se pinta como una MASA de manchas solapadas, no como hojas
+  // sueltas: separadas parecian bolas colgando de un cable.
+  const masa = (g, color, manchas) => {
+    g.fillStyle(color, 1);
+    manchas.forEach(([x, y, rx, ry]) => g.fillEllipse(x, y, rx * 2, ry * 2));
+  };
+
+  // rama frondosa que entra desde arriba
+  generar(escena, TEXTURAS.frenteRama, 300, 150, (g) => {
+    g.lineStyle(16, COLORES.frenteOscuro, 1);
+    g.beginPath();
+    g.moveTo(-4, 6);
+    g.lineTo(104, 36);
+    g.lineTo(210, 30);
+    g.lineTo(298, 62);
+    g.strokePath();
+    g.lineStyle(9, COLORES.frenteOscuro, 1);
+    [[96, 34, 74, 76], [168, 32, 156, 84], [238, 44, 252, 92]].forEach(([x1, y1, x2, y2]) => {
+      g.beginPath();
+      g.moveTo(x1, y1);
+      g.lineTo(x2, y2);
+      g.strokePath();
+    });
+
+    masa(g, COLORES.frenteOscuro, [
+      [40, 30, 44, 26], [96, 40, 52, 32], [150, 34, 46, 28], [206, 44, 50, 30], [262, 52, 44, 28],
+      [66, 72, 40, 26], [128, 84, 46, 30], [190, 78, 42, 27], [246, 88, 38, 25],
+      [100, 110, 34, 22], [170, 112, 32, 21],
+    ]);
+    // unos toques mas claros, que la masa no quede plana
+    masa(g, COLORES.frenteHoja, [
+      [78, 58, 20, 13], [162, 62, 18, 12], [232, 70, 17, 11], [118, 96, 16, 10],
+    ]);
+  });
+
+  // farol de calle colgado de su cable, tambien desde arriba
+  generar(escena, TEXTURAS.frenteFarol, 120, 200, (g) => {
+    g.lineStyle(5, COLORES.frenteOscuro, 1);
+    g.beginPath();
+    g.moveTo(0, 4);
+    g.lineTo(60, 26);
+    g.lineTo(120, 4);
+    g.strokePath();
+
+    g.lineStyle(7, COLORES.frenteOscuro, 1);
+    g.beginPath();
+    g.moveTo(60, 26);
+    g.lineTo(60, 92);
+    g.strokePath();
+
+    // la pantalla del farol, en escalones art deco
+    g.fillStyle(COLORES.frenteOscuro, 1);
+    g.fillRect(36, 92, 48, 14);
+    g.fillRect(28, 106, 64, 12);
+    [
+      [30, 118, 60, 46],
+      [38, 164, 44, 16],
+      [48, 180, 24, 12],
+    ].forEach(([x, y, w, h]) => g.fillRect(x, y, w, h));
+    g.fillStyle(COLORES.frenteHoja, 0.9);
+    g.fillRect(38, 126, 44, 6);
+    g.fillRect(38, 142, 44, 6);
+  });
+
+  // matorral que sube desde el borde de abajo
+  //
+  // La masa ocupa TODA la altura de la lamina a proposito: si se queda en el
+  // tercio de abajo, en el juego solo asoma por la franja de tierra y parece
+  // una mancha, en vez de algo que pasa por delante.
+  generar(escena, TEXTURAS.frenteMata, 260, 150, (g) => {
+    masa(g, COLORES.frenteOscuro, [
+      [58, 38, 40, 30], [128, 24, 50, 28], [196, 42, 42, 30],
+      [40, 76, 46, 36], [104, 62, 54, 40], [170, 70, 50, 38], [226, 84, 40, 32],
+      [70, 112, 52, 38], [140, 106, 56, 42], [206, 118, 46, 34],
+      [30, 142, 44, 32], [110, 146, 56, 36], [190, 142, 50, 34],
+    ]);
+    g.lineStyle(9, COLORES.frenteOscuro, 1);
+    [
+      [30, 150, 22, 62], [78, 150, 66, 36], [130, 150, 126, 20],
+      [178, 150, 186, 40], [228, 150, 238, 66],
+    ].forEach(([x1, y1, x2, y2]) => {
+      g.beginPath();
+      g.moveTo(x1, y1);
+      g.lineTo(x2, y2);
+      g.strokePath();
+    });
+    masa(g, COLORES.frenteHoja, [
+      [96, 54, 18, 13], [166, 84, 17, 12], [128, 118, 16, 11], [54, 94, 15, 11],
+    ]);
+  });
+
   generar(escena, TEXTURAS.nube, 96, 40, (g) => {
     g.fillStyle(COLORES.nube, 0.9);
     g.fillCircle(26, 24, 16);
@@ -483,39 +725,50 @@ export function pintarFondo(escena, ancho, alto, opciones = {}) {
 
 function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXTURAS.fondo) {
   const fuente = escena.textures.get(textura).getSourceImage();
-  const escala = Math.max(ancho / fuente.width, alto / fuente.height) * FONDO.sobreancho;
+  const cubrir = Math.max(ancho / fuente.width, alto / fuente.height);
 
+  // Sin velo encima. El fondo se lee como fondo porque esta desenfocado y
+  // porque se mueve despacio, no porque este lavado: el velo blanco de antes
+  // se comia el color de las ciudades.
   const imagen = escena.add
     .image(ancho / 2, alto / 2, textura)
-    .setScale(escala)
+    .setScale(cubrir * FONDO.sobreancho)
     .setScrollFactor(0)
     .setDepth(-100);
 
-  // Velo: apaga el dibujo para que se sigan viendo bien el personaje, las
-  // monedas y los enemigos. Va en degradado, mas fuerte abajo.
-  const arriba = Math.min(1, FONDO.veloArriba + veloExtra);
-  const abajo = Math.min(1, FONDO.veloAbajo + veloExtra);
-  const velo = escena.add.graphics().setScrollFactor(0).setDepth(-99);
-  velo.fillGradientStyle(
-    FONDO.velo,
-    FONDO.velo,
-    FONDO.velo,
-    FONDO.velo,
-    arriba,
-    arriba,
-    abajo,
-    abajo,
-  );
-  velo.fillRect(0, 0, ancho, alto);
+  // En los menus si conviene calmarlo, que llevan mucho texto encima.
+  if (veloExtra > 0) {
+    escena.add
+      .rectangle(0, 0, ancho, alto, COLORES.decoFondo, veloExtra)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(-99);
+  }
 
   return {
     imagen,
-    // El fondo acompana un poco a la camara, pero nunca tanto como para que se
-    // asome el borde: el margen que sobra es el que manda.
+    // Para que el fondo se mueva de verdad hay que darle cuerda: se agranda lo
+    // justo para que, yendo a la velocidad del plano, nunca se asome su borde.
+    //
+    // Se ancla por la IZQUIERDA y no por el centro. Centrado haria falta margen
+    // a los dos lados (el doble de ampliacion) para el mismo recorrido, y
+    // ampliar de mas emborrona el dibujo y recorta el cielo. Anclado, el fondo
+    // empieza pegado al borde izquierdo y termina pegado al derecho, gastando
+    // todo el margen en una sola direccion.
     ajustarParallax(anchoMundo) {
       const recorrido = Math.max(1, anchoMundo - ancho);
-      const margen = Math.max(0, (imagen.displayWidth - ancho) / 2) * 0.95;
-      imagen.setScrollFactor(Math.min(FONDO.parallaxMaximo, margen / recorrido), 0);
+      const quiere = PLANOS.fondo.velocidad;
+      const necesario = ancho + recorrido * quiere;
+      const escala = Math.min(
+        Math.max(necesario / fuente.width, alto / fuente.height),
+        cubrir * PLANOS.fondo.ampliacionMaxima,
+      );
+      imagen.setScale(escala).setOrigin(0, 0.5).setX(0);
+      // se baja un poco: la parte de abajo del dibujo queda tapada por el suelo
+      imagen.setY(alto / 2 + Math.max(0, imagen.displayHeight - alto) * PLANOS.fondo.bajada);
+
+      const sobra = Math.max(0, imagen.displayWidth - ancho) * 0.99;
+      imagen.setScrollFactor(Math.min(quiere, sobra / recorrido), 0);
     },
   };
 }
