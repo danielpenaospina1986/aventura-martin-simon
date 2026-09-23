@@ -439,6 +439,103 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   expect(despues.vidas).toBe(2);
 });
 
+test('la bañera se agacha, salta y lanza agua con jabón', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    const banera = n.enemigos.getChildren()[0];
+
+    // se le pone el nino a tiro y por delante
+    j.setPosition(banera.x - 150, j.y);
+    banera.direccion = -1;
+    banera.proximoAtaque = 0;
+
+    await new Promise((r) => setTimeout(r, 250));
+    const agachada = banera.estado;
+
+    await new Promise((r) => setTimeout(r, 600));
+    return {
+      agachada,
+      despues: banera.estado,
+      peligros: n.peligros.getChildren().filter((p) => p.active).length,
+    };
+  });
+
+  expect(resultado.agachada).toBe('carga');
+  expect(resultado.despues).toBe('lanza');
+  expect(resultado.peligros).toBeGreaterThanOrEqual(1);
+  expect(errores).toEqual([]);
+});
+
+test('el agua con jabón cuesta tres monedas si te alcanza', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.monedas = 9;
+    const banera = n.enemigos.getChildren()[0];
+    banera.direccion = -1;
+    j.setPosition(banera.x - 70, j.y);
+    n.lanzarAgua(banera);
+    await new Promise((r) => setTimeout(r, 900));
+    return { monedas: j.monedas, golpes: j.golpes };
+  });
+
+  expect(resultado.monedas).toBe(6); // 9 - 3
+  expect(resultado.golpes).toBe(1);
+});
+
+test('la paloma suelta al pasar sobre el niño y le cuesta tres monedas', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.monedas = 12;
+    n.proximaPaloma = 999999; // que no salga otra por su cuenta
+
+    const { Paloma } = await import('/src/entidades/Paloma.js');
+    const paloma = new Paloma(n, j.x + 120, 2 * 32, -1);
+    n.palomas.add(paloma);
+
+    await new Promise((r) => setTimeout(r, 1100));
+    const solto = paloma.yaSolto;
+    await new Promise((r) => setTimeout(r, 1600));
+    return { solto, monedas: j.monedas, golpes: j.golpes };
+  });
+
+  expect(resultado.solto).toBe(true);
+  expect(resultado.monedas).toBe(9); // 12 - 3
+  expect(resultado.golpes).toBe(1);
+  expect(errores).toEqual([]);
+});
+
+test('los bichos atacan más a menudo según avanza la partida', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const esperas = await page.evaluate(async () => {
+    const medir = async (indice) => {
+      window.juego.scene.stop('nivel');
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: indice });
+      await new Promise((r) => setTimeout(r, 1100));
+      const n = window.juego.scene.getScene('nivel');
+      // se toma la media de varias tiradas, que son al azar
+      const banera = n.enemigos.getChildren()[0];
+      let suma = 0;
+      for (let i = 0; i < 40; i += 1) suma += banera.esperaDeAtaque();
+      return Math.round(suma / 40);
+    };
+    return { primero: await medir(0), ultimo: await medir(4) };
+  });
+
+  expect(esperas.ultimo).toBeLessThan(esperas.primero);
+});
+
 test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 

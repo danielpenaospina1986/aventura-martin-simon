@@ -104,9 +104,47 @@ export const ENEMIGO = {
   sondaBorde: 8,    // cuanto mira por delante para detectar el borde
   // Los bichos son del tamano de los ninos: si son mucho mas bajos, cuesta
   // darles y no dan ningun respeto.
-  ancho: 76,
+  ancho: 96,
   alto: 86,
-  caja: { ancho: 52, alto: 74 },
+  caja: { ancho: 62, alto: 72 },
+
+  // De vez en cuando la banera se planta, se agacha y salta tirando agua con
+  // jabon. Cuanto mas avanzada la partida, mas a menudo lo hace.
+  ataque: {
+    esperaMinMs: 3200,    // en el primer tablero
+    esperaMaxMs: 6000,
+    // cada nivel que pasa acorta la espera; nunca baja de esperaMinima
+    recortePorNivel: 0.14,
+    esperaMinima: 1200,
+    avisoMs: 420,         // lo que se queda agachado antes de saltar
+    lanzandoMs: 420,
+    impulsoSalto: 380,
+    distanciaMaxima: 420, // solo ataca si el nino esta a tiro
+  },
+};
+
+// El agua con jabon que lanza la banera.
+export const AGUA = {
+  velocidad: 210,
+  elevacion: -170,
+  gravedad: 520,
+  duracionMs: 2600,
+  tamano: 30,
+};
+
+// La paloma pasa volando por la franja de arriba y suelta lo que suelta.
+export const PALOMA = {
+  velocidad: 130,
+  alturaMinFila: 0.4,   // por que parte de la franja alta vuela
+  alturaMaxFila: 2.2,
+  msPorAleteo: 90,
+  // cada cuanto aparece una. Igual que las baneras, mas a menudo segun avanza.
+  esperaMinMs: 7000,
+  esperaMaxMs: 13000,
+  recortePorNivel: 0.12,
+  esperaMinima: 3000,
+  avisoMs: 260,         // lo que tarda en soltar desde que se pone
+  caida: { gravedad: 620, tamano: 22 },
 };
 
 export const CAMARA = {

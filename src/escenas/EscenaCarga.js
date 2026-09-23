@@ -47,6 +47,16 @@ import martinAtaque1 from '../assets/martin/ataque1.png';
 import martinAtaque2 from '../assets/martin/ataque2.png';
 import martinGolpe from '../assets/martin/golpe.png';
 import martinVictoria from '../assets/martin/victoria.png';
+import baneraQuieta from '../assets/bichos/banera/quieta.png';
+import baneraAnda1 from '../assets/bichos/banera/anda1.png';
+import baneraAnda2 from '../assets/bichos/banera/anda2.png';
+import baneraCarga from '../assets/bichos/banera/carga.png';
+import baneraLanza from '../assets/bichos/banera/lanza.png';
+import palomaVuela1 from '../assets/bichos/paloma/vuela1.png';
+import palomaVuela2 from '../assets/bichos/paloma/vuela2.png';
+import palomaVuela3 from '../assets/bichos/paloma/vuela3.png';
+import palomaVuela4 from '../assets/bichos/paloma/vuela4.png';
+import palomaSuelta from '../assets/bichos/paloma/suelta1.png';
 
 export class EscenaCarga extends Phaser.Scene {
   constructor() {
@@ -79,6 +89,16 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.martinAtaque2, martinAtaque2);
     this.load.image(TEXTURAS.martinGolpe, martinGolpe);
     this.load.image(TEXTURAS.martinVictoria, martinVictoria);
+    this.load.image(TEXTURAS.baneraQuieta, baneraQuieta);
+    this.load.image(TEXTURAS.baneraAnda1, baneraAnda1);
+    this.load.image(TEXTURAS.baneraAnda2, baneraAnda2);
+    this.load.image(TEXTURAS.baneraCarga, baneraCarga);
+    this.load.image(TEXTURAS.baneraLanza, baneraLanza);
+    this.load.image(TEXTURAS.palomaVuela1, palomaVuela1);
+    this.load.image(TEXTURAS.palomaVuela2, palomaVuela2);
+    this.load.image(TEXTURAS.palomaVuela3, palomaVuela3);
+    this.load.image(TEXTURAS.palomaVuela4, palomaVuela4);
+    this.load.image(TEXTURAS.palomaSuelta, palomaSuelta);
   }
 
   create() {

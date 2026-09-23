@@ -306,6 +306,29 @@ export function generarTexturas(escena) {
   generar(escena, TEXTURAS.jefe, JEFE.ancho, JEFE.alto, jefe(COLORES.jefe));
   generar(escena, TEXTURAS.jefeEnfadado, JEFE.ancho, JEFE.alto, jefe(0xb583cc));
 
+  // El agua con jabon que lanza la banera: un pegote de espuma con burbujas.
+  generar(escena, TEXTURAS.agua, 30, 30, (g) => {
+    g.fillStyle(0xbfe6f5, 1);
+    g.fillCircle(15, 16, 12);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(11, 12, 7);
+    g.fillCircle(20, 14, 6);
+    g.fillCircle(15, 21, 6);
+    g.lineStyle(2.5, 0x4a8fa8, 0.9);
+    g.strokeCircle(15, 16, 12);
+    g.fillStyle(0xffffff, 0.9);
+    g.fillCircle(9, 9, 2.5);
+  });
+
+  // Lo que suelta la paloma.
+  generar(escena, TEXTURAS.caida, 22, 26, (g) => {
+    g.fillStyle(0xf4f1e6, 1);
+    g.fillEllipse(11, 15, 16, 20);
+    g.fillEllipse(11, 6, 9, 9);
+    g.lineStyle(2, 0x8a8570, 0.9);
+    g.strokeEllipse(11, 15, 16, 20);
+  });
+
   // checkpoint: banderin apagado y encendido
   const banderin = (color) => (g) => {
     caja(g, 8, 0, 4, 44, COLORES.mastil);

@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { CAMARA, JEFE, LANZAMIENTO, MUNDO, PUNTOS } from '../config/ajustes.js';
+import { AGUA, CAMARA, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -18,6 +18,7 @@ import { pintarFondo } from '../sistemas/dibujo.js';
 import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
+import { Paloma } from '../entidades/Paloma.js';
 
 const C = MUNDO.casilla;
 
@@ -57,8 +58,12 @@ export class EscenaNivel extends Phaser.Scene {
     this.jefe = this.nivel.jefe;
     this.terminado = false;
 
-    // bloques que Simon lanza por los aires
+    // bloques que Samaon lanza por los aires
     this.proyectiles = this.physics.add.group();
+    // lo que sueltan los bichos: agua con jabon y lo de las palomas
+    this.peligros = this.physics.add.group();
+    this.palomas = this.physics.add.group({ allowGravity: false });
+    this.proximaPaloma = this.esperaDePaloma();
 
     this.physics.world.setBounds(0, 0, this.nivel.ancho, this.nivel.alto + 400);
     this.cameras.main.setBounds(0, 0, this.nivel.ancho, this.nivel.alto);
@@ -134,6 +139,17 @@ export class EscenaNivel extends Phaser.Scene {
     this.physics.add.collider(this.enemigos, solidos);
     this.physics.add.collider(this.enemigos, plataformas);
 
+    // lo que tiran los bichos hace dano al nino y se deshace contra el suelo
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.peligros, (j, p) => {
+        this.romperPeligro(this.peligros.contains(j) ? j : p);
+        this.herirJugador(jugador);
+      });
+    });
+    this.physics.add.collider(this.peligros, solidos, (a, b) => {
+      this.romperPeligro(this.peligros.contains(a) ? a : b);
+    });
+
     if (this.jefe) this.physics.add.collider(this.jefe, solidos);
 
     // Los bloques lanzados se rompen contra el escenario y contra los bichos.
@@ -182,10 +198,20 @@ export class EscenaNivel extends Phaser.Scene {
     });
 
     this.enemigos.getChildren().forEach((enemigo) => {
-      if (enemigo.active) enemigo.actualizar();
+      if (enemigo.active) enemigo.actualizar(delta);
     });
 
     if (this.jefe && this.jefe.active) this.jefe.actualizar(delta);
+
+    this.palomas.getChildren().forEach((paloma) => {
+      if (paloma.active) paloma.actualizar(delta);
+    });
+    this.gestionarPalomas(delta);
+
+    this.peligros.getChildren().forEach((peligro) => {
+      if (!peligro.active) return;
+      if (peligro.y > this.nivel.alto + 40) this.romperPeligro(peligro, false);
+    });
 
     this.proyectiles.getChildren().forEach((proyectil) => {
       if (!proyectil.active) return;
@@ -406,6 +432,70 @@ export class EscenaNivel extends Phaser.Scene {
     if (proyectil.temporizador) proyectil.temporizador.remove();
     if (conPolvo) polvo(this, proyectil.x, proyectil.y);
     proyectil.destroy();
+  }
+
+  // --- lo que tiran los bichos ---------------------------------------------
+
+  lanzarAgua(banera) {
+    const dir = banera.direccion;
+    const agua = this.peligros.create(
+      banera.x + dir * 18,
+      banera.y - 20,
+      TEXTURAS.agua,
+    );
+    agua.setDepth(9);
+    agua.body.setAllowGravity(true);
+    agua.body.setGravityY(AGUA.gravedad - this.physics.world.gravity.y);
+    agua.body.setVelocity(dir * AGUA.velocidad, AGUA.elevacion);
+    agua.body.setSize(AGUA.tamano - 8, AGUA.tamano - 8, true);
+    agua.temporizador = this.time.delayedCall(AGUA.duracionMs, () => this.romperPeligro(agua));
+
+    this.tweens.add({
+      targets: agua,
+      angle: dir * 220,
+      duration: AGUA.duracionMs,
+    });
+  }
+
+  soltarCaida(paloma) {
+    const caida = this.peligros.create(paloma.x, paloma.y + 16, TEXTURAS.caida);
+    caida.setDepth(9);
+    caida.body.setAllowGravity(true);
+    caida.body.setGravityY(PALOMA.caida.gravedad - this.physics.world.gravity.y);
+    caida.body.setVelocity(paloma.body.velocity.x * 0.35, 0);
+    caida.temporizador = this.time.delayedCall(4000, () => this.romperPeligro(caida));
+  }
+
+  romperPeligro(peligro, conSalpicadura = true) {
+    if (!peligro || !peligro.active) return;
+    if (peligro.temporizador) peligro.temporizador.remove();
+    if (conSalpicadura) polvo(this, peligro.x, peligro.y);
+    peligro.destroy();
+  }
+
+  // --- las palomas -----------------------------------------------------------
+
+  esperaDePaloma() {
+    const recorte = Math.max(0, 1 - this.indiceNivel * PALOMA.recortePorNivel);
+    const minimo = Math.max(PALOMA.esperaMinima, PALOMA.esperaMinMs * recorte);
+    const maximo = Math.max(minimo + 1500, PALOMA.esperaMaxMs * recorte);
+    return Phaser.Math.Between(minimo, maximo);
+  }
+
+  gestionarPalomas(delta) {
+    this.proximaPaloma -= delta;
+    if (this.proximaPaloma > 0) return;
+    this.proximaPaloma = this.esperaDePaloma();
+
+    // entra por el lado contrario al que mira la camara, para que se la vea venir
+    const camara = this.cameras.main;
+    const desdeLaDerecha = Math.random() < 0.72;
+    const x = desdeLaDerecha ? camara.scrollX + this.scale.width + 70 : camara.scrollX - 70;
+    const fila = Phaser.Math.FloatBetween(PALOMA.alturaMinFila, PALOMA.alturaMaxFila);
+    const y = fila * MUNDO.casilla;
+
+    const paloma = new Paloma(this, x, y, desdeLaDerecha ? -1 : 1);
+    this.palomas.add(paloma);
   }
 
   // El suelo que ven los enemigos y el jefe.

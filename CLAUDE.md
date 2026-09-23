@@ -149,10 +149,33 @@ es la habilidad.
   - Antes construia bloques para subir. Se cambio para que los dos personajes
     tengan un golpe y los dos puedan pelear con el jefe.
 
-### Los bichos y el jefe
+### Los bichos
 
-Los bichos miden **76 x 86**, la misma altura que los ninos: mas bajos costaba
-darles y no daban ningun respeto.
+El bicho de a pie es una **banera con ojos** (96 x 86, la altura de los ninos).
+Tiene cinco poses: quieta, dos de caminar, agachada y saltando.
+
+- Camina y da la vuelta en bordes y paredes, como siempre.
+- De vez en cuando **se planta, se agacha y salta tirando agua con jabon**. Si el
+  agua alcanza al nino, cuenta como un golpe (parpadea, vuelve al checkpoint y
+  pierde tres monedas).
+- Los tiempos son **al azar**, para que no se aprendan de memoria, y **se acortan
+  segun avanza la partida**: en Space Coast ataca poco y en Cartagena, a menudo.
+- Solo ataca si el nino esta **a tiro y por delante**; si no, seria injusto.
+- De momento es el mismo bicho en los cinco tableros. La idea es personalizarlo
+  por ciudad mas adelante.
+
+### La paloma
+
+Cruza volando por la **franja de arriba**, la que se dejo libre en los tableros.
+Vuela recto, sin perseguir: se la ve venir y da tiempo a apartarse. Al pasar
+justo por encima del nino **suelta lo que suelta**, y si le cae encima cuenta
+como un golpe. Aparece cada cierto tiempo al azar, y mas a menudo segun avanza
+la partida.
+
+### El jefe
+
+Los bichos miden lo que los ninos: mas bajos costaba darles y no daban ningun
+respeto.
 
 Al final del nivel espera el jefe, que mide **172 x 172**, el doble que un nino,
 con **3 vidas**. Como no se le puede saltar encima desde el suelo (el salto no
@@ -450,6 +473,18 @@ baja.
   y el jefe a **172**, el doble. Al agrandarlos, la katana y los bloques, que
   salian a la altura del pecho, pasaban por encima de los bichos; ahora la zona
   de golpe va del pecho a los pies.
+- **2026-09-23** — Los bichos pasan a ser **baneras con ojos** que, ademas de
+  caminar, se agachan y saltan tirando agua con jabon. Y aparece la **paloma**,
+  que cruza la franja de arriba y suelta lo suyo. Los dos hacen dano como
+  cualquier golpe: no hay muerte en este juego, se vuelve al checkpoint y cuesta
+  tres monedas.
+- **2026-09-23** — La frecuencia con la que atacan bichos y palomas **se acorta
+  segun el nivel**: el primer tablero es un paseo y el ultimo no.
+- **2026-09-23** — Al recortar sprites, la tolerancia de color es **por
+  personaje**: el damero de la banera es gris puro y su espuma casi tambien, asi
+  que con la tolerancia de siempre la espuma se iba con el fondo. Ademas, todas
+  las poses de un personaje se escalan con **un mismo factor**: si cada una se
+  escalara a su altura, en un aleteo el bicho encogeria y creceria.
 - **2026-09-22** — La barra de vida del jefe va sobre una chapa oscura: sueltos,
   sus puntos rojos se confundian con los premios, que tambien son rojos.
 - **2026-09-22** — Cuidado con `setScale` en los personajes: sus texturas son
