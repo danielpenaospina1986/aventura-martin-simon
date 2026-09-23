@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, CAMARA, ENEMIGO, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER, VIDA } from '../config/ajustes.js';
+import { AGUA, CAMARA, ENEMIGO, JEFE, JUGADOR, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER, VIDA } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -252,7 +252,10 @@ export class EscenaNivel extends Phaser.Scene {
 
       // caer por un hueco: no se pierde nada, se vuelve al checkpoint
       if (jugador.y > this.nivel.alto + 60) {
-        if (!this.herirJugador(jugador)) jugador.reaparecer();
+        // Caerse por un hueco es el unico golpe que obliga a volver: no hay
+        // donde quedarse parpadeando, se esta cayendo al vacio.
+        this.herirJugador(jugador, { devolverAlCheckpoint: true });
+        if (jugador.active) jugador.reaparecer();
       }
     });
 
@@ -333,7 +336,7 @@ export class EscenaNivel extends Phaser.Scene {
     });
   }
 
-  herirJugador(jugador) {
+  herirJugador(jugador, opciones = {}) {
     if (!jugador.herir()) return false;
 
     jugador.golpes += 1;
@@ -349,7 +352,13 @@ export class EscenaNivel extends Phaser.Scene {
     this.hud.animarCara(jugador);
     this.hud.animarCorazones(jugador);
 
-    if (jugador.corazones <= 0) this.perderVida(jugador);
+    if (jugador.corazones <= 0) {
+      this.perderVida(jugador);
+    } else if (opciones.devolverAlCheckpoint) {
+      this.time.delayedCall(JUGADOR.congelarAlHerirMs, () => {
+        if (jugador.active) jugador.reaparecer();
+      });
+    }
     return true;
   }
 
@@ -361,14 +370,11 @@ export class EscenaNivel extends Phaser.Scene {
 
     if (this.vidas > 0) {
       jugador.corazones = VIDA.corazonesPorNivel;
-
-    // Cada cuanto un bicho suelta corazon y una paloma una vida. Se guarda en
-    // la escena y no se lee de la constante para poder apagarlo desde las
-    // pruebas: con el azar suelto, medir cuantas monedas da un bicho era una
-    // moneda al aire.
-    this.probabilidadCorazon = VIDA.probabilidadCorazon;
-    this.probabilidadVidaExtra = VIDA.probabilidadVidaExtra;
       textoFlotante(this, jugador.x, jugador.y - 60, '¡Una vida menos!', '#ff6b6b');
+      // Aqui si se vuelve al ultimo checkpoint, con los corazones repuestos.
+      this.time.delayedCall(JUGADOR.congelarAlHerirMs, () => {
+        if (jugador.active) jugador.reaparecer();
+      });
       return;
     }
 

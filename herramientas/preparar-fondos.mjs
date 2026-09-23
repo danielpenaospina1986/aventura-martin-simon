@@ -12,9 +12,8 @@
 //      El mecanismo se conserva por si algun dia hiciera falta: cada parche
 //      dice su zona y de que tipo es ('paloma' posa una bandada encima, 'sol'
 //      dibuja un sol art deco, y sin tipo rellena con un color de muestra).
-//   2. La desenfoca, que es lo que la manda al fondo: el detalle de la
-//      ilustracion competia con el personaje y los premios. El color no se
-//      toca.
+//   2. La deja como esta. No se le toca ni el color ni el enfoque: lo que la
+//      manda al fondo es que se mueve despacio.
 //
 //   node herramientas/preparar-fondos.mjs
 // ---------------------------------------------------------------------------
@@ -22,11 +21,12 @@
 import { chromium } from '@playwright/test';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 
-// Solo desenfoque. El color se deja intacto a proposito: antes se bajaba la
-// saturacion y se subia el brillo para que el personaje no se perdiera dentro
-// del dibujo, pero eso dejaba las ciudades lavadas. Ahora el fondo se distingue
-// por estar LEJOS (desenfocado y moviendose despacio), no por estar apagado.
-const FILTRO = 'blur(3px)';
+// Sin filtro ninguno: las ciudades se ven tal cual las dibujaron. Antes se les
+// bajaba la saturacion (quedaban lavadas) y luego se les dejaba solo un
+// desenfoque (quedaban emborronadas). Lo que separa el fondo del juego es que
+// se mueve despacio, que ya es bastante, y ahora que el lienzo tiene mas
+// pixeles se aprecia el detalle del dibujo.
+const FILTRO = 'none';
 const CALIDAD = 0.86;
 
 // Las palomas que hacen de parche. Son las mismas que cruzan los tableros.

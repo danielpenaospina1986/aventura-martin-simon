@@ -230,7 +230,12 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.reaparicion = { x, y };
   }
 
-  // Devuelve true si el golpe ha contado.
+  // Le han dado. Devuelve true si el golpe ha contado.
+  //
+  // Un golpe NO devuelve al checkpoint: el nino se queda donde estaba,
+  // parpadeando un momento. Al checkpoint solo se vuelve cuando se acaban los
+  // corazones, o cuando se ha caido por un hueco y no hay donde quedarse; de
+  // eso se encarga la escena.
   herir() {
     if (this.esInvulnerable) return false;
 
@@ -238,10 +243,6 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.congeladoHasta = this.reloj + JUGADOR.congelarAlHerirMs;
     this.body.setVelocity(0, 0);
     this.parpadear(JUGADOR.invulnerabilidadMs);
-
-    this.escena.time.delayedCall(JUGADOR.congelarAlHerirMs, () => {
-      if (this.active) this.reaparecer();
-    });
     return true;
   }
 

@@ -248,8 +248,10 @@ Filosofia: juego **generoso y sin castigos fuertes**.
   la escena (`probabilidadCorazon`, `probabilidadVidaExtra`) para poder apagarlo
   desde las pruebas.
 
-- Tocar un enemigo de lado o caer a un hueco: el personaje parpadea y reaparece en el
-  ultimo checkpoint. **No pierde monedas.**
+- Un golpe **no devuelve al checkpoint**: el nino se queda donde estaba,
+  parpadeando un momento. Al checkpoint solo se vuelve cuando se acaban los
+  corazones (y quedan vidas), o al caerse por un hueco, que ahi no hay donde
+  quedarse.
 - Saltar encima de un enemigo lo elimina.
 - Los enemigos eliminados desaparecen en una **nube de estrellitas**.
 - El jefe es el unico que aguanta mas de un golpe (tres), y tocarle de lado tampoco
@@ -436,8 +438,11 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
 - Todo el arte es **100% original** o de paquetes con **licencia libre** (Kenney, CC0).
 - **Prohibido** usar personajes, sprites, disenos, tipografias o musica de marcas o
   franquicias conocidas.
-- **Fondo actual:** ilustracion de un barrio de ladera con metrocable, aportada por
-  Daniel el 2026-09-22. No contiene marcas ni personajes de franquicias.
+- **Fondos:** las cinco ciudades van **tal cual**, sin tocarles color ni
+  enfoque. Lo que las manda al fondo es que se mueven despacio y que todo lo
+  de delante lleva contorno de tinta. Antes se les bajaba la saturacion
+  (quedaban lavadas) y luego se les dejaba un desenfoque (quedaban
+  emborronadas).
 - **Tipografia:** Chailce Noggin, de ripoof (2021), que da el aire de dibujo
   animado de los anos 30. No declara licencia en sus metadatos: si algun dia hay
   que sustituirla, es cambiar un archivo. Venia con 81 glifos y **sin acentos,
@@ -645,6 +650,12 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Un golpe deja al nino **donde estaba**, parpadeando, en vez
+  de devolverlo al checkpoint. Al checkpoint se vuelve solo al quedarse sin
+  corazones o al caer por un hueco.
+- **2026-09-23** — **Fuera el desenfoque de los fondos.** Con el lienzo a mas
+  pixeles y el contorno de tinta separando lo de delante, ya no hace falta
+  emborronar la ilustracion para que se distinga el juego.
 - **2026-09-23** — Todo dibujo recortado lleva ahora **contorno de tinta** por
   fuera, y los banderines de checkpoint y las puertas de salida van al **doble
   de tamano**, que pequenos no se leian. Ver la seccion 10.
