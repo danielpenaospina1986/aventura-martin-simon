@@ -42,9 +42,8 @@ const PERSONAJES = [
   },
   {
     nombre: 'banera',
-    // su espuma blanca es casi gris puro: con la tolerancia de siempre se iba
-    // con el fondo y el bicho quedaba agujereado
-    tolerancia: 5,
+    // su hoja viene sobre verde liso, asi que el detector la recorta por tono y
+    // la tolerancia del damero no se usa
     origen: 'src/assets/bichos-origen',
     destino: 'src/assets/bichos/banera',
     poses: [],
@@ -92,6 +91,79 @@ const PERSONAJES = [
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage();
 await pagina.goto('about:blank');
+
+// Detector de fondo, compartido por las dos fases (buscar poses y recortarlas).
+//
+// Hay dos clases de original: los que vienen sobre el damero gris y blanco de
+// los generadores de imagenes, y los que vienen sobre un color liso, como la
+// hoja de baneras que Daniel pidio en verde justamente para que el recorte
+// saliera limpio. Se distinguen mirando las cuatro esquinas: si coinciden entre
+// si y no son grises, el fondo es liso.
+await pagina.evaluate(() => {
+  const tonoDe = (r, g, b) => {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    if (d === 0) return -1;
+    let h;
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    return h < 0 ? h + 360 : h;
+  };
+
+  window.detectorDeFondo = (p, ancho, alto, tolerancia) => {
+    const en = (x, y) => {
+      const i = (y * ancho + x) * 4;
+      return [p[i], p[i + 1], p[i + 2]];
+    };
+    const esquinas = [en(2, 2), en(ancho - 3, 2), en(2, alto - 3), en(ancho - 3, alto - 3)];
+    const [r0, g0, b0] = esquinas[0];
+    const parecidas = esquinas.every(
+      ([r, g, b]) => Math.abs(r - r0) < 22 && Math.abs(g - g0) < 22 && Math.abs(b - b0) < 22,
+    );
+    const casiGris = Math.abs(r0 - g0) < 22 && Math.abs(g0 - b0) < 22 && Math.abs(r0 - b0) < 22;
+
+    if (parecidas && !casiGris) {
+      // Fondo de color liso. Se compara por TONO y no por color exacto, porque
+      // la sombra que el dibujante pone bajo el bicho es ese mismo verde pero
+      // mas oscuro, y tiene que irse con el fondo. Lo que no tiene color (la
+      // porcelana, el metal, el contorno negro) se queda siempre.
+      const tonoFondo = tonoDe(r0, g0, b0);
+      const comoElFondo = (i, margen, satMinima) => {
+        const r = p[i];
+        const g = p[i + 1];
+        const b = p[i + 2];
+        const max = Math.max(r, g, b);
+        if (max === 0) return false;
+        if ((max - Math.min(r, g, b)) / max < satMinima) return false;
+        const t = tonoDe(r, g, b);
+        if (t < 0) return false;
+        const dif = Math.abs(t - tonoFondo);
+        return Math.min(dif, 360 - dif) < margen;
+      };
+      return {
+        esFondo: (i) => comoElFondo(i, 34, 0.17),
+        // mas ancho, para el halo que deja la compresion del JPG en el contorno
+        esResiduo: (i) => comoElFondo(i, 52, 0.10),
+      };
+    }
+
+    // Damero gris y blanco, como hasta ahora.
+    const tol = tolerancia || 24;
+    const gris = (i, t, minimo) => {
+      const r = p[i];
+      const g = p[i + 1];
+      const b = p[i + 2];
+      return r > minimo && Math.abs(r - g) < t && Math.abs(g - b) < t && Math.abs(r - b) < t;
+    };
+    return {
+      esFondo: (i) => gris(i, tol, 92),
+      esResiduo: (i) => gris(i, 26, 120),
+    };
+  };
+});
 
 const comoDatos = (ruta) => {
   const tipo = ruta.endsWith('.webp') ? 'webp' : ruta.endsWith('.png') ? 'png' : 'jpeg';
@@ -239,13 +311,7 @@ async function buscarPoses(pagina, origen, tolerancia) {
 
     const datos = ctx.getImageData(0, 0, ancho, alto);
     const p = datos.data;
-    const tol = tolerancia || 24;
-    const esFondo = (i) => {
-      const r = p[i];
-      const g = p[i + 1];
-      const b = p[i + 2];
-      return r > 92 && Math.abs(r - g) < tol && Math.abs(g - b) < tol && Math.abs(r - b) < tol;
-    };
+    const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia);
 
     const hay = new Uint8Array(ancho * alto);
     for (let i = 0; i < ancho * alto; i += 1) hay[i] = esFondo(i * 4) ? 0 : 1;
@@ -330,23 +396,7 @@ async function recortarPose(pagina, opciones) {
         const datos = ctx.getImageData(0, 0, ancho, alto);
         const p = datos.data;
         const visto = new Uint8Array(ancho * alto);
-        // El damero es gris y claro, pero no siempre igual: en unas poses es
-        // gris puro y en otras viene tenido y mas oscuro (hasta 96). Por eso el
-        // umbral es bajo y la tolerancia de color, ancha. Al dibujo no le afecta:
-        // la piel, la ropa y el pelo tienen mucha mas diferencia entre canales.
-        // El damero es gris puro; el dibujo, aunque parezca blanco, casi
-        // siempre tira un poco a calido o a frio. La tolerancia dice cuanto se
-        // permite: en un dibujo con espuma blanca hay que apretarla, o la
-        // espuma se va con el fondo.
-        const tol = tolerancia || 24;
-        const esFondo = (i) => {
-          const r = p[i];
-          const g = p[i + 1];
-          const b = p[i + 2];
-          return (
-            r > 92 && Math.abs(r - g) < tol && Math.abs(g - b) < tol && Math.abs(r - b) < tol
-          );
-        };
+        const { esFondo, esResiduo } = window.detectorDeFondo(p, ancho, alto, tolerancia);
 
         const pila = [];
         for (let x = 0; x < ancho; x += 1) pila.push([x, 0], [x, alto - 1]);
@@ -377,12 +427,7 @@ async function recortarPose(pagina, opciones) {
             for (let x = 0; x < ancho; x += 1) {
               const i = (y * ancho + x) * 4;
               if (p[i + 3] === 0) continue;
-              const r = p[i];
-              const g = p[i + 1];
-              const b = p[i + 2];
-              const grisaceo =
-                r > 120 && Math.abs(r - g) < 26 && Math.abs(g - b) < 26 && Math.abs(r - b) < 26;
-              if (!grisaceo) continue;
+              if (!esResiduo(i)) continue;
               const vecinos =
                 Number(transparente(x + 1, y)) +
                 Number(transparente(x - 1, y)) +

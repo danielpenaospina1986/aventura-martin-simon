@@ -516,6 +516,12 @@ baja.
   eso, con un checkpoint al alcance de una banera, el nino reaparecia justo para
   recibir el siguiente chorro. En un juego sin vidas eso es un callejon sin
   salida, no una dificultad.
+- **2026-09-23** — La hoja de la banera pasa a venir sobre **verde liso** en vez
+  del damero gris: entre las piernas del bicho quedaban restos de cuadros. El
+  recorte detecta solo que clase de fondo tiene cada original mirando las cuatro
+  esquinas, y con fondo liso lo quita **por tono**, no por color exacto, para
+  que la sombra del suelo (el mismo verde mas oscuro) se vaya tambien. Lo que no
+  tiene color (porcelana, metal, contorno) nunca se toca.
 - **2026-09-23** — Los huecos del suelo pasan de tres casillas a **dos**, en los
   cinco tableros. `validar-niveles.mjs` comparaba el hueco con el alcance del
   salto (96 < 131) sin contar que el nino ocupa 30 px: ahora lo cuenta y da
