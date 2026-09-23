@@ -152,7 +152,9 @@ es la habilidad.
 ### Los bichos
 
 El bicho de a pie es una **banera con ojos** (96 x 86, la altura de los ninos).
-Tiene cinco poses: quieta, dos de caminar, agachada y saltando.
+Tiene cinco poses: quieta, dos de caminar, agachada y saltando. Su caja de
+colision va bastante por dentro del dibujo (54 x 60): si midiera lo que el
+dibujo seria mas alta que el propio nino y saltarla quedaria al filo.
 
 - Camina y da la vuelta en bordes y paredes, como siempre.
 - De vez en cuando **se planta, se agacha y salta tirando agua con jabon**. Si el
@@ -286,17 +288,24 @@ El tablero tiene **tres alturas y solo tres**, y una franja libre arriba:
 Entre altura y altura hay 3 casillas (96 px) y el salto llega a 3,58, asi que se
 sube de una a otra pero nunca del suelo al tercero de un tiron.
 
+Los **huecos del suelo no pasan de dos casillas**. El salto cubre 131 px en
+llano, pero el nino no es un punto: despega cuando su pie delantero llega al
+borde y aterriza cuando el trasero pasa al otro lado, asi que hay que cruzar el
+hueco **mas su propio ancho**. Con tres casillas (96 + 30 = 126 px) la ventana
+para despegar se queda en 10 px, unas milesimas, y se falla casi siempre.
+`npm run validar` lo comprueba.
+
 ### Los cinco tableros
 
 Cada tablero es una **ciudad**, con su propio fondo ilustrado:
 
-| # | Ciudad | Tamano | Premios | Enemigos |
+| # | Ciudad | Tamano | Premios | Bichos |
 |---|---|---|---|---|
-| 1 | Space Coast | 96 x 17 | 28 | 4 |
-| 2 | Medellin | 104 x 17 | 31 | 5 |
-| 3 | Atlanta | 108 x 17 | 42 | 8 |
-| 4 | Miami | 112 x 17 | 42 | 5 |
-| 5 | Cartagena | 116 x 17 | 48 | 7 |
+| 1 | Space Coast | 84 x 11 | 34 | 3 |
+| 2 | Medellin | 92 x 11 | 44 | 5 |
+| 3 | Atlanta | 92 x 11 | 50 | 7 |
+| 4 | Miami | 100 x 11 | 56 | 5 |
+| 5 | Cartagena | 100 x 11 | 59 | 6 |
 
 El fondo de cada una vive en `src/assets/fondos/` y el nivel lo nombra en su
 campo `fondo`. La historia de cada ciudad esta por escribir.
@@ -480,6 +489,37 @@ baja.
   tres monedas.
 - **2026-09-23** — La frecuencia con la que atacan bichos y palomas **se acorta
   segun el nivel**: el primer tablero es un paseo y el ultimo no.
+- **2026-09-23** — Cada pose se escala con el factor de **su archivo de origen**,
+  no uno comun para todo el personaje. Dentro de una hoja, que una pose sea mas
+  alta que otra es la animacion y hay que conservarlo; entre archivos distintos
+  es solo el encuadre del dibujante. Con un factor comun, Martain media 240 px
+  quieto y 100 corriendo: cambiaba de tamano al echar a andar.
+- **2026-09-23** — Las poses se apoyan por el **pie del muneco**, que es la
+  mancha conectada mas grande del dibujo, y no por el borde de abajo del
+  recuadro. El recuadro incluye la sombra y la salpicadura, y alinear por el
+  dejaba al bicho flotando en las poses que las llevan.
+- **2026-09-23** — Los bichos se colocan en el mapa **apoyados en el suelo de su
+  casilla**, como el jefe, y no centrados en ella. Centrarlos daba igual mientras
+  midieran 32 px; al crecer hasta la altura de los ninos, su caja acababa 25 px
+  por debajo del suelo y la fisica los dejaba medio enterrados o caminando por
+  el aire.
+- **2026-09-23** — Los dibujos de los bichos y de la paloma **miran a la
+  derecha**, asi que se voltean al ir hacia la izquierda (`setFlipX(dir < 0)`),
+  igual que los ninos. Estaba al reves y cruzaban la pantalla de espaldas. Al
+  jefe le pasaba lo mismo: sus pupilas tambien miran a la derecha.
+- **2026-09-23** — Se aplasta a un bicho si se le cae encima y los pies quedan en
+  su **mitad de arriba**. Antes se pedian 16 px justos desde la coronilla: con
+  los bichos a la altura de los ninos era casi imposible acertar y el salto
+  acababa en choque de lado.
+- **2026-09-23** — Al volver al checkpoint **se despeja el terreno**: se borra lo
+  que haya en vuelo y los bichos que alcanzan hasta alli se toman un respiro. Sin
+  eso, con un checkpoint al alcance de una banera, el nino reaparecia justo para
+  recibir el siguiente chorro. En un juego sin vidas eso es un callejon sin
+  salida, no una dificultad.
+- **2026-09-23** — Los huecos del suelo pasan de tres casillas a **dos**, en los
+  cinco tableros. `validar-niveles.mjs` comparaba el hueco con el alcance del
+  salto (96 < 131) sin contar que el nino ocupa 30 px: ahora lo cuenta y da
+  error. Los 21 huecos de tres casillas que habia eran saltos de milesimas.
 - **2026-09-23** — Al recortar sprites, la tolerancia de color es **por
   personaje**: el damero de la banera es gris puro y su espuma casi tambien, asi
   que con la tolerancia de siempre la espuma se iba con el fondo. Ademas, todas

@@ -11,6 +11,7 @@
 
 import { NIVELES } from '../src/niveles/index.js';
 import { MUNDO, FISICA, JUGADOR, ALCANCE } from '../src/config/ajustes.js';
+import { PERSONAJES } from '../src/config/personajes.js';
 
 const C = MUNDO.casilla;
 const MARGEN = 0.85; // no damos por bueno un salto pixel-perfect
@@ -183,6 +184,35 @@ function analizar(nivel) {
       }
     });
   });
+
+  // 10. los huecos del suelo, con el ancho del nino por delante
+  //
+  // Comparar el hueco contra el alcance del salto no basta: el nino no es un
+  // punto. Despega cuando su pie delantero llega al borde y aterriza cuando su
+  // pie trasero pasa el otro lado, asi que hay que cruzar el hueco MAS su
+  // ancho. Un hueco de 3 casillas (96 px) mas los 30 px del nino se come los
+  // 131 px del salto y deja una ventana de despegue de milesimas: se falla casi
+  // siempre. Esto se colaba porque solo se miraba 96 < 131.
+  const anchoNino = Math.max(...Object.values(PERSONAJES).map((p) => p.caja.ancho));
+  const alcanceUtil = ALCANCE.distanciaSaltoPx * MARGEN;
+  const filaSuelo = MUNDO.nivelSuelo;
+  let desdeHueco = -1;
+  for (let c = 0; c <= cols; c += 1) {
+    const vacio = c === cols || !esBloque(mapa[filaSuelo][c]);
+    if (vacio && desdeHueco < 0) desdeHueco = c;
+    if (!vacio && desdeHueco >= 0) {
+      const casillas = c - desdeHueco;
+      const necesario = casillas * C + anchoNino;
+      if (casillas > 0 && necesario > alcanceUtil) {
+        errores.push(
+          `Hueco de ${casillas} casillas en la columna ${desdeHueco}: cruzarlo pide ` +
+            `${necesario.toFixed(0)} px (hueco + ancho del nino) y el salto da ` +
+            `${alcanceUtil.toFixed(0)} px utiles`,
+        );
+      }
+      desdeHueco = -1;
+    }
+  }
 
   // El jefe necesita sitio para caminar y para que se le pueda esquivar.
   if (supJefe) {

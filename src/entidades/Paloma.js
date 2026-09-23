@@ -29,12 +29,18 @@ export class Paloma extends Phaser.Physics.Arcade.Sprite {
     escena.add.existing(this);
     escena.physics.add.existing(this);
 
-    this.setDisplaySize(84, 60).setDepth(8);
+    this.setDisplaySize(PALOMA.ancho, PALOMA.alto).setDepth(8);
     this.body.setAllowGravity(false);
-    this.body.setSize(this.width * 0.7, this.height * 0.6, true);
+
+    // la caja se mide en pixeles de la textura y luego se escala
+    const escalaX = this.scaleX || 1;
+    const escalaY = this.scaleY || 1;
+    this.body.setSize(PALOMA.caja.ancho / escalaX, PALOMA.caja.alto / escalaY, true);
 
     this.direccion = direccion;
-    this.setFlipX(direccion > 0);
+    // el dibujo viene mirando a la derecha: se voltea solo al volar hacia la
+    // izquierda. Al reves las palomas cruzaban la pantalla de espaldas.
+    this.setFlipX(direccion < 0);
     this.body.velocity.x = direccion * PALOMA.velocidad;
 
     this.reloj = 0;

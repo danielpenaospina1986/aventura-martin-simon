@@ -31,7 +31,8 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
     this.body.setMaxVelocity(260, 900);
 
     this.direccion = direccion;
-    this.setFlipX(direccion > 0);
+    // las pupilas del dibujo miran a la derecha: se voltea al ir a la izquierda
+    this.setFlipX(direccion < 0);
     this.setDepth(9);
 
     this.vidas = JEFE.vidas;
@@ -78,7 +79,7 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
 
   girar(nuevaDireccion) {
     this.direccion = nuevaDireccion;
-    this.setFlipX(nuevaDireccion > 0);
+    this.setFlipX(nuevaDireccion < 0);
   }
 
   actualizar(delta) {

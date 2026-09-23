@@ -251,6 +251,8 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.body.setAllowGravity(true);
     this.coyote = 0;
     this.buffer = 0;
+    // la escena le despeja el terreno: ver despejarAlReaparecer
+    if (this.escena.despejarAlReaparecer) this.escena.despejarAlReaparecer(this);
   }
 
   parpadear(duracion) {

@@ -38,6 +38,9 @@ const SOBRE_ALTO = ALTO - 1;
 const crearLienzo = (columnas) =>
   Array.from({ length: FILAS }, () => Array(columnas).fill('.'));
 
+// Los huecos entre dos tramos no pasan de DOS casillas. Con tres, el salto
+// llega por los pelos: hay que despegar en una ventana de 10 px (unos 48 ms) y
+// se falla casi siempre. Con dos sobran 200 ms, que es lo que un nino necesita.
 function suelo(mapa, desde, hasta) {
   for (let col = desde; col <= hasta; col += 1) {
     for (let fila = SUELO; fila < FILAS; fila += 1) mapa[fila][col] = '#';
@@ -93,8 +96,8 @@ const NIVELES = [];
   const columnas = 84;
   const m = crearLienzo(columnas);
 
-  suelo(m, 0, 23);
-  suelo(m, 27, 45);
+  suelo(m, 0, 24);
+  suelo(m, 27, 46);
   suelo(m, 49, 62);
   suelo(m, 65, 83);
   cerrar(m, columnas);
@@ -158,10 +161,10 @@ const NIVELES = [];
   const columnas = 92;
   const m = crearLienzo(columnas);
 
-  suelo(m, 0, 20);
-  suelo(m, 24, 40);
-  suelo(m, 44, 58);
-  suelo(m, 62, 74);
+  suelo(m, 0, 21);
+  suelo(m, 24, 41);
+  suelo(m, 44, 59);
+  suelo(m, 62, 75);
   suelo(m, 78, 91);
   cerrar(m, columnas);
 
@@ -226,10 +229,10 @@ const NIVELES = [];
   const columnas = 92;
   const m = crearLienzo(columnas);
 
-  suelo(m, 0, 18);
-  suelo(m, 22, 36);
-  suelo(m, 40, 54);
-  suelo(m, 58, 72);
+  suelo(m, 0, 19);
+  suelo(m, 22, 37);
+  suelo(m, 40, 55);
+  suelo(m, 58, 73);
   suelo(m, 76, 91);
   cerrar(m, columnas);
 
@@ -298,12 +301,12 @@ const NIVELES = [];
   const columnas = 100;
   const m = crearLienzo(columnas);
 
-  suelo(m, 0, 14);
-  suelo(m, 18, 28);
-  suelo(m, 32, 42);
-  suelo(m, 46, 56);
-  suelo(m, 60, 70);
-  suelo(m, 74, 84);
+  suelo(m, 0, 15);
+  suelo(m, 18, 29);
+  suelo(m, 32, 43);
+  suelo(m, 46, 57);
+  suelo(m, 60, 71);
+  suelo(m, 74, 85);
   suelo(m, 88, 99);
   cerrar(m, columnas);
 
@@ -371,11 +374,11 @@ const NIVELES = [];
   const columnas = 100;
   const m = crearLienzo(columnas);
 
-  suelo(m, 0, 16);
-  suelo(m, 20, 32);
-  suelo(m, 36, 48);
-  suelo(m, 52, 62);
-  suelo(m, 66, 78);
+  suelo(m, 0, 17);
+  suelo(m, 20, 33);
+  suelo(m, 36, 49);
+  suelo(m, 52, 63);
+  suelo(m, 66, 79);
   suelo(m, 82, 99);
   cerrar(m, columnas);
 

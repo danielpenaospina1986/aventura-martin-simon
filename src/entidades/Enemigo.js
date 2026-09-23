@@ -39,12 +39,14 @@ export class Enemigo extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(ENEMIGO.caja.ancho / escalaX, ENEMIGO.caja.alto / escalaY, false);
     this.body.setOffset(
       (ENEMIGO.ancho - ENEMIGO.caja.ancho) / 2 / escalaX,
-      (ENEMIGO.alto - ENEMIGO.caja.alto) / escalaY,
+      (ENEMIGO.alto - ENEMIGO.caja.alto - (ENEMIGO.margenPie || 0)) / escalaY,
     );
     this.body.setMaxVelocity(200, 900);
 
     this.direccion = direccion;
-    this.setFlipX(direccion > 0);
+    // el dibujo viene mirando a la derecha, asi que se voltea al ir a la
+    // izquierda; al reves salia andando de espaldas
+    this.setFlipX(direccion < 0);
 
     // --- estado del ataque ---
     this.estado = 'anda';
@@ -67,7 +69,7 @@ export class Enemigo extends Phaser.Physics.Arcade.Sprite {
 
   girar(nuevaDireccion) {
     this.direccion = nuevaDireccion;
-    this.setFlipX(nuevaDireccion > 0);
+    this.setFlipX(nuevaDireccion < 0);
   }
 
   // Solo se lanza si el nino esta cerca y hacia donde mira.

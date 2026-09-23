@@ -4,7 +4,7 @@
 // Es el unico sitio que sabe que significa cada simbolo.
 // ---------------------------------------------------------------------------
 
-import { JEFE, MUNDO } from '../config/ajustes.js';
+import { ENEMIGO, JEFE, MUNDO } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { Enemigo } from '../entidades/Enemigo.js';
 import { Jefe } from '../entidades/Jefe.js';
@@ -155,7 +155,13 @@ export function construirNivel(escena, nivel, opciones = {}) {
         }
 
         case SIMBOLOS.ENEMIGO: {
-          const enemigo = new Enemigo(escena, x, y, col % 2 === 0 ? -1 : 1);
+          // Apoyado en el suelo de su casilla, igual que el jefe. Antes se
+          // ponia centrado en la casilla, que es lo mismo mientras el bicho
+          // mida 32; al crecer hasta la altura de los ninos, su caja acababa
+          // 25 px por debajo del suelo y la fisica lo dejaba medio enterrado o
+          // lo escupia a caminar por el aire.
+          const apoyo = baseY(fila) - ENEMIGO.alto / 2 + (ENEMIGO.margenPie || 0);
+          const enemigo = new Enemigo(escena, x, apoyo, col % 2 === 0 ? -1 : 1);
           enemigos.add(enemigo);
           break;
         }

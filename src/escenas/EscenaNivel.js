@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, CAMARA, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS } from '../config/ajustes.js';
+import { AGUA, CAMARA, ENEMIGO, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -142,6 +142,9 @@ export class EscenaNivel extends Phaser.Scene {
     // lo que tiran los bichos hace dano al nino y se deshace contra el suelo
     this.jugadores.forEach((jugador) => {
       this.physics.add.overlap(jugador, this.peligros, (j, p) => {
+        // mientras parpadea no se le vuelve a dar: si no, un chorro encadenaba
+        // varios golpes en fotogramas seguidos
+        if (jugador.estaCongelado) return;
         this.romperPeligro(this.peligros.contains(j) ? j : p);
         this.herirJugador(jugador);
       });
@@ -236,8 +239,12 @@ export class EscenaNivel extends Phaser.Scene {
   tocarEnemigo(jugador, enemigo) {
     if (!enemigo.active || jugador.estaCongelado) return;
 
+    // Si viene cayendo y sus pies estan en la mitad de arriba del bicho, lo
+    // aplasta. Antes se pedian 16 px justos desde la coronilla: con los bichos
+    // a la altura de los ninos era casi imposible acertar, y el salto acababa
+    // en choque de lado una y otra vez.
     const cayendo = jugador.body.velocity.y > 30;
-    const porEncima = jugador.body.bottom <= enemigo.body.top + 16;
+    const porEncima = jugador.body.bottom <= enemigo.body.top + enemigo.body.height * 0.5;
 
     if (cayendo && porEncima) {
       this.eliminarEnemigo(enemigo);
@@ -249,6 +256,27 @@ export class EscenaNivel extends Phaser.Scene {
 
   // Un golpe no quita vidas (no hay), pero cuesta monedas. El marcador final es
   // lo que has ganado menos lo que te ha costado llegar.
+  // Al volver al checkpoint se le despeja el terreno: se borra el agua y lo que
+  // haya en vuelo, y los bichos que alcanzan hasta alli se toman un respiro.
+  //
+  // Sin esto el juego se atasca: los bichos tiran agua desde bastante lejos, y
+  // con un checkpoint a su alcance el nino reaparecia justo para recibir el
+  // siguiente chorro, una y otra vez. En un juego sin vidas eso es un callejon
+  // sin salida, no una dificultad.
+  despejarAlReaparecer(jugador) {
+    this.peligros.getChildren().forEach((peligro) => {
+      if (peligro.active) this.romperPeligro(peligro, false);
+    });
+
+    const respiro = ENEMIGO.ataque.avisoMs + ENEMIGO.ataque.lanzandoMs + 900;
+    this.enemigos.getChildren().forEach((bicho) => {
+      if (!bicho.active) return;
+      if (Math.abs(bicho.x - jugador.x) > ENEMIGO.ataque.distanciaMaxima + 120) return;
+      bicho.estado = 'anda';
+      bicho.proximoAtaque = bicho.reloj + respiro;
+    });
+  }
+
   herirJugador(jugador) {
     if (!jugador.herir()) return false;
 
@@ -327,8 +355,9 @@ export class EscenaNivel extends Phaser.Scene {
   tocarJefe(jugador, jefe) {
     if (!jefe.active || jugador.estaCongelado) return;
 
+    // mismo criterio generoso que con los bichos
     const cayendo = jugador.body.velocity.y > 30;
-    const porEncima = jugador.body.bottom <= jefe.body.top + 20;
+    const porEncima = jugador.body.bottom <= jefe.body.top + jefe.body.height * 0.4;
 
     if (cayendo && porEncima) {
       jugador.body.velocity.y = -JEFE.reboteJugador;

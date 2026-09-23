@@ -727,6 +727,12 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
 
   // Un "piloto automatico": corre a la derecha con el teclado de verdad y salta
   // cuando se le acaba el suelo, choca con algo o tiene un enemigo delante.
+  //
+  // Las dos sondas son distintas a proposito, como salta una persona:
+  //   - al bicho se le ve venir de lejos (110 px), porque ahora mide lo que un
+  //     nino y saltarle encima tarde acaba en choque de lado;
+  //   - al hueco se salta desde el mismo borde (26 px), porque saltar antes de
+  //     tiempo se queda corto en los huecos de tres casillas.
   await page.keyboard.down('ArrowRight');
 
   const recorrido = await page.evaluate(async () => {
@@ -741,11 +747,11 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
     // margen largo: en una maquina lenta el juego va a menos fotogramas y el
     // recorrido necesita mas pasos para cubrir la misma distancia
     for (let paso = 0; paso < 1800 && !n.terminado; paso += 1) {
-      const sueloDelante = n.haySoporteEn(j.x + 30, j.body.bottom + 6);
+      const sueloDelante = n.haySoporteEn(j.x + 26, j.body.bottom + 6);
       const chocando = j.body.blocked.right;
       const enemigoCerca = n.enemigos
         .getChildren()
-        .some((e) => e.active && e.x - j.x > 0 && e.x - j.x < 70 && Math.abs(e.y - j.y) < 60);
+        .some((e) => e.active && e.x - j.x > 0 && e.x - j.x < 110 && Math.abs(e.y - j.y) < 70);
 
       if (j.enSuelo && (!sueloDelante || chocando || enemigoCerca || quieto > 6)) {
         j.saltar();

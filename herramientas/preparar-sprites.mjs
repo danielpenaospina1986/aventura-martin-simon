@@ -110,7 +110,9 @@ for (const personaje of PERSONAJES) {
       console.error(`  falta ${origen}`);
       continue;
     }
-    trabajos.push({ nombre: pose, origen: comoDatos(origen), zona: null });
+    // cada archivo es su propio grupo: el muneco esta dibujado a una escala
+    // distinta en cada uno
+    trabajos.push({ nombre: pose, origen: comoDatos(origen), zona: null, grupo: `suelta:${pose}` });
   }
 
   for (const hoja of personaje.hojas || []) {
@@ -123,15 +125,26 @@ for (const personaje of PERSONAJES) {
     const zonas = await buscarPoses(pagina, datos, personaje.tolerancia);
     console.log(`  ${hoja.archivo}: encontradas ${zonas.length} poses`);
     for (let i = 0; i < zonas.length && i < hoja.nombres.length; i += 1) {
-      trabajos.push({ nombre: hoja.nombres[i], origen: datos, zona: zonas[i] });
+      trabajos.push({
+        nombre: hoja.nombres[i],
+        origen: datos,
+        zona: zonas[i],
+        grupo: `hoja:${hoja.archivo}`,
+      });
     }
   }
 
-  // --- 2. medirlas todas y sacar UN factor de escala para el personaje ---
+  // --- 2. medirlas y sacar un factor de escala POR ARCHIVO DE ORIGEN ---
   //
-  // Si cada pose se escalara a su propia altura, el personaje encogeria y
-  // creceria al animarse: en un aleteo, la pose con las alas abiertas es mas
-  // alta que la de las alas pegadas, y esa diferencia es justo la animacion.
+  // Dentro de una misma hoja, que una pose sea mas alta que otra es la
+  // animacion: al correr el muneco se inclina, y eso hay que conservarlo. Asi
+  // que las poses de una hoja comparten factor.
+  //
+  // Entre archivos distintos es al reves: el mismo muneco esta dibujado mas
+  // grande en unos que en otros, y eso no es animacion, es el encuadre del
+  // dibujante. Si se les da un factor comun, el personaje cambia de tamano al
+  // pasar de estar quieto (imagen suelta) a correr (hoja). Por eso cada
+  // archivo se normaliza por separado, hasta la misma altura de muneco.
   const medidas = [];
   for (const trabajo of trabajos) {
     const m = await medirPose(pagina, {
@@ -145,12 +158,35 @@ for (const personaje of PERSONAJES) {
     medidas.push(m);
   }
 
-  const altoMaximo = Math.max(...medidas.map((m) => m.alto));
-  const anchoMaximo = Math.max(...medidas.map((m) => m.ancho));
-  const factor = Math.min(
-    ALTO_PERSONAJE / altoMaximo,
-    (LIENZO.ancho * 0.96) / anchoMaximo,
-  );
+  const grupos = new Map();
+  trabajos.forEach((trabajo, i) => {
+    const m = medidas[i];
+    const g = grupos.get(trabajo.grupo) || {
+      altoCuerpo: 0,
+      altoTotal: 0,
+      anchoTotal: 0,
+    };
+    g.altoCuerpo = Math.max(g.altoCuerpo, m.alto);
+    g.altoTotal = Math.max(g.altoTotal, m.altoTotal || m.alto);
+    g.anchoTotal = Math.max(g.anchoTotal, m.anchoTotal || m.ancho);
+    grupos.set(trabajo.grupo, g);
+  });
+
+  // El muneco quiere medir ALTO_PERSONAJE, pero el dibujo entero (con su polvo
+  // y sus rayas de movimiento) tiene que caber en el lienzo. Si a algun grupo
+  // no le cabe, se rebaja la altura de TODOS: mas vale el muneco un poco mas
+  // pequeno que unas poses mayores que otras.
+  let altoObjetivo = ALTO_PERSONAJE;
+  for (const g of grupos.values()) {
+    const tope = Math.min(
+      (LIENZO.alto * 0.99) / g.altoTotal,
+      (LIENZO.ancho * 0.98) / g.anchoTotal,
+    );
+    altoObjetivo = Math.min(altoObjetivo, g.altoCuerpo * tope);
+  }
+
+  const factores = new Map();
+  for (const [nombre, g] of grupos) factores.set(nombre, altoObjetivo / g.altoCuerpo);
 
   // --- 3. recortarlas con ese factor ---
   for (let i = 0; i < trabajos.length; i += 1) {
@@ -162,7 +198,7 @@ for (const personaje of PERSONAJES) {
       altoPersonaje: ALTO_PERSONAJE,
       lienzoAncho: LIENZO.ancho,
       lienzoAlto: LIENZO.alto,
-      factor,
+      factor: factores.get(trabajo.grupo),
     });
     if (!resultado.url) continue;
 
@@ -173,7 +209,10 @@ for (const personaje of PERSONAJES) {
         `  · ${resultado.recorte}`,
     );
   }
-  console.log(`  (factor comun ${factor.toFixed(3)} para ${trabajos.length} poses)
+  const detalle = [...factores]
+    .map(([nombre, f]) => `${nombre} x${f.toFixed(3)}`)
+    .join(', ');
+  console.log(`  (muneco de ${altoObjetivo.toFixed(0)} px · ${detalle})
 `);
 }
 
@@ -381,7 +420,61 @@ async function recortarPose(pagina, opciones) {
         // una celda vacia (las hojas no siempre estan completas)
         if (anchoUtil < 20 || altoUtil < 20) return { url: null, recorte: 'vacia' };
 
-        if (soloMedir) return { url: null, ancho: anchoUtil, alto: altoUtil };
+        // Ni para medir ni para colocar vale el recuadro entero: incluye el
+        // polvo, las rayas de movimiento y la sombra, que cambian de una pose a
+        // otra. Lo que interesa es el cuerpo, que es la mancha conectada mas
+        // grande del dibujo.
+        const mancha = (() => {
+          const visitado = new Uint8Array(ancho * alto);
+          let mejor = null;
+          for (let y0 = 0; y0 < alto; y0 += 1) {
+            for (let x0 = 0; x0 < ancho; x0 += 1) {
+              const raiz = y0 * ancho + x0;
+              if (visitado[raiz] || p[raiz * 4 + 3] <= 24) continue;
+              let cuenta = 0;
+              let bx1 = x0;
+              let bx2 = x0;
+              let by1 = y0;
+              let by2 = y0;
+              const pila = [raiz];
+              visitado[raiz] = 1;
+              while (pila.length) {
+                const idx = pila.pop();
+                const x = idx % ancho;
+                const y = (idx - x) / ancho;
+                cuenta += 1;
+                if (x < bx1) bx1 = x;
+                if (x > bx2) bx2 = x;
+                if (y < by1) by1 = y;
+                if (y > by2) by2 = y;
+                const vecinos = [idx + 1, idx - 1, idx + ancho, idx - ancho];
+                for (let k = 0; k < 4; k += 1) {
+                  const v = vecinos[k];
+                  if (v < 0 || v >= ancho * alto || visitado[v]) continue;
+                  // no saltar de una fila a otra por los lados
+                  if (k < 2 && Math.floor(v / ancho) !== y) continue;
+                  if (p[v * 4 + 3] <= 24) continue;
+                  visitado[v] = 1;
+                  pila.push(v);
+                }
+              }
+              if (!mejor || cuenta > mejor.cuenta) {
+                mejor = { cuenta, ancho: bx2 - bx1 + 1, alto: by2 - by1 + 1, pie: by2 };
+              }
+            }
+          }
+          return mejor;
+        })();
+
+        if (soloMedir) {
+          return {
+            url: null,
+            ancho: mancha ? mancha.ancho : anchoUtil,
+            alto: mancha ? mancha.alto : altoUtil,
+            anchoTotal: anchoUtil,
+            altoTotal: altoUtil,
+          };
+        }
 
         // --- todas las poses con el MISMO factor, apoyadas abajo ---
         const salida = document.createElement('canvas');
@@ -394,6 +487,12 @@ async function recortarPose(pagina, opciones) {
         const destinoAncho = anchoUtil * escala;
         const destinoAlto = altoUtil * escala;
 
+        // Se apoya el CUERPO en la linea de suelo del lienzo. Alinear por el
+        // borde de abajo del dibujo dejaba al bicho flotando en las poses que
+        // llevan sombra o salpicadura debajo de los pies.
+        const pieDelCuerpo = mancha ? (mancha.pie - minY + 1) * escala : destinoAlto;
+        const arriba = lienzoAlto - 6 - pieDelCuerpo;
+
         sctx.drawImage(
           lienzo,
           minX,
@@ -401,7 +500,7 @@ async function recortarPose(pagina, opciones) {
           anchoUtil,
           altoUtil,
           (lienzoAncho - destinoAncho) / 2,
-          lienzoAlto - destinoAlto - 6,
+          arriba,
           destinoAncho,
           destinoAlto,
         );

@@ -106,7 +106,14 @@ export const ENEMIGO = {
   // darles y no dan ningun respeto.
   ancho: 96,
   alto: 86,
-  caja: { ancho: 62, alto: 72 },
+  // La caja va bastante por dentro del dibujo. La banera se dibuja de la
+  // altura de un nino, pero si la caja midiera lo mismo que el dibujo seria
+  // mas alta que el propio nino y saltarla quedaria al filo: se chocaba de
+  // lado una y otra vez en vez de aplastarla.
+  caja: { ancho: 54, alto: 60 },
+  // el dibujo no llega hasta el borde de abajo del lienzo: se apoya un poco
+  // antes. Sin esto la banera se hunde en el suelo.
+  margenPie: 2,
 
   // De vez en cuando la banera se planta, se agacha y salta tirando agua con
   // jabon. Cuanto mas avanzada la partida, mas a menudo lo hace.
@@ -134,6 +141,11 @@ export const AGUA = {
 
 // La paloma pasa volando por la franja de arriba y suelta lo que suelta.
 export const PALOMA = {
+  // cuadrado, como el lienzo del dibujo: con un rectangulo la paloma salia
+  // aplastada
+  ancho: 92,
+  alto: 92,
+  caja: { ancho: 56, alto: 40 },
   velocidad: 130,
   alturaMinFila: 0.4,   // por que parte de la franja alta vuela
   alturaMaxFila: 2.2,
