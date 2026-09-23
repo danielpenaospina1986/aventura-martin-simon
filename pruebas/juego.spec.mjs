@@ -453,11 +453,13 @@ test('al Astronauta Burbuja no se le puede dar mientras camina', async ({ page }
     const antes = jefe.vidas;
     jefe.invulnerableHasta = 0;
     n.golpearJefe(jefe.x - 40);
-    return { clase: jefe.constructor.name, estado: jefe.estado, antes, despues: jefe.vidas };
+    // Se mira su ESTADO y no el nombre de la clase: al compilar, los nombres se
+    // acortan y la prueba dejaria de valer contra el juego publicado.
+    return { estado: jefe.estado, expuesto: jefe.puedeRecibirGolpe(), antes, despues: jefe.vidas };
   });
 
-  expect(resultado.clase).toBe('AstronautaBurbuja');
   expect(resultado.estado).toBe('anda');
+  expect(resultado.expuesto).toBe(false);
   expect(resultado.despues).toBe(resultado.antes); // el golpe rebota
 });
 
