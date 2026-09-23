@@ -48,3 +48,8 @@ src/assets/objetos-origen/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# scripts de comprobacion de usar y tirar
+.ver-tmp.mjs
+.diag-tmp.mjs
+.audit-tmp.mjs
