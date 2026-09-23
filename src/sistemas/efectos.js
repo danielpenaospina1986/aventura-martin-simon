@@ -93,23 +93,28 @@ export function brilloMoneda(escena, x, y, textura = TEXTURAS.moneda) {
 }
 
 // Texto que sube y se desvanece.
-export function textoFlotante(escena, x, y, texto, color = COLORES.textoAcento) {
+// Un texto que sube y se desvanece. La duracion se puede alargar para lo que
+// haya que leer de verdad, como las frases de los jefes.
+export function textoFlotante(escena, x, y, texto, color = COLORES.textoAcento, duracion = 700) {
+  const largo = duracion > 1200;
   const etiqueta = escena.add
     .text(x, y, texto, {
       fontFamily: FUENTE.familia,
-      fontSize: '18px',
+      fontSize: largo ? '15px' : '18px',
       color,
       stroke: '#16202c',
       strokeThickness: 4,
+      align: 'center',
+      wordWrap: { width: 300 },
     })
     .setOrigin(0.5)
     .setDepth(45);
 
   escena.tweens.add({
     targets: etiqueta,
-    y: y - 40,
+    y: y - (largo ? 18 : 40),
     alpha: { from: 1, to: 0 },
-    duration: 700,
+    duration: duracion,
     ease: 'Quad.easeOut',
     onComplete: () => etiqueta.destroy(),
   });

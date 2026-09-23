@@ -18,7 +18,7 @@ import { aEscalaDeJuego, escalaDeJuego, pintarFondo } from '../sistemas/dibujo.j
 import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
-import { AVISOS } from '../config/historia.js';
+import { AVISOS, jefeDelCuento } from '../config/historia.js';
 import { brilloMoneda, burbujas, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
@@ -156,6 +156,8 @@ export class EscenaNivel extends Phaser.Scene {
     // la escena y no se lee de la constante para poder apagarlo desde las
     // pruebas: con el azar suelto, medir cuantas monedas da un bicho era una
     // moneda al aire.
+    this.proximoCorazon = JEFE.corazonMinMs;
+    this.jefeSaludo = false;
     this.probabilidadCorazon = VIDA.probabilidadCorazon;
     this.probabilidadVidaExtra = VIDA.probabilidadVidaExtra;
 
@@ -287,7 +289,19 @@ export class EscenaNivel extends Phaser.Scene {
       if (proyectil.y > this.nivel.alto + 40) this.romperProyectil(proyectil, false);
     });
 
+    this.gestionarCorazonesDeJefe(delta);
+    this.saludarSiEmpiezaLaPelea();
     this.hud.actualizar();
+  }
+
+  // El jefe saluda cuando el nino pisa su arena, no antes: si lo dijera al
+  // cargar el tablero, nadie lo leeria.
+  saludarSiEmpiezaLaPelea() {
+    if (this.jefeSaludo || !this.jefe || !this.jefe.active) return;
+    const jugador = this.jugadores[0];
+    if (!jugador || Math.abs(jugador.x - this.jefe.x) > 300) return;
+    this.jefeSaludo = true;
+    this.hablaElJefe('saludo');
   }
 
   // --- reglas del juego -----------------------------------------------------
@@ -579,6 +593,47 @@ export class EscenaNivel extends Phaser.Scene {
     }
   }
 
+  // --- lo que los jefes le piden a la arena ---------------------------------
+
+  // Un pisoton que se siente: la camara da un brinco.
+  sacudirArena(fuerza = 0.012, duracionMs = 260) {
+    this.cameras.main.shake(duracionMs, fuerza);
+  }
+
+  // Espuma saliendo a los lados de quien sea.
+  salpicarDesde(quien) {
+    const abajo = quien.body ? quien.body.bottom : quien.y;
+    burbujas(this, quien.x - 40, abajo - 12, 5);
+    burbujas(this, quien.x + 40, abajo - 12, 5);
+  }
+
+  // Durante la pelea caen corazones de vez en cuando: pelear no puede costar la
+  // partida, y menos a un nino de cinco anos.
+  gestionarCorazonesDeJefe(delta) {
+    if (!this.jefe || !this.jefe.active) return;
+    this.proximoCorazon -= delta;
+    if (this.proximoCorazon > 0) return;
+    this.proximoCorazon = Phaser.Math.Between(JEFE.corazonMinMs, JEFE.corazonMaxMs);
+
+    const jugador = this.jugadores[0];
+    if (!jugador || jugador.corazones >= VIDA.corazonesPorNivel) return;
+
+    const x = Phaser.Math.Clamp(
+      jugador.x + Phaser.Math.Between(-120, 120),
+      this.jefe.x - 220,
+      this.jefe.x + 220,
+    );
+    this.soltarRegalo(x, 40, 'corazon');
+  }
+
+  // Lo que dice el guardian del bano, en su idioma.
+  hablaElJefe(cual) {
+    if (!this.jefe || !this.jefe.active) return;
+    const suyo = jefeDelCuento(this.datosNivel.fondo || '');
+    if (!suyo || !suyo[cual]) return;
+    textoFlotante(this, this.jefe.x, this.jefe.y - 78, suyo[cual], COLORES.textoAcento, 2200);
+  }
+
   golpearJefe(desdeX) {
     if (!this.jefe || !this.jefe.active) return;
     if (!this.jefe.recibirGolpe(desdeX)) return;
@@ -605,6 +660,9 @@ export class EscenaNivel extends Phaser.Scene {
     estrellitas(this, x - 24, y - 10, 10);
     estrellitas(this, x + 24, y + 6, 10);
     this.cameras.main.shake(320, 0.01);
+    // el empapado es el, que para eso es un guardian del bano
+    this.salpicarDesde(this.jefe);
+    this.hablaElJefe('derrota');
     this.jefe.destroy();
     this.jefe = null;
 

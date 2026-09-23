@@ -170,6 +170,10 @@ export const META = {
 };
 
 export const JEFE = {
+  // Durante la pelea caen corazones de vez en cuando: pelear con un jefe no
+  // puede costar la partida.
+  corazonMinMs: 5200,
+  corazonMaxMs: 9000,
   vidas: 3,
   velocidad: 46,
   invulnerableMs: 900,

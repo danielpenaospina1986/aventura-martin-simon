@@ -73,6 +73,8 @@ aventura-martin-simon/
     entidades/
       Jugador.js        movimiento, habilidades, estados
       Enemigo.js        caminar y dar la vuelta en bordes y paredes
+      JefeBase.js       lo que comparten los cinco guardianes del bano
+      jefes/            uno por ciudad, cada cual con su forma de caer
     sistemas/
       controles.js      mapeo de teclas por jugador (preparado para 2 jugadores)
       constructor-nivel.js  convierte el mapa de texto en objetos del mundo
@@ -228,24 +230,42 @@ mas despacio y da tumbos; al segundo se cae, rueda por el aire, se estampa
 contra el suelo, titila y desaparece, dejando su premio donde cayo. Tocarla de
 lado no hace nada: va por el aire y castigar un roce seria injusto.
 
-### El jefe
+### Los jefes
 
-Los bichos miden lo que los ninos: mas bajos costaba darles y no daban ningun
-respeto.
+Al final de cada tablero espera un **guardian del bano**: mide **172 x 172**, el
+doble que un nino, y mientras viva **la meta esta cerrada** y se dibuja apagada.
+Hay un **checkpoint justo antes de su arena**, asi que pelear no castiga.
 
-Al final del nivel espera el jefe, que mide **172 x 172**, el doble que un nino,
-con **3 vidas**. Como no se le puede saltar encima desde el suelo (el salto no
-llega), cada arena lleva una **plataforma a un lado** para subirse y dejarse caer
-sobre el. Con la katana o con un bloque se le alcanza desde el suelo. Camina de
-un lado a otro de su arena y da la vuelta en los bordes; no persigue.
+Lo comun esta en `entidades/JefeBase.js` (vidas con su barra de puntitos,
+parpadeo tras cada golpe, el aviso antes de atacar) y **como se le gana** lo
+pone cada uno, en `entidades/jefes/`. Quien guarda que ciudad se decide en
+`entidades/jefes/index.js`; las que aun no tienen el suyo se quedan con el
+**provisional**, el bicho morado de siempre.
 
-- Se le hace dano de tres maneras, para que los dos ninos puedan con el:
-  saltandole encima, con la katana de Martin o con un bloque de Simon.
-- Tras cada golpe parpadea y no se le puede volver a dar durante un momento.
-- Lleva **tres puntitos encima de la cabeza** que se van apagando.
-- **Mientras viva, la meta esta cerrada** y se dibuja apagada. Al derrotarlo se
-  enciende y ya se puede terminar el nivel.
-- Hay un **checkpoint justo antes de su arena**: morir peleando no castiga.
+Reglas para los cinco:
+
+- **Cualquiera de los dos ninos puede ganarle.** Ninguna pelea puede pedir la
+  katana de Martain ni los bloques de Samaon.
+- **Ningun ataque llega sin avisar**: el jefe se pone en tension, se tine y sale
+  un signo encima antes de cada golpe.
+- **Durante la pelea caen corazones** de vez en cuando (`JEFE.corazonMinMs` y
+  `corazonMaxMs`): pelear con un jefe no puede costar la partida.
+- Cada uno **dice una frase** al empezar (cuando el nino pisa su arena, no
+  antes, que si no nadie la lee) y otra al perder, de `config/historia.js`.
+- Mientras no haya arte, se dibujan **por codigo** con los pinceles de tinta.
+
+#### 1. Space Coast: el Astronauta Burbuja
+
+Un astronauta grandote con el casco lleno de agua jabonosa y un patico de caucho
+flotando dentro. **Aguanta cuatro golpes.**
+
+No vale pegarle cuando uno quiera: camina por su arena, avisa, y pega un
+**pisoton lunar** que sacude la pantalla. Despues se queda unos segundos con las
+botas rebosando espuma, y **esa es la ventana** para darle: pisandolo, con la
+katana o con un bloque. Fuera de ella el golpe rebota con un ¡clonc! y no cuenta.
+
+Con el tercer golpe queda **mareado** y ya no vuelve a andar: da tumbos en el
+sitio esperando el remate, que lo manda flotando al espacio.
 
 ## 5. Sensacion de movimiento
 
@@ -703,6 +723,19 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Los jefes se parten en **una base y uno por ciudad**
+  (`JefeBase` + `entidades/jefes/`). Lo comun es la barra, el parpadeo y el
+  aviso; lo propio, **como se le gana**, que es lo que hace que cada ciudad se
+  juegue distinto. Deja de ser cierto que a todos se les da igual: lo que se
+  mantiene es que **cualquiera de los dos ninos puede con todos**.
+- **2026-09-23** — Space Coast estrena al **Astronauta Burbuja**: solo se le
+  puede dar cuando se queda atascado tras su pisoton. Las pruebas del jefe pasan
+  a esperar **su ventana** (`esperarJefeExpuesto`) en vez de dar por hecho que
+  esta siempre expuesto; las que miden otra cosa (la meta, el recorrido entero)
+  lo derrotan de un tiron, que si no se quedaban en bucle golpeando en vano.
+- **2026-09-23** — El tinte de aviso **no se anima con un tween**: es un color,
+  no un numero. Animandolo se quedaba pegado y el jefe salia de un solo color,
+  como un muneco de plastico.
 - **2026-09-23** — El juego estrena **historia**: "La gran fuga del bano". Los
   textos viven todos en `config/historia.js`, las vinetas las pinta
   `EscenaRelato` y cuando sale cada una lo decide `sistemas/cuento.js`. Ninguna

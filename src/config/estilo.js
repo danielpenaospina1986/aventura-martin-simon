@@ -72,6 +72,14 @@ export const COLORES = {
   frenteOscuro: 0x2b211c,
   frenteHoja: 0x4a3b2c,
 
+  // el Astronauta Burbuja
+  trajeClaro: 0xf2efe6,
+  trajeSombra: 0xcfc8b8,
+  aguaJabon: 0x9fd8ef,
+  espuma: 0xffffff,
+  patico: 0xf2c33c,
+  visor: 0x2d4a63,
+
   corazon: 0xd94f4f,
   corazonBrillo: 0xf0857f,
   corazonApagado: 0x5a4a4a,
@@ -147,6 +155,10 @@ export const TEXTURAS = {
   caida: 'tex-caida',
   jefe: 'tex-jefe',
   jefeEnfadado: 'tex-jefe-enfadado',
+  // Space Coast: el Astronauta Burbuja
+  jefeAstronauta: 'tex-jefe-astronauta',
+  jefeAstronautaAtascado: 'tex-jefe-astronauta-atascado',
+  jefeAstronautaMareado: 'tex-jefe-astronauta-mareado',
   checkpointApagado: 'tex-checkpoint-apagado',
   checkpointEncendido: 'tex-checkpoint-encendido',
   meta: 'tex-meta',

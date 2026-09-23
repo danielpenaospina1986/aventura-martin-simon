@@ -85,6 +85,20 @@ async function entrarAlNivel(page, personaje = 'martin') {
   });
 }
 
+// Deja pasar el tiempo hasta que el jefe esta en su momento vulnerable, sea
+// cual sea su truco. El Astronauta Burbuja, por ejemplo, solo se deja dar
+// cuando se queda atascado tras su pisoton.
+async function esperarJefeExpuesto(page, msMaximo = 12000) {
+  await page.waitForFunction(
+    () => {
+      const n = window.juego.scene.getScene('nivel');
+      return !n.jefe || !n.jefe.active || n.jefe.puedeRecibirGolpe();
+    },
+    null,
+    { timeout: msMaximo },
+  );
+}
+
 const estadoJugador = (page) =>
   page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
@@ -380,7 +394,7 @@ test('la meta está cerrada mientras el jefe siga vivo', async ({ page }) => {
     const n = window.juego.scene.getScene('nivel');
     return { vidasJefe: n.jefe.vidas, alphaMeta: n.nivel.meta.alpha };
   });
-  expect(antes.vidasJefe).toBe(3);
+  expect(antes.vidasJefe).toBeGreaterThan(0); // cada jefe aguanta lo suyo
   expect(antes.alphaMeta).toBeLessThan(1); // se ve apagada
 
   // plantarse encima de la meta con el jefe vivo: no debe pasar nada
@@ -394,30 +408,25 @@ test('la meta está cerrada mientras el jefe siga vivo', async ({ page }) => {
   expect(await page.evaluate(() => window.juego.scene.isActive('victoria'))).toBe(false);
 });
 
-test('al jefe se le quitan tres vidas saltándole encima', async ({ page }) => {
+test('al jefe se le gana saltándole encima cuando está expuesto', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
 
-  const saltarEncima = () =>
-    page.evaluate(async () => {
+  const saltarEncima = async () => {
+    await esperarJefeExpuesto(page);
+    await page.evaluate(async () => {
       const n = window.juego.scene.getScene('nivel');
       const j = n.jugadores[0];
       if (!n.jefe || !n.jefe.active) return;
-      n.jefe.direccion = 0;
-      n.jefe.body.setVelocity(0, 0);
       n.jefe.invulnerableHasta = 0; // sin esperar el parpadeo
       j.setPosition(n.jefe.x, n.jefe.body.top - 70);
       j.body.setVelocity(0, 140);
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 420));
     });
+  };
 
-  await saltarEncima();
-  expect((await estadoJugador(page)).vidasJefe).toBe(2);
-
-  await saltarEncima();
-  expect((await estadoJugador(page)).vidasJefe).toBe(1);
-
-  await saltarEncima();
+  const vidas = await page.evaluate(() => window.juego.scene.getScene('nivel').jefe.vidas);
+  for (let i = 0; i < vidas; i += 1) await saltarEncima();
   await page.waitForTimeout(400);
 
   // derrotado: desaparece y la meta se enciende
@@ -430,38 +439,60 @@ test('al jefe se le quitan tres vidas saltándole encima', async ({ page }) => {
   expect(errores).toEqual([]);
 });
 
+test('al Astronauta Burbuja no se le puede dar mientras camina', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+
+    // se espera a pillarlo andando, que es cuando NO se deja
+    for (let i = 0; i < 160 && jefe.estado !== 'anda'; i += 1) {
+      await new Promise((r) => setTimeout(r, 55));
+    }
+    const antes = jefe.vidas;
+    jefe.invulnerableHasta = 0;
+    n.golpearJefe(jefe.x - 40);
+    return { clase: jefe.constructor.name, estado: jefe.estado, antes, despues: jefe.vidas };
+  });
+
+  expect(resultado.clase).toBe('AstronautaBurbuja');
+  expect(resultado.estado).toBe('anda');
+  expect(resultado.despues).toBe(resultado.antes); // el golpe rebota
+});
+
 test('la katana de Martín también hace daño al jefe', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
-  await page.evaluate(() => {
+  await esperarJefeExpuesto(page);
+  const antes = await page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
-    n.jefe.direccion = 0;
-    n.jefe.body.setVelocity(0, 0);
     j.setPosition(n.jefe.x - 108, j.y);
     j.body.setVelocity(0, 0);
     j.mirando = 1;
+    return n.jefe.vidas;
   });
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(150);
   await page.keyboard.press('KeyX');
   await page.waitForTimeout(300);
 
-  expect((await estadoJugador(page)).vidasJefe).toBe(2);
+  expect((await estadoJugador(page)).vidasJefe).toBe(antes - 1);
 });
 
 test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
-  await page.evaluate(() => {
+  await esperarJefeExpuesto(page);
+  const antes = await page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
-    n.jefe.direccion = 0;
-    n.jefe.body.setVelocity(0, 0);
     j.setPosition(n.jefe.x - 190, j.y);
     j.body.setVelocity(0, 0);
     j.mirando = 1;
+    return n.jefe.vidas;
   });
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(150);
   await page.keyboard.press('KeyX');
   await page.waitForTimeout(600);
 
@@ -472,7 +503,7 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   });
   expect(despues.existe).toBe(true);
   expect(despues.activo).toBe(true);
-  expect(despues.vidas).toBe(2);
+  expect(despues.vidas).toBe(antes - 1);
 });
 
 test('la bañera se agacha, salta y lanza agua con jabón', async ({ page }) => {
@@ -830,14 +861,30 @@ test('el marcador nunca baja de cero', async ({ page }) => {
 test('derrotar al jefe da diez monedas', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
-  const resultado = await page.evaluate(() => {
-    const n = window.juego.scene.getScene('nivel');
-    const j = n.jugadores[0];
-    j.monedas = 5;
-    while (n.jefe && n.jefe.active) {
+  await page.evaluate(() => {
+    window.juego.scene.getScene('nivel').jugadores[0].monedas = 5;
+  });
+
+  // Cada jefe se deja dar en su momento, asi que hay que esperar su ventana
+  // antes de cada golpe.
+  for (let i = 0; i < 8; i += 1) {
+    const sigueVivo = await page.evaluate(() => {
+      const n = window.juego.scene.getScene('nivel');
+      return !!(n.jefe && n.jefe.active);
+    });
+    if (!sigueVivo) break;
+    await esperarJefeExpuesto(page);
+    await page.evaluate(() => {
+      const n = window.juego.scene.getScene('nivel');
+      if (!n.jefe || !n.jefe.active) return;
       n.jefe.invulnerableHasta = 0;
-      n.golpearJefe(j.x);
-    }
+      n.golpearJefe(n.jugadores[0].x);
+    });
+    await page.waitForTimeout(120);
+  }
+
+  const resultado = await page.evaluate(() => {
+    const j = window.juego.scene.getScene('nivel').jugadores[0];
     return { monedas: j.monedas, jefes: j.jefesDerrotados };
   });
 
@@ -959,11 +1006,10 @@ test('llegar a la meta lleva a la pantalla de victoria', async ({ page }) => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
     j.monedas = 22;
-    // primero el jefe: sin derrotarlo la meta no se abre
-    while (n.jefe && n.jefe.active) {
-      n.jefe.invulnerableHasta = 0;
-      n.golpearJefe(j.x);
-    }
+    // Primero el jefe: sin derrotarlo la meta no se abre. Aqui se le derrota de
+    // un tiron a proposito: lo que mide esta prueba es la meta, no la pelea, y
+    // cada jefe se deja dar en un momento distinto.
+    if (n.jefe && n.jefe.active) n.derrotarJefe();
     j.setPosition(n.nivel.meta.x, n.nivel.meta.y);
   });
 
@@ -1012,9 +1058,11 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
       }
 
       // al llegar al jefe, pelear: se le quitan las tres vidas
+      // Al llegar a la arena se le derrota de un tiron: el piloto automatico
+      // no sabe pelear, y lo que se mide aqui es que el tablero se recorre
+      // entero.
       if (n.jefe && n.jefe.active && Math.abs(n.jefe.x - j.x) < 150) {
-        n.jefe.invulnerableHasta = 0;
-        n.golpearJefe(j.x);
+        n.derrotarJefe();
       }
 
       await esperar(32);

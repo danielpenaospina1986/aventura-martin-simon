@@ -9,7 +9,7 @@ import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { aEscalaDeJuego, mosaico } from './dibujo.js';
 import { ciudadDe } from '../config/ciudades.js';
 import { Enemigo } from '../entidades/Enemigo.js';
-import { Jefe } from '../entidades/Jefe.js';
+import { jefeDeCiudad } from '../entidades/jefes/index.js';
 
 export const SIMBOLOS = {
   SOLIDO: '#',
@@ -190,7 +190,8 @@ export function construirNivel(escena, nivel, opciones = {}) {
 
         case SIMBOLOS.JEFE: {
           // se le coloca apoyado en el suelo de su casilla
-          jefe = new Jefe(escena, x, baseY(fila) - JEFE_ALTO / 2, -1);
+          const Guardian = jefeDeCiudad(ciudad);
+          jefe = new Guardian(escena, x, baseY(fila) - JEFE_ALTO / 2, -1);
           break;
         }
 
