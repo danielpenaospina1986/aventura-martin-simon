@@ -25,6 +25,10 @@ const PANTALLA = { ancho: 640, alto: 360 };
 // hacen las pruebas automaticas: alli el navegador dibuja por software, sin
 // tarjeta grafica, y cuadruplicar los pixeles las dejaba a 20 fotogramas.
 function densidadQueTocaria() {
+  // Las herramientas (validar-niveles, generar-niveles) importan este archivo
+  // desde Node, donde no hay ventana ninguna. Alli la densidad da igual.
+  if (typeof window === 'undefined') return 1;
+
   const forzada = Number(new URLSearchParams(window.location.search).get('densidad'));
   if (forzada >= 1 && forzada <= 4) return Math.round(forzada);
 
