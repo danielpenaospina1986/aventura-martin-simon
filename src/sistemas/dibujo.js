@@ -479,6 +479,47 @@ export function generarTexturas(escena) {
     g.fillRect(cx + 10, centroY + 34, 12, 12);
     brillo(g, cx - 42, centroY - radio * 0.6, 8);
   };
+  // --- Atlanta: la arena de Dona Zully --------------------------------------
+  //
+  // Sombrillas clavadas en el piso: son el escudo de esta pelea. El chorro que
+  // les da rebota y vuelve a quien lo tiro.
+  generar(escena, TEXTURAS.sombrilla, 76, 118, (g) => {
+    // palo
+    tintaRedonda(g, 34, 26, 8, 92, 3, COLORES.sombrillaPalo, 3);
+    // tela, a gajos
+    const cx = 38;
+    const cy = 30;
+    for (let i = 0; i < 6; i += 1) {
+      const a1 = Math.PI + (i * Math.PI) / 6;
+      const a2 = Math.PI + ((i + 1) * Math.PI) / 6;
+      g.fillStyle(i % 2 === 0 ? COLORES.sombrillaTela : COLORES.sombrillaTela2, 1);
+      g.beginPath();
+      g.moveTo(cx, cy);
+      g.arc(cx, cy, 36, a1, a2, false);
+      g.closePath();
+      g.fillPath();
+    }
+    g.lineStyle(4, TINTA, 1);
+    g.beginPath();
+    g.arc(cx, cy, 36, Math.PI, 2 * Math.PI, false);
+    g.strokePath();
+    g.beginPath();
+    g.moveTo(cx - 36, cy);
+    g.lineTo(cx + 36, cy);
+    g.strokePath();
+    // remate
+    tintaCirculo(g, cx, cy - 36, 5, COLORES.sombrillaPalo, 3);
+    brillo(g, cx - 18, cy - 16, 4);
+  });
+
+  // Pastilla de jabon, de las que caen del techo en su arena.
+  generar(escena, TEXTURAS.jabon, 34, 24, (g) => {
+    tintaRedonda(g, 1, 1, 32, 22, 8, COLORES.jabonCuerpo, 4);
+    g.fillStyle(COLORES.jabonBrillo, 0.85);
+    g.fillRoundedRect(6, 5, 14, 6, 3);
+    brillo(g, 9, 8, 3);
+  });
+
   // --- Space Coast: el Astronauta Burbuja -----------------------------------
   //
   // Un astronauta grandote con el casco lleno de agua jabonosa y un patico de
@@ -679,8 +720,8 @@ export function generarTexturas(escena) {
   // gordo a proposito, que es lo que pide la estetica de los anos 30.
   const corazon = (relleno, conBrillo) => (g) => {
     formaCorazon(g, 13, 12, 26, 24, TINTA);
-    formaCorazon(g, 13, 11.2, 19, 17, relleno);
-    if (conBrillo) brillo(g, 8.5, 7.5, 2.3);
+    formaCorazon(g, 13, 11.6, 22, 20, relleno);
+    if (conBrillo) brillo(g, 8, 7, 2.5);
   };
 
   generar(escena, TEXTURAS.corazon, 26, 24, corazon(COLORES.corazon, true));
@@ -693,11 +734,11 @@ export function generarTexturas(escena) {
     g.fillEllipse(6, 13, 16, 11);
     g.fillEllipse(34, 13, 16, 11);
     g.fillStyle(0xfaf0d8, 1);
-    g.fillEllipse(6, 12.6, 10, 6);
-    g.fillEllipse(34, 12.6, 10, 6);
+    g.fillEllipse(6, 12.8, 11.5, 7);
+    g.fillEllipse(34, 12.8, 11.5, 7);
 
     formaCorazon(g, 20, 14, 24, 22, TINTA);
-    formaCorazon(g, 20, 13.2, 17, 15, COLORES.vidaExtra);
+    formaCorazon(g, 20, 13.6, 20, 18, COLORES.vidaExtra);
     brillo(g, 16, 10, 2.1);
   });
 

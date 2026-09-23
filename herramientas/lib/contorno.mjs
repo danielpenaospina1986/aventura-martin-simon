@@ -14,7 +14,7 @@
 // llama desde cualquier page.evaluate.
 // ---------------------------------------------------------------------------
 
-export const CONTORNO = 10; // en pixeles del lienzo de 260
+export const CONTORNO = 5; // en pixeles del lienzo de 260
 export const TINTA = '#161210';
 
 export async function instalarContorno(pagina) {
@@ -61,6 +61,56 @@ export async function instalarContorno(pagina) {
         }
       }
       if (limpiado) ctx.putImageData(datos, 0, 0);
+      return lienzo;
+    };
+
+    // Borra todo lo que no este pegado a la mancha mas grande. Sirve cuando en
+    // una hoja los dibujos se solapan y el recorte de uno arrastra un trozo del
+    // vecino: el cepillo de una pose llegaba hasta dentro de la siguiente.
+    //
+    // Ojo: solo vale para dibujos de una pieza. En una pose con estrellitas o
+    // polvo sueltos se las comeria.
+    window.dejarSoloElCuerpo = (lienzo) => {
+      const ctx = lienzo.getContext('2d', { willReadFrequently: true });
+      const ancho = lienzo.width;
+      const alto = lienzo.height;
+      const datos = ctx.getImageData(0, 0, ancho, alto);
+      const q = datos.data;
+      const total = ancho * alto;
+      const visitado = new Uint8Array(total);
+      const grupos = [];
+
+      for (let i = 0; i < total; i += 1) {
+        if (visitado[i] || q[i * 4 + 3] <= 16) continue;
+        const grupo = [];
+        const pila = [i];
+        visitado[i] = 1;
+        while (pila.length) {
+          const idx = pila.pop();
+          grupo.push(idx);
+          const x = idx % ancho;
+          const vecinos = [idx + 1, idx - 1, idx + ancho, idx - ancho];
+          for (let k = 0; k < 4; k += 1) {
+            const v = vecinos[k];
+            if (v < 0 || v >= total || visitado[v]) continue;
+            if (k === 0 && x === ancho - 1) continue;
+            if (k === 1 && x === 0) continue;
+            if (q[v * 4 + 3] <= 16) continue;
+            visitado[v] = 1;
+            pila.push(v);
+          }
+        }
+        grupos.push(grupo);
+      }
+
+      if (grupos.length < 2) return lienzo;
+      grupos.sort((a, b) => b.length - a.length);
+      grupos.slice(1).forEach((grupo) => {
+        grupo.forEach((idx) => {
+          q[idx * 4 + 3] = 0;
+        });
+      });
+      ctx.putImageData(datos, 0, 0);
       return lienzo;
     };
 

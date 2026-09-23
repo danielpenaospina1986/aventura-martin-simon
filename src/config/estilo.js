@@ -80,6 +80,12 @@ export const COLORES = {
   patico: 0xf2c33c,
   visor: 0x2d4a63,
 
+  sombrillaTela: 0xd96b5e,
+  sombrillaTela2: 0xf2e3c8,
+  sombrillaPalo: 0x8d7850,
+  jabonCuerpo: 0xeddf9c,
+  jabonBrillo: 0xfaf3d2,
+
   corazon: 0xd94f4f,
   corazonBrillo: 0xf0857f,
   corazonApagado: 0x5a4a4a,
@@ -156,6 +162,16 @@ export const TEXTURAS = {
   jefe: 'tex-jefe',
   jefeEnfadado: 'tex-jefe-enfadado',
   // Space Coast: el Astronauta Burbuja
+  // Atlanta: Dona Zully y su arena
+  zullyQuieta: 'tex-zully-quieta',
+  zullyMirada: 'tex-zully-mirada',
+  zullyEmpapada: 'tex-zully-empapada',
+  zullyVictoria: 'tex-zully-victoria',
+  zullyChorro: 'tex-zully-chorro',
+  zullyBoquilla: 'tex-zully-boquilla',
+  sombrilla: 'tex-sombrilla',
+  jabon: 'tex-jabon',
+
   jefeAstronauta: 'tex-jefe-astronauta',
   jefeAstronautaAtascado: 'tex-jefe-astronauta-atascado',
   jefeAstronautaMareado: 'tex-jefe-astronauta-mareado',

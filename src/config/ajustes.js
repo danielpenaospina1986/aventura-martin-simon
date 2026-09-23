@@ -169,6 +169,22 @@ export const META = {
   alto: 152,
 };
 
+// La arena de Dona Zully: sus sombrillas y su chorro.
+export const SOMBRILLA = {
+  ancho: 84,
+  alto: 130,
+};
+
+export const CHORRO = {
+  ancho: 92,
+  alto: 72,
+  caja: { ancho: 62, alto: 38 },
+  salidaY: 6,
+  velocidad: 230,
+  velocidadRebote: 300,
+  duracionMs: 3200,
+};
+
 export const JEFE = {
   // Durante la pelea caen corazones de vez en cuando: pelear con un jefe no
   // puede costar la partida.

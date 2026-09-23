@@ -142,6 +142,44 @@ const PERSONAJES = [
     ],
   },
   {
+    // Dona Zully, la mama, con su gorro de bano y su cepillo. Las mangueras van
+    // sueltas en la misma hoja: son el chorro que dispara.
+    nombre: 'zully',
+    colorExacto: true,
+    tolerancia: 60,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/zully',
+    poses: [],
+    hojas: [
+      // Los cuerpos por un lado y las mangueras por otro: si compartieran
+      // escala, o la manguera saldria del tamano de Zully o Zully del tamano de
+      // una manguera.
+      {
+        archivo: 'zully',
+        grupo: 'zully-cuerpo',
+        soloElCuerpo: true,
+        nombres: ['quieta', 'mirada', 'empapada', 'victoria'],
+        zonas: [
+          { x: 50, y: 74, ancho: 280, alto: 462 },    // quieta, con su cepillo
+          { x: 300, y: 74, ancho: 280, alto: 462 },   // la mirada: le brillan los ojos
+          { x: 508, y: 95, ancho: 256, alto: 446 },   // empapada
+          { x: 732, y: 40, ancho: 290, alto: 496 },   // victoria
+        ],
+      },
+      {
+        archivo: 'zully',
+        grupo: 'zully-manguera',
+        nombres: ['boquilla', 'chorro', 'aturdida', 'desinflada'],
+        zonas: [
+          { x: 22, y: 652, ancho: 254, alto: 266 },   // boquilla goteando
+          { x: 230, y: 616, ancho: 364, alto: 304 },  // disparando
+          { x: 592, y: 620, ancho: 166, alto: 302 },  // aturdida, con estrellitas
+          { x: 773, y: 685, ancho: 224, alto: 270 },  // desinflada
+        ],
+      },
+    ],
+  },
+  {
     nombre: 'martin',
     origen: 'src/assets/martin-origen',
     destino: 'src/assets/martin',
@@ -332,7 +370,10 @@ for (const personaje of PERSONAJES) {
         zona: zonas[i],
         // porPieza: cada dibujo se escala por su cuenta. Se usa con objetos
         // sueltos, donde no hay animacion que conservar.
-        grupo: hoja.porPieza ? `pieza:${hoja.archivo}:${i}` : `hoja:${hoja.archivo}`,
+        grupo: hoja.porPieza
+          ? `pieza:${hoja.archivo}:${i}`
+          : `hoja:${hoja.grupo || hoja.archivo}`,
+        soloElCuerpo: hoja.soloElCuerpo || false,
       });
     }
   }
@@ -406,6 +447,7 @@ for (const personaje of PERSONAJES) {
       contorno: personaje.contorno === undefined ? CONTORNO : personaje.contorno,
       tinta: TINTA,
       colorExacto: personaje.colorExacto || false,
+      soloElCuerpo: trabajo.soloElCuerpo || false,
     });
     if (!resultado.url) continue;
 
@@ -625,6 +667,7 @@ async function recortarPose(pagina, opciones) {
         contorno,
         tinta,
         colorExacto,
+        soloElCuerpo,
       }) => {
         const imagen = new Image();
         imagen.src = origen;
@@ -814,6 +857,9 @@ async function recortarPose(pagina, opciones) {
         // final y sobre el recorte ya limpio: si se hiciera sobre el original,
         // el contorno rodearia tambien la basura que luego se quita.
         window.quitarMotas(salida);
+        // En las hojas donde los dibujos se solapan, el recorte de uno arrastra
+        // un trozo del vecino: se deja solo lo que este pegado al cuerpo.
+        if (soloElCuerpo) window.dejarSoloElCuerpo(salida);
         const conTinta = window.ponerContorno(salida, contorno, tinta);
 
         return {

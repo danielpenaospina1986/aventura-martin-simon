@@ -205,6 +205,12 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
   // Gancho para los hijos: pasar de fase, cambiar de humor, lo que haga falta.
   alRecibirGolpe() {}
 
+  // Se le llama cuando el tablero YA esta montado, no al nacer: un jefe nace
+  // dentro de construirNivel, cuando la escena todavia no sabe donde esta el
+  // suelo. Lo que necesite mirar el terreno (plantar sombrillas, por ejemplo)
+  // va aqui.
+  prepararArena() {}
+
   // Cuando el golpe no cuenta porque no esta expuesto: un ¡clonc! y nada mas.
   rebotar() {
     if (this.escena.tweens.isTweening(this)) return;

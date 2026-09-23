@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, CAMARA, ENEMIGO, JEFE, JUGADOR, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER, VIDA } from '../config/ajustes.js';
+import { AGUA, CAMARA, CHORRO, ENEMIGO, JEFE, JUGADOR, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VIDA } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -81,6 +81,15 @@ export class EscenaNivel extends Phaser.Scene {
     montarPrimerPlano(this, ancho, alto, this.nivel.ancho, suyos, this.planos);
     this.enemigos = this.nivel.enemigos;
     this.jefe = this.nivel.jefe;
+
+    // La arena de Dona Zully. Se crean aqui, antes de que el jefe prepare lo
+    // suyo: si se creasen mas abajo, al plantar las sombrillas el grupo todavia
+    // no existiria.
+    this.chorros = this.physics.add.group({ allowGravity: false });
+    this.sombrillas = this.physics.add.staticGroup();
+
+    // El jefe ya puede mirar su arena: el tablero esta montado.
+    if (this.jefe && this.jefe.prepararArena) this.jefe.prepararArena();
     this.terminado = false;
 
     // bloques que Samaon lanza por los aires
@@ -197,6 +206,31 @@ export class EscenaNivel extends Phaser.Scene {
     });
     this.physics.add.collider(this.palomas, solidos);
     this.physics.add.collider(this.regalos, solidos);
+
+    // El chorro de Dona Zully: moja al nino, rebota en las sombrillas y, de
+    // vuelta, la empapa a ella.
+
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.chorros, (a, b) => {
+        const chorro = this.chorros.contains(a) ? a : b;
+        if (chorro.rebotado) return; // de vuelta ya no moja al nino
+        this.romperChorro(chorro);
+        this.herirJugador(jugador);
+      });
+    });
+
+    this.physics.add.overlap(this.chorros, this.sombrillas, (a, b) => {
+      this.rebotarChorro(this.chorros.contains(a) ? a : b);
+    });
+
+    if (this.jefe) {
+      this.physics.add.overlap(this.chorros, this.jefe, (a, b) => {
+        const chorro = this.chorros.contains(a) ? a : b;
+        if (!chorro.rebotado || !this.jefe || !this.jefe.recibirRebote) return;
+        if (this.jefe.recibirRebote(chorro.x)) this.anotarGolpeAlJefe();
+        this.romperChorro(chorro);
+      });
+    }
     this.jugadores.forEach((jugador) => {
       this.physics.add.overlap(jugador, this.regalos, (a, b) => {
         this.recogerRegalo(jugador, this.regalos.contains(a) ? a : b);
@@ -593,6 +627,66 @@ export class EscenaNivel extends Phaser.Scene {
     }
   }
 
+  // --- la arena de Dona Zully -----------------------------------------------
+
+  // Tres sombrillas clavadas en el suelo de su arena. No estorban al andar: lo
+  // suyo es parar el chorro, no al nino.
+  plantarSombrillas(jefe) {
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    const puestos = [-260, -150, -40];
+    const plantadas = [];
+
+    puestos.forEach((dx) => {
+      const x = jefe.x + dx;
+      if (!this.haySoporteEn(x, suelo + 6)) return;
+      const sombrilla = this.sombrillas.create(x, suelo, TEXTURAS.sombrilla);
+      sombrilla.setOrigin(0.5, 1).setDisplaySize(SOMBRILLA.ancho, SOMBRILLA.alto);
+      sombrilla.refreshBody();
+      sombrilla.setDepth(6);
+      plantadas.push(sombrilla);
+    });
+
+    return plantadas;
+  }
+
+  // El chorro a presion. Sale de la manguera, y si le da a una sombrilla vuelve
+  // por donde vino: eso es lo que empapa a Zully.
+  lanzarChorro(jefe) {
+    const dir = jefe.direccion;
+    const chorro = this.chorros.create(
+      jefe.x + dir * 70,
+      jefe.y + CHORRO.salidaY,
+      TEXTURAS.zullyChorro,
+    );
+    chorro.setDisplaySize(CHORRO.ancho, CHORRO.alto).setDepth(8);
+    chorro.setFlipX(dir < 0);
+    chorro.body.setSize(CHORRO.caja.ancho / chorro.scaleX, CHORRO.caja.alto / chorro.scaleY, true);
+    chorro.body.setAllowGravity(false);
+    chorro.body.setVelocityX(dir * CHORRO.velocidad);
+    chorro.sentido = dir;
+    chorro.rebotado = false;
+
+    this.time.delayedCall(CHORRO.duracionMs, () => chorro.active && chorro.destroy());
+    return chorro;
+  }
+
+  // Una pastilla de jabon que cae del techo.
+  soltarJabon(jefe) {
+    const nino = this.jugadores[0];
+    if (!nino || !nino.active) return;
+    const x = Phaser.Math.Clamp(
+      nino.x + Phaser.Math.Between(-70, 70),
+      jefe.x - 300,
+      jefe.x + 120,
+    );
+    const jabon = this.peligros.create(x, 20, TEXTURAS.jabon);
+    aEscalaDeJuego(jabon);
+    jabon.setDepth(7);
+    jabon.body.setAllowGravity(true);
+    jabon.body.setGravityY(AGUA.gravedad - this.physics.world.gravity.y);
+    this.time.delayedCall(AGUA.duracionMs, () => jabon.active && this.romperPeligro(jabon, false));
+  }
+
   // --- lo que los jefes le piden a la arena ---------------------------------
 
   // Un pisoton que se siente: la camara da un brinco.
@@ -634,24 +728,46 @@ export class EscenaNivel extends Phaser.Scene {
     textoFlotante(this, this.jefe.x, this.jefe.y - 78, suyo[cual], COLORES.textoAcento, 2200);
   }
 
-  golpearJefe(desdeX) {
-    if (!this.jefe || !this.jefe.active) return;
-    if (!this.jefe.recibirGolpe(desdeX)) return;
+  // El chorro pega en la sombrilla y se vuelve por donde vino.
+  rebotarChorro(chorro) {
+    if (!chorro || !chorro.active || chorro.rebotado) return;
+    chorro.rebotado = true;
+    chorro.sentido = -chorro.sentido;
+    chorro.body.setVelocityX(chorro.sentido * CHORRO.velocidadRebote);
+    chorro.setFlipX(chorro.sentido < 0);
+    chorro.setTint(0xbfe9ff);
+    burbujas(this, chorro.x, chorro.y, 4);
+  }
 
+  romperChorro(chorro) {
+    if (!chorro || !chorro.active) return;
+    burbujas(this, chorro.x, chorro.y, 5);
+    chorro.destroy();
+  }
+
+  // Lo que pasa cuando a un jefe le cuenta un golpe, venga de donde venga.
+  anotarGolpeAlJefe() {
+    if (!this.jefe || !this.jefe.active) return;
     estrellitas(this, this.jefe.x, this.jefe.y, 7);
     this.cameras.main.shake(140, 0.006);
 
     if (this.jefe.derrotado) {
       this.derrotarJefe();
-    } else {
-      textoFlotante(
-        this,
-        this.jefe.x,
-        this.jefe.y - 46,
-        `¡Le quedan ${this.jefe.vidas}!`,
-        COLORES.textoClaro,
-      );
+      return;
     }
+    textoFlotante(
+      this,
+      this.jefe.x,
+      this.jefe.y - 46,
+      `¡Le quedan ${this.jefe.vidas}!`,
+      COLORES.textoClaro,
+    );
+  }
+
+  golpearJefe(desdeX) {
+    if (!this.jefe || !this.jefe.active) return;
+    if (!this.jefe.recibirGolpe(desdeX)) return;
+    this.anotarGolpeAlJefe();
   }
 
   derrotarJefe() {

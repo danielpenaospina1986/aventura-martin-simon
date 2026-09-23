@@ -508,6 +508,52 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   expect(despues.vidas).toBe(antes - 1);
 });
 
+test('a Doña Zully se le gana escondiéndose tras una sombrilla', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    // se salta a Atlanta, que es su ciudad
+    n.scene.restart({ indiceNivel: 2, personajeId: 'simon', acumulado: {} });
+    await new Promise((r) => setTimeout(r, 1600));
+
+    const esc = window.juego.scene.getScene('nivel');
+    const jefe = esc.jefe;
+    const j = esc.jugadores[0];
+    const sombrilla = jefe.sombrillas && jefe.sombrillas[1];
+    if (!sombrilla) return { sombrillas: 0 };
+
+    // de frente no se le puede dar
+    jefe.invulnerableHasta = 0;
+    const antesDeFrente = jefe.vidas;
+    esc.golpearJefe(jefe.x - 40);
+    const trasGolpeDeFrente = jefe.vidas;
+
+    // el nino se esconde detras de la sombrilla y espera su chorro
+    const vidasAntes = jefe.vidas;
+    for (let i = 0; i < 200 && jefe.vidas === vidasAntes; i += 1) {
+      j.x = sombrilla.x - 40;
+      j.y = sombrilla.y - 50;
+      j.body.setVelocity(0, 0);
+      await new Promise((r) => setTimeout(r, 55));
+    }
+
+    return {
+      sombrillas: jefe.sombrillas.length,
+      antesDeFrente,
+      trasGolpeDeFrente,
+      vidasAntes,
+      vidas: jefe.vidas,
+      corazones: j.corazones,
+    };
+  });
+
+  expect(resultado.sombrillas).toBe(3);
+  expect(resultado.trasGolpeDeFrente).toBe(resultado.antesDeFrente); // de frente, nada
+  expect(resultado.vidas).toBe(resultado.vidasAntes - 1); // el rebote sí la empapa
+  expect(resultado.corazones).toBe(5); // y al niño no le cae una gota
+});
+
 test('la bañera se agacha, salta y lanza agua con jabón', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');

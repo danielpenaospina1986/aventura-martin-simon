@@ -145,7 +145,7 @@ empapados son ellos.
 |---|---|---|
 | 1 | Space Coast | Donde nacieron los dos |
 | 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos |
-| 3 | Atlanta | Donde viven ahora |
+| 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia |
 | 5 | Cartagena | El paseo que no se les olvida |
 
@@ -266,6 +266,24 @@ katana o con un bloque. Fuera de ella el golpe rebota con un ¡clonc! y no cuent
 
 Con el tercer golpe queda **mareado** y ya no vuelve a andar: da tumbos en el
 sitio esperando el remate, que lo manda flotando al espacio.
+
+#### 3. Atlanta: Dona Zully
+
+La mama, con su gorro de bano, su cepillo y su manguera. **Aguanta cuatro
+rebotes.** No persigue a nadie: se planta, se vuelve hacia el nino y dispara
+chorros a presion.
+
+**A ella no se le pega.** En la arena hay **tres sombrillas** clavadas; si el
+nino se pone detras de una, el chorro da en la sombrilla, **rebota** y vuelve a
+empaparla. Mientras tanto le caen jabones del techo, para que quedarse quieto
+detras de una sombrilla no sea tan comodo.
+
+Por eso esta pelea **no pide habilidad ninguna**: esconderse vale igual para
+Samaon y para Martain.
+
+Sus dibujos son de verdad (`src/assets/jefes/zully/`), sacados de la hoja que
+paso Daniel: cuatro poses de cuerpo (quieta, la mirada, empapada y victoria) y
+cuatro de manguera.
 
 ## 5. Sensacion de movimiento
 
@@ -723,6 +741,17 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Atlanta estrena a **Dona Zully**, con los dibujos de verdad.
+  A ella no se le pega: hay que esconderse tras una sombrilla para que su propio
+  chorro rebote y la empape.
+- **2026-09-23** — Un jefe **nace dentro de `construirNivel`**, cuando la escena
+  todavia no sabe donde esta el suelo. Lo que necesite mirar el terreno va en
+  `prepararArena()`, que la escena llama cuando el tablero ya esta montado.
+  Plantando las sombrillas en el constructor, Zully reventaba al nacer y — lo
+  peor — la excepcion dejaba en pie al jefe del tablero anterior, asi que en
+  Atlanta salia el astronauta.
+- **2026-09-23** — El contorno de tinta se queda en **la mitad de grueso** (de
+  10 a 5 px del lienzo): marcaba bien la silueta pero se comia el dibujo.
 - **2026-09-23** — Los jefes se parten en **una base y uno por ciudad**
   (`JefeBase` + `entidades/jefes/`). Lo comun es la barra, el parpadeo y el
   aviso; lo propio, **como se le gana**, que es lo que hace que cada ciudad se

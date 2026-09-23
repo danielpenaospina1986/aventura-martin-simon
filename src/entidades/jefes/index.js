@@ -9,10 +9,12 @@
 // ---------------------------------------------------------------------------
 
 import { AstronautaBurbuja } from './AstronautaBurbuja.js';
+import { DonaZully } from './DonaZully.js';
 import { Provisional } from './Provisional.js';
 
 const POR_CIUDAD = {
   'space-coast': AstronautaBurbuja,
+  atlanta: DonaZully,
 };
 
 export function jefeDeCiudad(ciudad) {
