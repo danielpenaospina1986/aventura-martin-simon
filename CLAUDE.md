@@ -177,6 +177,11 @@ justo por encima del nino **suelta lo que suelta**, y si le cae encima cuenta
 como un golpe. Aparece cada cierto tiempo al azar, y mas a menudo segun avanza
 la partida.
 
+**Se le puede saltar encima** y aguanta dos: al primero se queda aturdida, va
+mas despacio y da tumbos; al segundo se cae, rueda por el aire, se estampa
+contra el suelo, titila y desaparece, dejando su premio donde cayo. Tocarla de
+lado no hace nada: va por el aire y castigar un roce seria injusto.
+
 ### El jefe
 
 Los bichos miden lo que los ninos: mas bajos costaba darles y no daban ningun

@@ -63,6 +63,11 @@ import palomaVuela2 from '../assets/bichos/paloma/vuela2.png';
 import palomaVuela3 from '../assets/bichos/paloma/vuela3.png';
 import palomaVuela4 from '../assets/bichos/paloma/vuela4.png';
 import palomaSuelta from '../assets/bichos/paloma/suelta1.png';
+import palomaMareada from '../assets/bichos/paloma/mareada.png';
+import palomaCae1 from '../assets/bichos/paloma/cae1.png';
+import palomaCae2 from '../assets/bichos/paloma/cae2.png';
+import palomaCae3 from '../assets/bichos/paloma/cae3.png';
+import palomaSuelo from '../assets/bichos/paloma/suelo.png';
 
 export class EscenaCarga extends Phaser.Scene {
   constructor() {
@@ -111,6 +116,11 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.palomaVuela3, palomaVuela3);
     this.load.image(TEXTURAS.palomaVuela4, palomaVuela4);
     this.load.image(TEXTURAS.palomaSuelta, palomaSuelta);
+    this.load.image(TEXTURAS.palomaMareada, palomaMareada);
+    this.load.image(TEXTURAS.palomaCae1, palomaCae1);
+    this.load.image(TEXTURAS.palomaCae2, palomaCae2);
+    this.load.image(TEXTURAS.palomaCae3, palomaCae3);
+    this.load.image(TEXTURAS.palomaSuelo, palomaSuelo);
   }
 
   create() {

@@ -130,6 +130,12 @@ export const TEXTURAS = {
   palomaVuela3: 'tex-paloma-vuela3',
   palomaVuela4: 'tex-paloma-vuela4',
   palomaSuelta: 'tex-paloma-suelta',
+  // cuando le dan: aturdida, tres de caida y tumbada en el suelo
+  palomaMareada: 'tex-paloma-mareada',
+  palomaCae1: 'tex-paloma-cae1',
+  palomaCae2: 'tex-paloma-cae2',
+  palomaCae3: 'tex-paloma-cae3',
+  palomaSuelo: 'tex-paloma-suelo',
   caida: 'tex-caida',
   jefe: 'tex-jefe',
   jefeEnfadado: 'tex-jefe-enfadado',

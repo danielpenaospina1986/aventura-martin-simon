@@ -167,6 +167,15 @@ export class EscenaNivel extends Phaser.Scene {
     this.physics.add.collider(this.enemigos, solidos);
     this.physics.add.collider(this.enemigos, plataformas);
 
+    // A la paloma se le puede saltar encima. De lado no pasa nada: va por el
+    // aire y castigar un roce seria injusto.
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.palomas, (a, b) => {
+        this.tocarPaloma(jugador, this.palomas.contains(a) ? a : b);
+      });
+    });
+    this.physics.add.collider(this.palomas, solidos);
+
     // lo que tiran los bichos hace dano al nino y se deshace contra el suelo
     this.jugadores.forEach((jugador) => {
       this.physics.add.overlap(jugador, this.peligros, (j, p) => {
@@ -318,6 +327,30 @@ export class EscenaNivel extends Phaser.Scene {
     }
     this.hud.animarCara(jugador);
     return true;
+  }
+
+  // Saltar encima de una paloma la golpea. Aguanta dos: al primero se queda
+  // aturdida dando tumbos, al segundo se cae.
+  tocarPaloma(jugador, paloma) {
+    if (!paloma || !paloma.active || jugador.estaCongelado) return;
+    if (paloma.estado === 'cae' || paloma.estado === 'suelo') return;
+
+    const cayendo = jugador.body.velocity.y > 30;
+    const porEncima = jugador.body.bottom <= paloma.body.top + paloma.body.height * 0.6;
+    if (!cayendo || !porEncima) return;
+
+    if (paloma.recibirGolpe()) {
+      jugador.rebotar();
+      estrellitas(this, paloma.x, paloma.y, 5);
+    }
+  }
+
+  // La paloma derribada deja su premio donde cayo.
+  premiarPaloma(paloma) {
+    const jugador = this.jugadores[0];
+    jugador.monedas += PUNTOS.porEnemigo;
+    jugador.enemigosVencidos += 1;
+    textoFlotante(this, paloma.x, paloma.y - 24, `+${PUNTOS.porEnemigo}`, COLORES.textoAcento);
   }
 
   eliminarEnemigo(enemigo) {

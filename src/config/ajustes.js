@@ -204,6 +204,13 @@ export const AGUA = {
 
 // La paloma pasa volando por la franja de arriba y suelta lo que suelta.
 export const PALOMA = {
+  // Aguanta dos saltos encima: al primero se queda aturdida dando tumbos, al
+  // segundo se cae al suelo, titila y desaparece.
+  vidas: 2,
+  aturdidaMs: 2600,
+  msPorVuelta: 110,
+  titileoMs: 130,
+  titileos: 5,
   // cuadrado, como el lienzo del dibujo: con un rectangulo la paloma salia
   // aplastada
   ancho: 92,
