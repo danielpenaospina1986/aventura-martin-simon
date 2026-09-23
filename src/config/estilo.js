@@ -127,6 +127,7 @@ export const TEXTURAS = {
   nube: 'tex-nube',
   fondo: 'tex-fondo',
   portada: 'tex-portada',
+  portadaMenu: 'tex-portada-menu',
   // un fondo por ciudad; la clave se arma con el nombre del nivel
   fondoDe: (ciudad) => `tex-fondo-${ciudad}`,
   caraMartin: 'tex-cara-martin',

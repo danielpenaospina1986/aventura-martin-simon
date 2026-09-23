@@ -45,7 +45,7 @@ export const NIVEL_1 = {
 
   // Carteles de ayuda que aparecen flotando en el mundo (columna, fila, texto).
   pistas: [
-    { col: 4, fila: 7, texto: '← →  moverte' },
+    { col: 4, fila: 7, texto: 'Flechas para moverte' },
     { col: 12, fila: 4, texto: 'Espacio: saltar' },
     { col: 35, fila: 1, texto: 'Tres alturas' },
     { col: 54, fila: 7, texto: 'X: atacar' },

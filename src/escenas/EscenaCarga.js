@@ -12,6 +12,7 @@ import { TEXTURAS } from '../config/estilo.js';
 // en una subcarpeta (GitHub Pages).
 import fondoBarrio from '../assets/fondo-barrio.jpg';
 import portada from '../assets/portada.jpg';
+import portadaMenu from '../assets/portada-menu.jpg';
 import fondoSpaceCoast from '../assets/fondos/space-coast.jpg';
 import fondoMedellin from '../assets/fondos/medellin.jpg';
 import fondoAtlanta from '../assets/fondos/atlanta.jpg';
@@ -66,6 +67,7 @@ export class EscenaCarga extends Phaser.Scene {
   preload() {
     this.load.image(TEXTURAS.fondo, fondoBarrio);
     this.load.image(TEXTURAS.portada, portada);
+    this.load.image(TEXTURAS.portadaMenu, portadaMenu);
     Object.entries(FONDOS_CIUDAD).forEach(([ciudad, url]) => {
       this.load.image(TEXTURAS.fondoDe(ciudad), url);
     });

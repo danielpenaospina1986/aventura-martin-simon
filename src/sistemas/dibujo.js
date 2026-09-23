@@ -442,6 +442,33 @@ export function panelDeco(escena, x, y, ancho, alto, opciones = {}) {
   return g;
 }
 
+// Fondo de los menus: la portada, ya desenfocada de antemano, a pantalla
+// completa. Encima lleva un velo OSCURO y suave, no blanco: oscurecer mantiene
+// los colores de la ilustracion y da contraste al texto claro, mientras que el
+// velo blanco de antes la dejaba lavada.
+export function pintarFondoDeMenu(escena, ancho, alto, opciones = {}) {
+  const { velo = 0.34 } = opciones;
+  if (!escena.textures.exists(TEXTURAS.portadaMenu)) {
+    return pintarFondo(escena, ancho, alto, { veloExtra: FONDO.veloMenus });
+  }
+
+  const fuente = escena.textures.get(TEXTURAS.portadaMenu).getSourceImage();
+  const escala = Math.max(ancho / fuente.width, alto / fuente.height);
+  escena.add
+    .image(ancho / 2, alto / 2, TEXTURAS.portadaMenu)
+    .setScale(escala)
+    .setScrollFactor(0)
+    .setDepth(-100);
+
+  escena.add
+    .rectangle(0, 0, ancho, alto, COLORES.decoFondo, velo)
+    .setOrigin(0, 0)
+    .setScrollFactor(0)
+    .setDepth(-99);
+
+  return { ajustarParallax() {} };
+}
+
 // Fondo de todas las pantallas. Si la ilustracion esta cargada se usa esa; si
 // no (por ejemplo si fallase la carga), se dibuja el cielo de siempre.
 export function pintarFondo(escena, ancho, alto, opciones = {}) {

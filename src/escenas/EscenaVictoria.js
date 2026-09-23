@@ -10,9 +10,9 @@
 import Phaser from 'phaser';
 import { PUNTOS } from '../config/ajustes.js';
 import { TOTAL_NIVELES } from '../niveles/index.js';
-import { COLORES, FONDO, FUENTE } from '../config/estilo.js';
+import { COLORES, FUENTE } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { pintarFondo, panelDeco } from '../sistemas/dibujo.js';
+import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
 import { estrellitas } from '../sistemas/efectos.js';
 import { Menu } from '../sistemas/menu.js';
 
@@ -38,7 +38,8 @@ export class EscenaVictoria extends Phaser.Scene {
   create() {
     const { width: ancho, height: alto } = this.scale;
     const datos = PERSONAJES[this.personajeId];
-    pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
+    // los menus van sobre la portada, ya desenfocada de antemano
+    pintarFondoDeMenu(this, ancho, alto);
 
     this.add
       .text(ancho / 2, 38, this.hayOtroNivel ? '¡Nivel superado!' : '¡Lo lograste!', {

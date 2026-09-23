@@ -147,7 +147,7 @@ const NIVELES = [];
     fondo: 'space-coast',
     mapa: m,
     pistas: [
-      { col: 4, fila: 7, texto: '← →  moverte' },
+      { col: 4, fila: 7, texto: 'Flechas para moverte' },
       { col: 12, fila: 4, texto: 'Espacio: saltar' },
       { col: 35, fila: 1, texto: 'Tres alturas' },
       { col: 54, fila: 7, texto: 'X: atacar' },

@@ -481,7 +481,11 @@ test('el agua con jabón cuesta tres monedas si te alcanza', async ({ page }) =>
     banera.direccion = -1;
     j.setPosition(banera.x - 70, j.y);
     n.lanzarAgua(banera);
-    await new Promise((r) => setTimeout(r, 900));
+    // se espera al golpe, no a un reloj: con la maquina cargada el juego va a
+    // menos fotogramas y un tiempo fijo se queda corto
+    for (let i = 0; i < 120 && j.golpes === 0; i += 1) {
+      await new Promise((r) => setTimeout(r, 25));
+    }
     return { monedas: j.monedas, golpes: j.golpes };
   });
 

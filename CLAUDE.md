@@ -88,7 +88,7 @@ aventura-martin-simon/
     preparar-caras.mjs  limpia y recorta las caritas de los ninos
     preparar-fondos.mjs tapa marcas y trata los fondos de cada ciudad
     preparar-sprites.mjs recorta y alinea las poses de un personaje
-    colorear-portada.mjs colorea la ilustracion de portada
+    preparar-portada.mjs ajusta la portada y saca su version borrosa
     completar-fuente.mjs anade acentos y signos a la tipografia
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
@@ -473,6 +473,20 @@ baja.
 - **2026-09-22** — La portada se colorea mapeando la luz de cada punto a una rampa
   de color (tinta, rojo, teja, naranja, mostaza, crema), como se hacia en los
   carteles de los anos 30, en vez de inventar un color por objeto.
+  *(Reemplazada el 2026-09-23: la portada nueva ya viene a color.)*
+- **2026-09-23** — Portada nueva, ya a color y con el titulo dibujado dentro de su
+  cartel art deco, arriba a la derecha. La pantalla de titulo no escribe ningun
+  titulo: cuelga una **caja art deco translucida justo debajo del cartel**, en el
+  hueco que la ilustracion deja libre, y ahi van el "pulsa Enter" y los
+  controles. La posicion del cartel se guarda en tanto por uno sobre el dibujo,
+  no en pixeles, para que siga cuadrando si cambia la resolucion.
+- **2026-09-23** — Los demas menus van sobre **la misma portada, desenfocada**.
+  El desenfoque se cuece de antemano en `preparar-portada.mjs` y no en el juego,
+  porque desenfocar por codigo se paga cada vez que se entra en un menu. Encima
+  lleva un velo **oscuro**, no blanco: oscurecer mantiene los colores y da
+  contraste al texto, mientras que el velo blanco dejaba la ilustracion lavada.
+- **2026-09-23** — Nada de flechas dibujadas en los textos: la tipografia no trae
+  esos signos y salian rotos. Se dicen con palabras.
 - **2026-09-22** — La ventana del juego baja a **640 x 360**. Es la forma limpia
   de que todo se vea al doble de grande sin tocar la casilla ni la fisica: solo
   se ve menos mundo, mas grande. Los textos y los paneles se reescalaron a mano.

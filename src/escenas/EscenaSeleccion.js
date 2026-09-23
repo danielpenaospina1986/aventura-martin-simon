@@ -4,9 +4,9 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FONDO, FUENTE } from '../config/estilo.js';
+import { COLORES, FUENTE } from '../config/estilo.js';
 import { PERSONAJES, ORDEN_PERSONAJES } from '../config/personajes.js';
-import { pintarFondo } from '../sistemas/dibujo.js';
+import { pintarFondoDeMenu } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
 
 export class EscenaSeleccion extends Phaser.Scene {
@@ -16,7 +16,8 @@ export class EscenaSeleccion extends Phaser.Scene {
 
   create() {
     const { width: ancho, height: alto } = this.scale;
-    pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
+    // los menus van sobre la portada, ya desenfocada de antemano
+    pintarFondoDeMenu(this, ancho, alto);
 
     this.add.rectangle(0, alto - 34, ancho, 34, COLORES.tierra).setOrigin(0, 0);
     this.add.rectangle(0, alto - 34, ancho, 6, COLORES.hierba).setOrigin(0, 0);
@@ -123,7 +124,7 @@ export class EscenaSeleccion extends Phaser.Scene {
     this.resaltar(0);
 
     this.add
-      .text(ancho / 2, 344, '← →  elegir        Enter o clic  empezar        Esc  volver', {
+      .text(ancho / 2, 344, 'Flechas  elegir        Enter o clic  empezar        Esc  volver', {
         fontFamily: FUENTE.familia,
         fontSize: '11px',
         color: COLORES.textoSuave,
