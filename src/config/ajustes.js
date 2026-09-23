@@ -101,6 +101,7 @@ export const KATANA = {
 // Simon lanza bloques hacia adelante. Antes los construia para subir; ahora es
 // un golpe, como la katana de Martin, para que los dos puedan pelear con el jefe.
 export const LANZAMIENTO = {
+  tamano: 34,          // lo que mide el bloque en pantalla
   velocidad: 480,      // a que velocidad sale el bloque
   // Sale a la altura de la cadera, no del pecho: desde mas arriba pasaba por
   // encima de los enemigos.
@@ -124,6 +125,27 @@ export const PUNTOS = {
   porEnemigo: 2,  // vencer a un bicho pequeno
   porJefe: 10,
   minimo: 0,      // el marcador nunca baja de aqui
+};
+
+// El premio que se recoge: un rollo de sushi, igual para los dos ninos.
+export const PREMIO = {
+  ancho: 28,
+  alto: 28,
+  enHud: 22,
+};
+
+// La banderita del checkpoint. Mientras no se toca va translucida; al tocarla
+// se enciende del todo, que es como se sabe que quedo guardado.
+export const CHECKPOINT = {
+  ancho: 46,
+  alto: 52,
+  alphaApagado: 0.45,
+};
+
+// La puerta por la que se sale del tablero, una vez derrotado el jefe.
+export const META = {
+  ancho: 52,
+  alto: 76,
 };
 
 export const JEFE = {

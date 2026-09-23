@@ -112,6 +112,12 @@ export const TEXTURAS = {
   moneda: 'tex-moneda',
   monedaMartin: 'tex-sushi',
   monedaSimon: 'tex-bloque-armar',
+  // dibujos de verdad, que sustituyen a los hechos por codigo
+  sushi: 'tex-sushi-png',
+  lego: 'tex-lego',
+  banderaCo: 'tex-bandera-co',
+  banderaUs: 'tex-bandera-us',
+  puerta: 'tex-puerta',
   enemigo: 'tex-enemigo',
   baneraQuieta: 'tex-banera-quieta',
   baneraAnda1: 'tex-banera-anda1',

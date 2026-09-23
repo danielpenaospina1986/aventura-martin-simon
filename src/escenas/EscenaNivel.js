@@ -336,7 +336,12 @@ export class EscenaNivel extends Phaser.Scene {
   tocarCheckpoint(jugador, bandera) {
     if (bandera.activo) return;
     bandera.activo = true;
-    bandera.setTexture(TEXTURAS.checkpointEncendido);
+    // Con el dibujo de verdad no se cambia de textura: se enciende, que es
+    // pasar de translucido a opaco.
+    if (bandera.texture.key === TEXTURAS.checkpointApagado) {
+      bandera.setTexture(TEXTURAS.checkpointEncendido);
+    }
+    bandera.setAlpha(1);
     textoFlotante(this, bandera.x, bandera.y - 30, '¡Punto de control!');
     this.tweens.add({
       targets: bandera,
@@ -460,9 +465,10 @@ export class EscenaNivel extends Phaser.Scene {
     const proyectil = this.proyectiles.create(
       jugador.x + dir * (jugador.datos.ancho / 2 + 10),
       jugador.y + (LANZAMIENTO.salidaY || 0),
-      TEXTURAS.bloque,
+      this.textures.exists(TEXTURAS.lego) ? TEXTURAS.lego : TEXTURAS.bloque,
     );
-    aEscalaDeJuego(proyectil);
+    if (proyectil.texture.key === TEXTURAS.bloque) aEscalaDeJuego(proyectil);
+    else proyectil.setDisplaySize(LANZAMIENTO.tamano, LANZAMIENTO.tamano);
 
     proyectil.setDepth(8);
     proyectil.sentido = dir;
@@ -472,10 +478,10 @@ export class EscenaNivel extends Phaser.Scene {
     proyectil.body.setGravityY(LANZAMIENTO.gravedad - this.physics.world.gravity.y);
     proyectil.body.setVelocity(dir * LANZAMIENTO.velocidad, LANZAMIENTO.elevacion);
 
-    // Aparece pequeno y crece hasta su tamano. Ojo: el tamano al que crece es
-    // la escala de juego, NO 1; con 1 se quedaba del tamano de la textura, que
-    // se dibuja a la densidad del render, y salian bloques enormes.
-    const suEscala = escalaDeJuego();
+    // Aparece pequeno y crece hasta su tamano. Ojo: el tamano al que crece NO es
+    // 1, sino la escala que le acaba de quedar al fijarle su medida. Con 1 se
+    // quedaba del tamano de su textura y salian bloques enormes.
+    const suEscala = proyectil.scaleX;
     proyectil.setScale(suEscala * 0.5);
     this.tweens.add({
       targets: proyectil,

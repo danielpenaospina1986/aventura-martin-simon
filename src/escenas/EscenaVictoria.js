@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { MUNDO, PUNTOS, RENDER } from '../config/ajustes.js';
+import { MUNDO, PREMIO, PUNTOS, RENDER } from '../config/ajustes.js';
 import { TOTAL_NIVELES } from '../niveles/index.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
@@ -197,9 +197,9 @@ export class EscenaVictoria extends Phaser.Scene {
       })
       .setOrigin(0, 0.5);
 
-    // La textura del premio se genera a la densidad del render, asi que hay que
-    // devolverla a su tamano de juego.
-    aEscalaDeJuego(this.add.image(derecha - 54, cy + 64, datos.moneda));
+    this.add
+      .image(derecha - 54, cy + 64, datos.moneda)
+      .setDisplaySize(PREMIO.ancho, PREMIO.alto);
 
     this.add
       .text(derecha, cy + 64, String(this.monedas), {

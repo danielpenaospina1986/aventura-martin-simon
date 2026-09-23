@@ -12,6 +12,11 @@ import { TEXTURAS } from '../config/estilo.js';
 // en una subcarpeta (GitHub Pages).
 import fondoBarrio from '../assets/fondo-barrio.jpg';
 import portada from '../assets/portada.jpg';
+import sushiPng from '../assets/objetos/sushi.png';
+import legoPng from '../assets/objetos/lego.png';
+import banderaCoPng from '../assets/objetos/bandera-co.png';
+import banderaUsPng from '../assets/objetos/bandera-us.png';
+import puertaPng from '../assets/objetos/puerta.png';
 import portadaMenu from '../assets/portada-menu.jpg';
 import fondoSpaceCoast from '../assets/fondos/space-coast.jpg';
 import fondoMedellin from '../assets/fondos/medellin.jpg';
@@ -67,6 +72,11 @@ export class EscenaCarga extends Phaser.Scene {
   preload() {
     this.load.image(TEXTURAS.fondo, fondoBarrio);
     this.load.image(TEXTURAS.portada, portada);
+    this.load.image(TEXTURAS.sushi, sushiPng);
+    this.load.image(TEXTURAS.lego, legoPng);
+    this.load.image(TEXTURAS.banderaCo, banderaCoPng);
+    this.load.image(TEXTURAS.banderaUs, banderaUsPng);
+    this.load.image(TEXTURAS.puerta, puertaPng);
     this.load.image(TEXTURAS.portadaMenu, portadaMenu);
     Object.entries(FONDOS_CIUDAD).forEach(([ciudad, url]) => {
       this.load.image(TEXTURAS.fondoDe(ciudad), url);

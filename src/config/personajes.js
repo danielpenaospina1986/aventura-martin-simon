@@ -29,7 +29,7 @@ export const PERSONAJES = {
     },
     msPorPaso: 105,
     margenPie: 2,
-    moneda: TEXTURAS.monedaMartin,
+    moneda: TEXTURAS.sushi,
     nombreMoneda: 'sushis',
     ancho: 86,
     alto: 86,
@@ -68,7 +68,7 @@ export const PERSONAJES = {
     },
     msPorPaso: 95, // lo que dura cada pose del ciclo de carrera
     margenPie: 3,   // aire que queda bajo los pies dentro del lienzo
-    moneda: TEXTURAS.monedaSimon,
+    moneda: TEXTURAS.sushi,
     nombreMoneda: 'bloques',
     ancho: 86,
     alto: 86,

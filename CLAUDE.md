@@ -218,8 +218,8 @@ Valores en `src/config/ajustes.js`:
 El marcador nunca baja de cero. Se arrastra de un nivel al siguiente, asi que al
 final refleja la partida entera: lo que ganaste menos lo que costo llegar.
 
-Cada personaje recoge lo suyo: **Martin rollos de sushi** y **Simon bloques de
-armar** con seis cilindros encima. Es solo el dibujo; puntuan igual.
+Los dos recogen lo mismo: **rollos de sushi**. Antes cada uno tenia su premio
+(sushi para Martain, bloques de armar para Samaon), pero se volvio atras.
 
 ## 6. Reglas amables
 
@@ -589,6 +589,17 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Entran los dibujos de verdad para el premio (sushi, igual
+  para los dos), el bloque que lanza Samaon, las banderas de los checkpoints y
+  la puerta de salida. Las banderas son la del **pais de cada ciudad** (Medellin
+  y Cartagena, Colombia; las otras tres, Estados Unidos) y van **translucidas**
+  hasta que se tocan.
+- **2026-09-23** — Cuidado con los cuerpos **estaticos** (premios, checkpoint,
+  meta): al cambiarles el tamano con `setDisplaySize` hay que llamar despues a
+  `refreshBody()`, o el cuerpo se queda con el tamano de la TEXTURA. Los premios
+  se recogian desde media pantalla y el checkpoint estaba 107 px descolocado de
+  su bandera. Y en un cuerpo estatico, `setSize` va en pixeles de pantalla, sin
+  dividir por la escala, al contrario que en los dinamicos.
 - **2026-09-23** — El tablero pasa a **12 filas**. Con 11 el terreno acababa en
   352 px y la pantalla mide 360: abajo del todo quedaba una franja negra. La
   camara, en cambio, se queda con el alto de la pantalla, para que no baje a

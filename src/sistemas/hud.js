@@ -5,7 +5,7 @@
 // recibe un array y apila una fila por jugador.
 // ---------------------------------------------------------------------------
 
-import { MUNDO } from '../config/ajustes.js';
+import { MUNDO, PREMIO } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { aEscalaDeJuego } from './dibujo.js';
 
@@ -51,9 +51,10 @@ export class Hud {
         .setOrigin(0, 0.5)
         .setDepth(101);
 
-      const icono = aEscalaDeJuego(
-        escena.add.image(FILA.margen + 124, centroY, jugador.datos.moneda).setDepth(101),
-      );
+      const icono = escena.add
+        .image(FILA.margen + 124, centroY, jugador.datos.moneda)
+        .setDisplaySize(PREMIO.enHud, PREMIO.enHud)
+        .setDepth(101);
 
       const contador = escena.add
         .text(FILA.margen + 140, centroY, '0', {

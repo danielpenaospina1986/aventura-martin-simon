@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { RENDER } from '../config/ajustes.js';
+import { PREMIO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 
 // Las texturas se generan a la densidad del render, asi que un objeto recien
@@ -39,12 +39,15 @@ export function estrellitas(escena, x, y, cantidad = 9) {
 
 // Destello al recoger una moneda (sushi o bloque, segun el personaje).
 export function brilloMoneda(escena, x, y, textura = TEXTURAS.moneda) {
-  const brillo = escena.add.image(x, y, textura).setDepth(40).setScale(BASE());
+  const brillo = escena.add
+    .image(x, y, textura)
+    .setDepth(40)
+    .setDisplaySize(PREMIO.ancho, PREMIO.alto);
   escena.tweens.add({
     targets: brillo,
     y: y - 34,
     alpha: { from: 1, to: 0 },
-    scale: { from: BASE(), to: BASE() * 1.9 },
+    scale: { from: brillo.scaleX, to: brillo.scaleX * 1.9 },
     duration: 320,
     ease: 'Quad.easeOut',
     onComplete: () => brillo.destroy(),

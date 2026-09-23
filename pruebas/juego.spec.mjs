@@ -549,8 +549,13 @@ test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ pa
   const monedas = await page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
+    // Se quitan los premios de alrededor del hueco: sobre cada uno hay un arco
+    // de premios y el nino los recogia de camino, asi que la cuenta no salia.
+    n.nivel.monedas.getChildren().forEach((m) => {
+      if (Math.abs(m.x - (25 * 32 + 16)) < 140) m.destroy();
+    });
     j.monedas = 7; // como si ya hubiese recogido siete
-    // tirarlo por el primer hueco (columnas 26-28)
+    // tirarlo por el primer hueco
     j.setPosition(25 * 32 + 16, 9 * 32 - 30);
     j.body.setVelocity(0, 400);
     return j.monedas;

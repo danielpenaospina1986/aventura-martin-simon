@@ -4,9 +4,10 @@
 // Es el unico sitio que sabe que significa cada simbolo.
 // ---------------------------------------------------------------------------
 
-import { ENEMIGO, JEFE, MUNDO } from '../config/ajustes.js';
+import { CHECKPOINT, ENEMIGO, JEFE, META, MUNDO, PREMIO } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { aEscalaDeJuego, mosaico } from './dibujo.js';
+import { ciudadDe } from '../config/ciudades.js';
 import { Enemigo } from '../entidades/Enemigo.js';
 import { Jefe } from '../entidades/Jefe.js';
 
@@ -44,6 +45,14 @@ export function construirNivel(escena, nivel, opciones = {}) {
   const texturaSuelo = conTextura(TEXTURAS.sueloDe(ciudad), TEXTURAS.suelo);
   const texturaTierra = conTextura(TEXTURAS.tierraDe(ciudad), TEXTURAS.tierra);
   const texturaPlataforma = conTextura(TEXTURAS.plataformaDe(ciudad), TEXTURAS.plataforma);
+
+  // El checkpoint lleva la bandera del pais de la ciudad, y la meta es la
+  // puerta de salida. Si los dibujos no estuvieran cargados se cae a los de
+  // codigo de siempre.
+  const bandera =
+    ciudadDe(ciudad).pais === 'co' ? TEXTURAS.banderaCo : TEXTURAS.banderaUs;
+  const texturaBandera = conTextura(bandera, TEXTURAS.checkpointApagado);
+  const texturaMeta = conTextura(TEXTURAS.puerta, TEXTURAS.meta);
   const mapa = nivel.mapa;
   const filas = mapa.length;
   const columnas = mapa[0].length;
@@ -148,7 +157,12 @@ export function construirNivel(escena, nivel, opciones = {}) {
 
         case SIMBOLOS.MONEDA: {
           const moneda = monedas.create(x, y, texturaMoneda);
-          aEscalaDeJuego(moneda);
+          // Medida explicita: el dibujo del sushi viene en un lienzo grande y
+          // sin esto ocupaba media pantalla. Y hay que refrescar el cuerpo: es
+          // estatico y se quedaba con el tamano de la TEXTURA, asi que los
+          // premios se recogian desde media pantalla de distancia.
+          moneda.setDisplaySize(PREMIO.ancho, PREMIO.alto);
+          moneda.refreshBody();
           moneda.setDepth(5);
           escena.tweens.add({
             targets: moneda,
@@ -181,26 +195,32 @@ export function construirNivel(escena, nivel, opciones = {}) {
         }
 
         case SIMBOLOS.CHECKPOINT: {
-          const bandera = checkpoints.create(
-            x,
-            baseY(fila) - 22,
-            TEXTURAS.checkpointApagado,
-          );
-          aEscalaDeJuego(bandera);
+          const bandera = checkpoints.create(x, baseY(fila) - 26, texturaBandera);
+          if (texturaBandera === TEXTURAS.checkpointApagado) aEscalaDeJuego(bandera);
+          else bandera.setDisplaySize(CHECKPOINT.ancho, CHECKPOINT.alto);
+          // Apagado va translucido; al tocarlo se enciende del todo.
+          bandera.setAlpha(CHECKPOINT.alphaApagado);
           bandera.setDepth(4);
           bandera.activo = false;
           bandera.col = col;
           bandera.fila = fila;
+          // Al cambiarle el tamano hay que refrescar el cuerpo: en los cuerpos
+          // estaticos no se entera solo, y se quedaba donde y como estaba antes
+          // (llego a quedar 107 px descolocado del dibujo).
+          bandera.refreshBody();
           // La zona de contacto es una columna alta: asi no se puede pasar de
-          // largo saltando por encima y quedarse sin checkpoint.
+          // largo saltando por encima y quedarse sin checkpoint. En un cuerpo
+          // estatico la medida va en pixeles de pantalla, sin escalar.
           bandera.body.setSize(C, C * 10, true);
           break;
         }
 
         case SIMBOLOS.META: {
-          meta = escena.physics.add.staticSprite(x, baseY(fila) - 31, TEXTURAS.meta);
-          aEscalaDeJuego(meta);
+          meta = escena.physics.add.staticSprite(x, baseY(fila) - META.alto / 2, texturaMeta);
+          if (texturaMeta === TEXTURAS.meta) aEscalaDeJuego(meta);
+          else meta.setDisplaySize(META.ancho, META.alto);
           meta.setDepth(4);
+          meta.refreshBody();
           // igual que el checkpoint: alta, para que no se pueda saltar por encima
           meta.body.setSize(C, C * 10, true);
           break;
