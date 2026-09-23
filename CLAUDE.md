@@ -349,7 +349,9 @@ Dos cosas que hay que tener en cuenta al tocar codigo:
   use una y llame a `setDisplaySize` no tiene que hacer nada; quien no, tiene
   que pasar por `aEscalaDeJuego()` (o por `mosaico()`, si es terreno), o saldra
   del tamano de la textura, que es D veces mayor. Y lo que anime la escala tiene
-  que ir en proporcion a `1 / densidad`, no a 1.
+  que ir en proporcion a `1 / densidad`, no a 1. Al jefe se le olvido y salio
+  del doble de grande: si algo se ve desproporcionado, es lo primero que hay que
+  mirar.
 - **`setScrollFactor` no sirve con el zoom**: descoloca todo lo que no vaya a
   velocidad 1. Los planos y el HUD se mueven a mano con `Planos`, en
   `sistemas/planos.js`.
@@ -587,6 +589,10 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — El jefe salia del doble de grande: usa una textura dibujada
+  por codigo y era el unico que no le fijaba el tamano con `setDisplaySize`, asi
+  que se llevaba la textura entera, que se genera a la densidad del render. Su
+  caja tambien se corrigio, que se mide en pixeles de textura y luego se escala.
 - **2026-09-23** — Los fondos se quedan con sus rotulos y logotipos tal cual. El
   juego es un regalo para Martin y Simon, sin fin comercial, y taparlos con
   palomas convertia a las palomas en las protagonistas del cuadro. El mecanismo

@@ -23,10 +23,19 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
     escena.add.existing(this);
     escena.physics.add.existing(this);
 
-    this.body.setSize(JEFE.caja.ancho, JEFE.caja.alto, false);
+    // Su dibujo se genera a la densidad del render, asi que la textura mide
+    // varias veces lo que el jefe: hay que fijarle el tamano de juego. Sin
+    // esto salia gigante, tantas veces como densidad tuviera la pantalla.
+    this.setDisplaySize(JEFE.ancho, JEFE.alto);
+
+    // Y la caja se mide en pixeles de la textura y luego se escala, asi que hay
+    // que dividir por la escala o sale del tamano equivocado.
+    const escalaX = this.scaleX || 1;
+    const escalaY = this.scaleY || 1;
+    this.body.setSize(JEFE.caja.ancho / escalaX, JEFE.caja.alto / escalaY, false);
     this.body.setOffset(
-      (JEFE.ancho - JEFE.caja.ancho) / 2,
-      JEFE.alto - JEFE.caja.alto,
+      (JEFE.ancho - JEFE.caja.ancho) / 2 / escalaX,
+      (JEFE.alto - JEFE.caja.alto) / escalaY,
     );
     this.body.setMaxVelocity(260, 900);
 
