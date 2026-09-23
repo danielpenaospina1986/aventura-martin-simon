@@ -14,7 +14,9 @@
 //   fila 3     TERCER nivel   (se llega saltando desde el segundo)
 //   fila 6     SEGUNDO nivel  (se llega saltando desde el suelo)
 //   fila 9     SUELO          (por donde se camina)
-//   fila 10    subsuelo
+//   fila 10-11 subsuelo (dos filas: con una sola, el terreno se quedaba 8 px
+//              por encima del borde de la pantalla y abajo se veia una franja
+//              negra)
 //
 // Entre altura y altura hay 3 casillas (96 px) y el salto llega a 3,58, asi que
 // se sube de una a otra pero nunca del suelo al tercero de un tiron. Encima de
@@ -23,7 +25,7 @@
 
 import { writeFileSync } from 'node:fs';
 
-const FILAS = 11;
+const FILAS = 12;
 const SUELO = 9;
 const MEDIO = 6;
 const ALTO = 3;

@@ -53,7 +53,9 @@ export const MUNDO = {
 
   // El tablero tiene tres alturas por las que moverse, y una franja arriba que
   // se deja libre para los bichos voladores que vendran.
-  filas: 11,
+  // 12 filas = 384 px, algo mas que la pantalla. Con 11 el terreno acababa en
+  // 352 y quedaba una franja negra de 8 px abajo del todo.
+  filas: 12,
   nivelSuelo: 9,    // fila donde esta el suelo
   nivelMedio: 6,    // se llega saltando desde el suelo
   nivelAlto: 3,     // se llega saltando desde el medio

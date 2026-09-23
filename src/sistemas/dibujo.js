@@ -32,9 +32,17 @@ function generar(escena, clave, ancho, alto, pintar) {
   g.destroy();
 }
 
+// La escala "natural" de cualquier objeto que use una textura generada: no es
+// 1, porque la textura se dibuja a la densidad del render. Todo lo que anime la
+// escala tiene que ir en proporcion a esta, o el objeto acabara del tamano de
+// su textura, que es D veces mayor.
+export function escalaDeJuego() {
+  return 1 / RENDER.densidad;
+}
+
 // Devuelve a su tamano de juego un objeto que use una textura generada.
 export function aEscalaDeJuego(objeto) {
-  return objeto.setScale(1 / RENDER.densidad);
+  return objeto.setScale(escalaDeJuego());
 }
 
 // Un tramo de terreno: la textura se repite al tamano del juego, no al de la
@@ -822,6 +830,6 @@ function pintarFondoDibujado(escena, ancho, alto, conNubes = true) {
       .image(60 + i * 200, 60 + (i % 3) * 42, TEXTURAS.nube)
       .setDepth(-80)
       .setAlpha(0.85)
-      .setScale(0.7 + (i % 3) * 0.15);
+      .setScale(escalaDeJuego() * (0.7 + (i % 3) * 0.15));
   }
 }

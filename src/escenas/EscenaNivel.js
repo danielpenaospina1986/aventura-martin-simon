@@ -14,7 +14,7 @@ import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
 import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
-import { aEscalaDeJuego, pintarFondo } from '../sistemas/dibujo.js';
+import { aEscalaDeJuego, escalaDeJuego, pintarFondo } from '../sistemas/dibujo.js';
 import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
 import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
@@ -82,7 +82,11 @@ export class EscenaNivel extends Phaser.Scene {
     this.proximaPaloma = this.esperaDePaloma();
 
     this.physics.world.setBounds(0, 0, this.nivel.ancho, this.nivel.alto + 400);
-    this.cameras.main.setBounds(0, 0, this.nivel.ancho, this.nivel.alto);
+    // Alto de pantalla, no del mundo: el terreno llega mas abajo del borde a
+    // proposito (para que no se vea el fondo por debajo), pero la camara no
+    // debe bajar a mirarlo. Con las tres alturas cabiendo en pantalla, moverla
+    // en vertical solo descoloca el HUD.
+    this.cameras.main.setBounds(0, 0, this.nivel.ancho, MUNDO.alto);
 
     this.crearJugadores();
     this.conectarColisiones();
@@ -336,7 +340,7 @@ export class EscenaNivel extends Phaser.Scene {
     textoFlotante(this, bandera.x, bandera.y - 30, '¡Punto de control!');
     this.tweens.add({
       targets: bandera,
-      scaleY: { from: 1.25, to: 1 },
+      scaleY: { from: bandera.scaleY * 1.25, to: bandera.scaleY },
       duration: 240,
       ease: 'Back.easeOut',
     });
@@ -438,7 +442,7 @@ export class EscenaNivel extends Phaser.Scene {
     meta.setAlpha(1);
     this.tweens.add({
       targets: meta,
-      scaleY: { from: 0.8, to: 1 },
+      scaleY: { from: meta.scaleY * 0.8, to: meta.scaleY },
       duration: 320,
       ease: 'Back.easeOut',
     });
@@ -462,15 +466,20 @@ export class EscenaNivel extends Phaser.Scene {
 
     proyectil.setDepth(8);
     proyectil.sentido = dir;
-    proyectil.body.setSize(26, 26, true);
+    // la caja se mide en pixeles de la textura y luego se escala
+    proyectil.body.setSize(26 / proyectil.scaleX, 26 / proyectil.scaleY, true);
     proyectil.body.setAllowGravity(true);
     proyectil.body.setGravityY(LANZAMIENTO.gravedad - this.physics.world.gravity.y);
     proyectil.body.setVelocity(dir * LANZAMIENTO.velocidad, LANZAMIENTO.elevacion);
 
-    proyectil.setScale(0.5);
+    // Aparece pequeno y crece hasta su tamano. Ojo: el tamano al que crece es
+    // la escala de juego, NO 1; con 1 se quedaba del tamano de la textura, que
+    // se dibuja a la densidad del render, y salian bloques enormes.
+    const suEscala = escalaDeJuego();
+    proyectil.setScale(suEscala * 0.5);
     this.tweens.add({
       targets: proyectil,
-      scale: 1,
+      scale: suEscala,
       duration: LANZAMIENTO.aparecerMs,
       ease: 'Back.easeOut',
     });

@@ -285,7 +285,7 @@ El tablero tiene **tres alturas y solo tres**, y una franja libre arriba:
  fila 3     TERCER nivel   (se llega saltando desde el segundo)
  fila 6     SEGUNDO nivel  (se llega saltando desde el suelo)
  fila 9     SUELO          (por donde se camina)
- fila 10    subsuelo
+ fila 10-11 subsuelo
 ```
 
 Entre altura y altura hay 3 casillas (96 px) y el salto llega a 3,58, asi que se
@@ -304,11 +304,11 @@ Cada tablero es una **ciudad**, con su propio fondo ilustrado:
 
 | # | Ciudad | Tamano | Premios | Bichos |
 |---|---|---|---|---|
-| 1 | Space Coast | 84 x 11 | 34 | 3 |
-| 2 | Medellin | 92 x 11 | 44 | 5 |
-| 3 | Atlanta | 92 x 11 | 50 | 7 |
-| 4 | Miami | 100 x 11 | 56 | 5 |
-| 5 | Cartagena | 100 x 11 | 59 | 6 |
+| 1 | Space Coast | 84 x 12 | 34 | 3 |
+| 2 | Medellin | 92 x 12 | 44 | 5 |
+| 3 | Atlanta | 92 x 12 | 50 | 7 |
+| 4 | Miami | 100 x 12 | 56 | 5 |
+| 5 | Cartagena | 100 x 12 | 59 | 6 |
 
 El fondo de cada una vive en `src/assets/fondos/` y el nivel lo nombra en su
 campo `fondo`. La historia de cada ciudad esta por escribir.
@@ -589,6 +589,14 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — El tablero pasa a **12 filas**. Con 11 el terreno acababa en
+  352 px y la pantalla mide 360: abajo del todo quedaba una franja negra. La
+  camara, en cambio, se queda con el alto de la pantalla, para que no baje a
+  mirar el subsuelo de mas y descoloque el HUD.
+- **2026-09-23** — Los bloques que lanza Samaon salian enormes: el tween que los
+  hace aparecer los llevaba a escala **1**, y la escala natural de un objeto con
+  textura generada es `1 / densidad`. Mismo cuidado en el checkpoint y la meta.
+  Para eso esta `escalaDeJuego()`.
 - **2026-09-23** — El jefe salia del doble de grande: usa una textura dibujada
   por codigo y era el unico que no le fijaba el tamano con `setDisplaySize`, asi
   que se llevaba la textura entera, que se genera a la densidad del render. Su
