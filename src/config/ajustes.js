@@ -158,15 +158,15 @@ export const PREMIO = {
 // La banderita del checkpoint. Mientras no se toca va translucida; al tocarla
 // se enciende del todo, que es como se sabe que quedo guardado.
 export const CHECKPOINT = {
-  ancho: 46,
-  alto: 52,
+  ancho: 92,
+  alto: 104,
   alphaApagado: 0.45,
 };
 
 // La puerta por la que se sale del tablero, una vez derrotado el jefe.
 export const META = {
-  ancho: 52,
-  alto: 76,
+  ancho: 104,
+  alto: 152,
 };
 
 export const JEFE = {

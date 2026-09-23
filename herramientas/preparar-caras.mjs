@@ -21,7 +21,8 @@
 // ---------------------------------------------------------------------------
 
 import { chromium } from '@playwright/test';
-import { writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { CONTORNO, TINTA, instalarContorno } from './lib/contorno.mjs';
 
 const LADO = 256; // tamano del PNG final
 const MARGEN = 0.04; // aire alrededor de la cabeza
@@ -45,7 +46,6 @@ const CARAS = [
   },
 ];
 
-const SERVIDOR = 'http://127.0.0.1:5173';
 
 for (const cara of CARAS) {
   if (!existsSync(cara.origen)) {
@@ -54,22 +54,18 @@ for (const cara of CARAS) {
   }
 }
 
+// El navegador solo hace de lienzo: las imagenes se le pasan ya leidas, no por
+// el servidor, que si no Vite recarga la pagina a media faena y la corta.
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage();
-
-try {
-  await pagina.goto(SERVIDOR, { timeout: 15000 });
-} catch {
-  console.error(`No responde ${SERVIDOR}. Arranca antes el servidor con: npm run dev`);
-  await navegador.close();
-  process.exit(1);
-}
+await pagina.goto('about:blank');
+await instalarContorno(pagina);
 
 for (const cara of CARAS) {
   const resultado = await pagina.evaluate(
-    async ({ cara, LADO, MARGEN }) => {
+    async ({ cara, LADO, MARGEN, contorno, tinta }) => {
       const imagen = new Image();
-      imagen.src = `/${cara.origen}`;
+      imagen.src = cara.datos;
       await imagen.decode();
 
       const ancho = imagen.naturalWidth;
@@ -189,12 +185,25 @@ for (const cara of CARAS) {
         destinoAlto,
       );
 
+      // Fuera la pelusa y contorno de tinta grueso, como a todo lo demas.
+      window.quitarMotas(salida);
+      const conTinta = window.ponerContorno(salida, contorno, tinta);
+
       return {
-        url: salida.toDataURL('image/png'),
+        url: conTinta.toDataURL('image/png'),
         recorte: `${anchoUtil}x${altoUtil} desde (${minX},${minY})`,
       };
     },
-    { cara, LADO, MARGEN },
+    {
+      cara: {
+        ...cara,
+        datos: `data:image/jpeg;base64,${readFileSync(cara.origen).toString('base64')}`,
+      },
+      LADO,
+      MARGEN,
+      contorno: CONTORNO,
+      tinta: TINTA,
+    },
   );
 
   const contenido = Buffer.from(resultado.url.split(',')[1], 'base64');

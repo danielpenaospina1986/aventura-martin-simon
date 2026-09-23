@@ -17,6 +17,7 @@
 // ---------------------------------------------------------------------------
 
 import { chromium } from '@playwright/test';
+import { CONTORNO, TINTA, instalarContorno } from './lib/contorno.mjs';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 
 const ALTO_PERSONAJE = 240; // alto del muneco dentro del lienzo, en pixeles
@@ -126,6 +127,7 @@ const PERSONAJES = [
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage();
 await pagina.goto('about:blank');
+await instalarContorno(pagina);
 
 // Detector de fondo, compartido por las dos fases (buscar poses y recortarlas).
 //
@@ -341,6 +343,8 @@ for (const personaje of PERSONAJES) {
       lienzoAncho: LIENZO.ancho,
       lienzoAlto: LIENZO.alto,
       factor: factores.get(trabajo.grupo),
+      contorno: personaje.contorno === undefined ? CONTORNO : personaje.contorno,
+      tinta: TINTA,
     });
     if (!resultado.url) continue;
 
@@ -548,7 +552,18 @@ async function medirPose(pagina, opciones) {
 
 async function recortarPose(pagina, opciones) {
   return pagina.evaluate(
-      async ({ origen, zona, altoPersonaje, lienzoAncho, lienzoAlto, factor, soloMedir, tolerancia }) => {
+      async ({
+        origen,
+        zona,
+        altoPersonaje,
+        lienzoAncho,
+        lienzoAlto,
+        factor,
+        soloMedir,
+        tolerancia,
+        contorno,
+        tinta,
+      }) => {
         const imagen = new Image();
         imagen.src = origen;
         await imagen.decode();
@@ -719,20 +734,28 @@ async function recortarPose(pagina, opciones) {
         const pieDelCuerpo = mancha ? (mancha.pie - minY + 1) * escala : destinoAlto;
         const arriba = lienzoAlto - 6 - pieDelCuerpo;
 
+        const izquierda = (lienzoAncho - destinoAncho) / 2;
         sctx.drawImage(
           lienzo,
           minX,
           minY,
           anchoUtil,
           altoUtil,
-          (lienzoAncho - destinoAncho) / 2,
+          izquierda,
           arriba,
           destinoAncho,
           destinoAlto,
         );
 
+        // Fuera la pelusa del recorte y contorno de tinta por todo el
+        // borde, que es lo que le da el aire de dibujo animado antiguo. Va al
+        // final y sobre el recorte ya limpio: si se hiciera sobre el original,
+        // el contorno rodearia tambien la basura que luego se quita.
+        window.quitarMotas(salida);
+        const conTinta = window.ponerContorno(salida, contorno, tinta);
+
         return {
-          url: salida.toDataURL('image/png'),
+          url: conTinta.toDataURL('image/png'),
           modo: window.__modoFondo,
           recorte: `${anchoUtil}x${altoUtil}`,
           ancho: anchoUtil,

@@ -95,6 +95,7 @@ aventura-martin-simon/
     preparar-caras.mjs  limpia y recorta las caritas de los ninos
     preparar-fondos.mjs tapa marcas y trata los fondos de cada ciudad
     preparar-sprites.mjs recorta y alinea las poses de un personaje
+    lib/contorno.mjs    el contorno de tinta, compartido por las herramientas
     preparar-portada.mjs ajusta la portada y saca su version borrosa
     completar-fuente.mjs anade acentos y signos a la tipografia
   pruebas/
@@ -449,6 +450,30 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
   `herramientas/preparar-caras.mjs`, y los dibujos de partida **no se suben al
   repositorio** (van en `.gitignore`). Lo que se publica son los PNG ya limpios.
 
+### El contorno de tinta
+
+Todo dibujo recortado lleva un **contorno negro grueso por fuera**, que es la
+marca de la casa de los dibujos animados de los anos 30: personajes, bichos,
+banderas, puertas, premios, corazones y las caritas de los ninos.
+
+Lo pone `herramientas/lib/contorno.mjs`, que usan tanto `preparar-sprites.mjs`
+como `preparar-caras.mjs`. Se hace sacando la silueta del dibujo (el mismo
+dibujo tenido de negro) y estampandola alrededor en circulo, antes de volver a
+poner el dibujo encima. El grosor, `CONTORNO`, va en pixeles del lienzo de 260;
+como en pantalla los dibujos se ven a un tercio, un contorno de 10 se lee como
+una linea de 3 px.
+
+Dos cuidados:
+
+- Va **al final**, sobre el recorte ya limpio. Hecho sobre el original, el
+  contorno rodearia tambien la basura que luego se quita.
+- Antes hay que **quitar la pelusa** del recorte (`quitarMotas`): puntitos de
+  dos o tres pixeles que sobraron del fondo y que, con contorno, se convierten
+  en borrones negros.
+
+Lo que se dibuja por codigo (corazones, jefe, vida extra) lleva su contorno a
+mano, pintando la forma dos veces: la de detras en tinta y un poco mas grande.
+
 ### El fondo y la legibilidad
 
 La ilustracion tiene mucho detalle y lineas oscuras por toda la pantalla. Tal cual,
@@ -620,6 +645,9 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Todo dibujo recortado lleva ahora **contorno de tinta** por
+  fuera, y los banderines de checkpoint y las puertas de salida van al **doble
+  de tamano**, que pequenos no se leian. Ver la seccion 10.
 - **2026-09-23** — Entran **corazones y vidas**. Cada golpe quita un corazon (se
   empieza con cinco por tablero); sin corazones se pierde una vida (tres por
   partida) y al perder la ultima se acaba. Sigue sin haber castigo fuerte: al

@@ -570,10 +570,12 @@ export function generarTexturas(escena) {
     );
   };
 
+  // El contorno es la diferencia de tamano entre las dos copias: se deja bien
+  // gordo a proposito, que es lo que pide la estetica de los anos 30.
   const corazon = (relleno, conBrillo) => (g) => {
     formaCorazon(g, 13, 12, 26, 24, TINTA);
-    formaCorazon(g, 13, 11.4, 22, 20, relleno);
-    if (conBrillo) brillo(g, 8, 7, 2.6);
+    formaCorazon(g, 13, 11.2, 19, 17, relleno);
+    if (conBrillo) brillo(g, 8.5, 7.5, 2.3);
   };
 
   generar(escena, TEXTURAS.corazon, 26, 24, corazon(COLORES.corazon, true));
@@ -583,15 +585,15 @@ export function generarTexturas(escena) {
   // confunda con los corazones normales.
   generar(escena, TEXTURAS.vidaExtra, 40, 28, (g) => {
     g.fillStyle(TINTA, 1);
-    g.fillEllipse(6, 13, 15, 10);
-    g.fillEllipse(34, 13, 15, 10);
+    g.fillEllipse(6, 13, 16, 11);
+    g.fillEllipse(34, 13, 16, 11);
     g.fillStyle(0xfaf0d8, 1);
-    g.fillEllipse(6, 12.6, 12, 7);
-    g.fillEllipse(34, 12.6, 12, 7);
+    g.fillEllipse(6, 12.6, 10, 6);
+    g.fillEllipse(34, 12.6, 10, 6);
 
     formaCorazon(g, 20, 14, 24, 22, TINTA);
-    formaCorazon(g, 20, 13.4, 20, 18, COLORES.vidaExtra);
-    brillo(g, 15, 9, 2.4);
+    formaCorazon(g, 20, 13.2, 17, 15, COLORES.vidaExtra);
+    brillo(g, 16, 10, 2.1);
   });
 
   // --- primer plano ---------------------------------------------------------
