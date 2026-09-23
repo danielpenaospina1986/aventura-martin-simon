@@ -23,7 +23,8 @@ codigo los identificadores siguen siendo `simon` y `martin`.
 | Motor | Phaser **4.2.1** (ultima estable) |
 | Empaquetador | Vite **8.3.0** |
 | Lenguaje | JavaScript (ES modules), sin TypeScript |
-| Resolucion interna | **640 x 360** (pequena a proposito: al escalarse, todo se ve al doble) |
+| Resolucion interna | **640 x 360**; el juego piensa siempre en esta pantalla |
+| Densidad de dibujo | **1, 2 o 3 pixeles de verdad por punto**, segun la pantalla |
 | Escalado | `Phaser.Scale.FIT` + `CENTER_BOTH` (se adapta a la ventana sin deformarse) |
 | Modo | antialias **encendido** (el estilo es dibujo animado, no pixel art) |
 | Tipografia | Chailce Noggin, completada a mano (ver seccion 10) |
@@ -324,6 +325,35 @@ aprender, escalera de plataformas, tres huecos, **28 monedas**, **4 enemigos**,
 monedas a la que se sube por una plataforma, un grupo de enemigos donde luce la
 katana de Martin, y al final la **arena del jefe** con la meta detras.
 
+## 8bis. Que se vea nitido
+
+El juego piensa en una pantalla de **640 x 360** y eso no se toca: la casilla
+mide 32, el salto sube 114 px y los mapas valen tal cual. Lo que cambia es
+cuantos pixeles de verdad se gastan en dibujar cada punto.
+
+Antes el lienzo tenia 640 x 360 pixeles y el navegador lo estiraba a lo que
+midiera la ventana. Un monitor de 1920 lo agrandaba tres veces, asi que cada
+punto del juego se veia como un cuadrado de 3 x 3: de ahi el dentado de los
+personajes.
+
+Ahora el lienzo tiene **densidad** veces mas pixeles y la camara de cada escena
+va con ese mismo zoom, asi que las coordenadas siguen siendo las de siempre.
+`RENDER.densidad` (en `ajustes.js`) se calcula sola al arrancar: la que haga
+falta para que cada punto caiga en un pixel de verdad, y ni uno mas. En una
+ventana de 1280 x 720 sale 2; a pantalla completa en 1920 x 1080, 3. Se puede
+forzar desde la barra de direcciones con `?densidad=1`.
+
+Dos cosas que hay que tener en cuenta al tocar codigo:
+
+- **Las texturas que se dibujan por codigo se generan a esa densidad.** Quien
+  use una y llame a `setDisplaySize` no tiene que hacer nada; quien no, tiene
+  que pasar por `aEscalaDeJuego()` (o por `mosaico()`, si es terreno), o saldra
+  del tamano de la textura, que es D veces mayor. Y lo que anime la escala tiene
+  que ir en proporcion a `1 / densidad`, no a 1.
+- **`setScrollFactor` no sirve con el zoom**: descoloca todo lo que no vaya a
+  velocidad 1. Los planos y el HUD se mueven a mano con `Planos`, en
+  `sistemas/planos.js`.
+
 ## 9bis. La camara multiplanar
 
 La tecnica de los dibujos animados de los anos 30: el decorado se pinta en
@@ -337,7 +367,8 @@ profundidad.
 | **Medio** | el mundo: suelo, cornisas, bichos, premios | **1** | `constructor-nivel.js` |
 | **Frente** | ramas, faroles y matorrales pegados a la camara | **1,45** | `sistemas/planos.js` |
 
-Se gradua en `PLANOS`, dentro de `src/config/estilo.js`.
+Se gradua en `PLANOS`, dentro de `src/config/estilo.js`. Cada plano se mueve a
+mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
 
 - **El fondo va sin velo.** Antes llevaba encima un degradado blanco para que no
   se comiera al personaje; el resultado eran ciudades lavadas. Ahora se lee como
@@ -540,6 +571,26 @@ baja.
 - **2026-09-23** — `preparar-fondos.mjs` deja de depender del servidor de
   desarrollo, como ya se hizo con los sprites: Vite recargaba la pagina a media
   faena y la cortaba.
+- **2026-09-23** — Los dibujos se veian dentados porque el lienzo tenia 640 x 360
+  pixeles y el navegador lo estiraba. Ahora el lienzo va a **densidad** (1, 2 o
+  3) y la camara con ese zoom, asi que el juego sigue pensando en 640 x 360 y
+  nada de la fisica, los mapas ni el validador se toca. Se probo antes `zoom` en
+  la configuracion de escala de Phaser, pero eso solo estira el lienzo por CSS:
+  no anade un solo pixel.
+- **2026-09-23** — La densidad se calcula sola segun la pantalla, con tope 3:
+  mas no se nota y cuesta el cuadrado. Las pruebas automaticas la fuerzan a 1
+  con `?densidad=1`, porque alli el navegador dibuja por software y a densidad 3
+  el juego se quedaba en 19 fotogramas.
+- **2026-09-23** — **`setScrollFactor` no funciona con el zoom de la camara**:
+  con zoom, todo lo que no va a velocidad 1 acaba descolocado (el HUD se
+  quedaba pegado al mundo y el fondo se iba de cuadro). Los planos y el HUD se
+  mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
+  visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
+  temblando un fotograma por detras.
+- **2026-09-23** — Los fondos se quedan con sus rotulos y logotipos tal cual. El
+  juego es un regalo para Martin y Simon, sin fin comercial, y taparlos con
+  palomas convertia a las palomas en las protagonistas del cuadro. El mecanismo
+  de parches sigue en `preparar-fondos.mjs` por si hiciera falta.
 - **2026-09-22** — La ventana del juego baja a **640 x 360**. Es la forma limpia
   de que todo se vea al doble de grande sin tocar la casilla ni la fisica: solo
   se ve menos mundo, mas grande. Los textos y los paneles se reescalaron a mano.

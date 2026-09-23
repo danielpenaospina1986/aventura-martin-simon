@@ -22,7 +22,10 @@ function vigilarErrores(page) {
 }
 
 async function abrirJuego(page) {
-  await page.goto('/');
+  // densidad 1 a proposito: aqui el navegador dibuja por software, sin tarjeta
+  // grafica, y con la densidad de verdad se queda en 20 fotogramas por segundo.
+  // Lo que se prueba es la logica del juego, no lo nitido que se ve.
+  await page.goto('/?densidad=1');
   await page.waitForFunction(() => window.juego && window.juego.isRunning, null, {
     timeout: 20000,
   });

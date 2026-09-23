@@ -6,6 +6,7 @@
 
 import { ENEMIGO, JEFE, MUNDO } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
+import { aEscalaDeJuego, mosaico } from './dibujo.js';
 import { Enemigo } from '../entidades/Enemigo.js';
 import { Jefe } from '../entidades/Jefe.js';
 
@@ -118,18 +119,14 @@ export function construirNivel(escena, nivel, opciones = {}) {
     const ancho = (hasta - desde + 1) * C;
     // solo la franja de mas arriba lleva el canto de la calle
     const alAire = fila === 0 || mapa[fila - 1][desde] !== SIMBOLOS.SOLIDO;
-    const trozo = escena.add
-      .tileSprite(desde * C, fila * C, ancho, C, alAire ? texturaSuelo : texturaTierra)
-      .setOrigin(0, 0);
+    const trozo = mosaico(escena, desde * C, fila * C, ancho, C, alAire ? texturaSuelo : texturaTierra);
     escena.physics.add.existing(trozo, true);
     solidos.add(trozo);
   });
 
   tramosDe(SIMBOLOS.PLATAFORMA).forEach(({ fila, desde, hasta }) => {
     const ancho = (hasta - desde + 1) * C;
-    const trozo = escena.add
-      .tileSprite(desde * C, fila * C, ancho, 12, texturaPlataforma)
-      .setOrigin(0, 0);
+    const trozo = mosaico(escena, desde * C, fila * C, ancho, 12, texturaPlataforma);
     escena.physics.add.existing(trozo, true);
     // se atraviesa desde abajo y por los lados: solo frena al caer encima
     trozo.body.checkCollision.down = false;
@@ -151,6 +148,7 @@ export function construirNivel(escena, nivel, opciones = {}) {
 
         case SIMBOLOS.MONEDA: {
           const moneda = monedas.create(x, y, texturaMoneda);
+          aEscalaDeJuego(moneda);
           moneda.setDepth(5);
           escena.tweens.add({
             targets: moneda,
@@ -188,6 +186,7 @@ export function construirNivel(escena, nivel, opciones = {}) {
             baseY(fila) - 22,
             TEXTURAS.checkpointApagado,
           );
+          aEscalaDeJuego(bandera);
           bandera.setDepth(4);
           bandera.activo = false;
           bandera.col = col;
@@ -200,6 +199,7 @@ export function construirNivel(escena, nivel, opciones = {}) {
 
         case SIMBOLOS.META: {
           meta = escena.physics.add.staticSprite(x, baseY(fila) - 31, TEXTURAS.meta);
+          aEscalaDeJuego(meta);
           meta.setDepth(4);
           // igual que el checkpoint: alta, para que no se pueda saltar por encima
           meta.body.setSize(C, C * 10, true);

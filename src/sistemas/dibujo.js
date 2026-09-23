@@ -12,14 +12,37 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { ENEMIGO, JEFE, MUNDO } from '../config/ajustes.js';
+import { ENEMIGO, JEFE, MUNDO, RENDER } from '../config/ajustes.js';
 
+// Las texturas se dibujan a la densidad del render, no al tamano del juego: si
+// una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
+// se veria dentada. El codigo de dibujo no se entera: se le escala el pincel y
+// sigue pensando en las medidas de siempre.
+//
+// A cambio, cualquier objeto que use una de estas texturas mide D veces mas de
+// la cuenta. Los que llaman a setDisplaySize ya se apanan solos; para los demas
+// estan aEscalaDeJuego() y mosaico().
 function generar(escena, clave, ancho, alto, pintar) {
   if (escena.textures.exists(clave)) return;
+  const d = RENDER.densidad;
   const g = escena.add.graphics({ x: 0, y: 0 }).setVisible(false);
   pintar(g);
-  g.generateTexture(clave, ancho, alto);
+  g.setScale(d);
+  g.generateTexture(clave, Math.ceil(ancho * d), Math.ceil(alto * d));
   g.destroy();
+}
+
+// Devuelve a su tamano de juego un objeto que use una textura generada.
+export function aEscalaDeJuego(objeto) {
+  return objeto.setScale(1 / RENDER.densidad);
+}
+
+// Un tramo de terreno: la textura se repite al tamano del juego, no al de la
+// textura, que es D veces mayor.
+export function mosaico(escena, x, y, ancho, alto, clave) {
+  const t = escena.add.tileSprite(x, y, ancho, alto, clave).setOrigin(0, 0);
+  t.setTileScale(1 / RENDER.densidad);
+  return t;
 }
 
 function caja(g, x, y, ancho, alto, color, alpha = 1) {
@@ -633,7 +656,7 @@ export function generarTexturas(escena) {
 // pantallas tengan el mismo lenguaje.
 export function panelDeco(escena, x, y, ancho, alto, opciones = {}) {
   const { alpha = 0.92, escalon = 14 } = opciones;
-  const g = escena.add.graphics().setScrollFactor(0);
+  const g = escena.add.graphics();
   const x0 = x - ancho / 2;
   const y0 = y - alto / 2;
 
@@ -699,13 +722,11 @@ export function pintarFondoDeMenu(escena, ancho, alto, opciones = {}) {
   escena.add
     .image(ancho / 2, alto / 2, TEXTURAS.portadaMenu)
     .setScale(escala)
-    .setScrollFactor(0)
     .setDepth(-100);
 
   escena.add
     .rectangle(0, 0, ancho, alto, COLORES.decoFondo, velo)
     .setOrigin(0, 0)
-    .setScrollFactor(0)
     .setDepth(-99);
 
   return { ajustarParallax() {} };
@@ -733,7 +754,6 @@ function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXT
   const imagen = escena.add
     .image(ancho / 2, alto / 2, textura)
     .setScale(cubrir * FONDO.sobreancho)
-    .setScrollFactor(0)
     .setDepth(-100);
 
   // En los menus si conviene calmarlo, que llevan mucho texto encima.
@@ -741,7 +761,6 @@ function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXT
     escena.add
       .rectangle(0, 0, ancho, alto, COLORES.decoFondo, veloExtra)
       .setOrigin(0, 0)
-      .setScrollFactor(0)
       .setDepth(-99);
   }
 
@@ -768,7 +787,9 @@ function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXT
       imagen.setY(alto / 2 + Math.max(0, imagen.displayHeight - alto) * PLANOS.fondo.bajada);
 
       const sobra = Math.max(0, imagen.displayWidth - ancho) * 0.99;
-      imagen.setScrollFactor(Math.min(quiere, sobra / recorrido), 0);
+      // La velocidad la mueve el repartidor de planos, no scrollFactor: con el
+      // zoom de la camara, scrollFactor descoloca todo lo que no va a 1.
+      this.velocidad = Math.min(quiere, sobra / recorrido);
     },
   };
 }
@@ -783,9 +804,9 @@ function pintarFondoDibujado(escena, ancho, alto, conNubes = true) {
     1,
   );
   fondo.fillRect(0, 0, ancho, alto);
-  fondo.setScrollFactor(0).setDepth(-100);
+  fondo.setDepth(-100);
 
-  const montanas = escena.add.graphics().setScrollFactor(0.2).setDepth(-90);
+  const montanas = escena.add.graphics().setDepth(-90);
   montanas.fillStyle(COLORES.montanaLejos, 1);
   for (let x = -100; x < ancho + 200; x += 210) {
     montanas.fillTriangle(x, alto, x + 105, alto - 170, x + 210, alto);
@@ -799,7 +820,6 @@ function pintarFondoDibujado(escena, ancho, alto, conNubes = true) {
   for (let i = 0; i < 5; i += 1) {
     escena.add
       .image(60 + i * 200, 60 + (i % 3) * 42, TEXTURAS.nube)
-      .setScrollFactor(0.35)
       .setDepth(-80)
       .setAlpha(0.85)
       .setScale(0.7 + (i % 3) * 0.15);

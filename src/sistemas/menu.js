@@ -4,6 +4,7 @@
 // La usan el titulo, la seleccion de personaje, la pausa y la victoria.
 // ---------------------------------------------------------------------------
 
+import { MUNDO } from '../config/ajustes.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
 
 export class Menu {
@@ -15,8 +16,8 @@ export class Menu {
     this.separacion = config.separacion || (this.horizontal ? 175 : 34);
     this.tamano = config.tamano || FUENTE.opcion;
 
-    const x = config.x ?? escena.scale.width / 2;
-    const y = config.y ?? escena.scale.height / 2;
+    const x = config.x ?? MUNDO.ancho / 2;
+    const y = config.y ?? MUNDO.alto / 2;
 
     this.etiquetas = opciones.map((opcion, i) => {
       const px = this.horizontal ? x + (i - (opciones.length - 1) / 2) * this.separacion : x;

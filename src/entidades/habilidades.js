@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { KATANA, LANZAMIENTO } from '../config/ajustes.js';
+import { KATANA, LANZAMIENTO, RENDER } from '../config/ajustes.js';
 import { TEXTURAS } from '../config/estilo.js';
 
 // --- Martin: golpe de katana ------------------------------------------------
@@ -22,13 +22,14 @@ function katana(jugador, escena) {
     .image(x, y, TEXTURAS.arcoKatana)
     .setDepth(30)
     .setFlipX(dir < 0)
-    .setScale(0.85);
+    // la textura se genera a la densidad del render: su escala natural es 1/D
+    .setScale(0.85 / RENDER.densidad);
   if (arco) {
     escena.tweens.add({
       targets: arco,
       alpha: { from: 1, to: 0 },
-      scaleX: dir < 0 ? -1.2 : 1.2,
-      scaleY: 1.2,
+      scaleX: (dir < 0 ? -1.2 : 1.2) / RENDER.densidad,
+      scaleY: 1.2 / RENDER.densidad,
       duration: KATANA.duracionMs,
       onComplete: () => arco.destroy(),
     });

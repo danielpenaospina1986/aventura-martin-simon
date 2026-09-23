@@ -4,6 +4,41 @@
 // Si algo se siente raro al jugar, se toca aqui y en ningun otro sitio.
 // ---------------------------------------------------------------------------
 
+// Cuantos pixeles de verdad se dibujan por cada punto del juego.
+//
+// El juego piensa en una pantalla de 640 x 360 y esas medidas no se tocan: la
+// casilla sigue midiendo 32, el salto sigue subiendo 114 px y los mapas siguen
+// valiendo. Lo que cambia es que el lienzo tiene el DOBLE (o el triple) de
+// pixeles y la camara va con ese mismo zoom, asi que cada dibujo se pinta con
+// mas puntos y deja de verse dentado.
+//
+// Antes el lienzo tenia 640 x 360 pixeles y el navegador lo estiraba a lo que
+// midiera la ventana: de ahi venia el dentado de los personajes.
+const PANTALLA = { ancho: 640, alto: 360 };
+
+// Se ajusta sola a la pantalla: la que haga falta para que cada punto del juego
+// caiga en un pixel de verdad, y ni uno mas. En una ventana de 1280 x 720 sale
+// 2; a pantalla completa en un monitor de 1920 x 1080, 3. Mas de 3 no aporta
+// nada visible y cuesta el cuadrado.
+//
+// Se puede forzar desde la barra de direcciones (?densidad=1), que es lo que
+// hacen las pruebas automaticas: alli el navegador dibuja por software, sin
+// tarjeta grafica, y cuadruplicar los pixeles las dejaba a 20 fotogramas.
+function densidadQueTocaria() {
+  const forzada = Number(new URLSearchParams(window.location.search).get('densidad'));
+  if (forzada >= 1 && forzada <= 4) return Math.round(forzada);
+
+  const cabe = Math.min(
+    window.innerWidth / PANTALLA.ancho,
+    window.innerHeight / PANTALLA.alto,
+  );
+  return Math.max(1, Math.min(3, Math.ceil(cabe - 0.02)));
+}
+
+export const RENDER = {
+  densidad: densidadQueTocaria(),
+};
+
 export const MUNDO = {
   // Resolucion interna. Es pequena a proposito: al escalarse a la ventana, todo
   // se ve al doble de tamano que antes, que es lo que pide un dibujo animado.

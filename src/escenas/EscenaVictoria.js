@@ -8,11 +8,11 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { PUNTOS } from '../config/ajustes.js';
+import { MUNDO, PUNTOS, RENDER } from '../config/ajustes.js';
 import { TOTAL_NIVELES } from '../niveles/index.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
+import { aEscalaDeJuego, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
 import { estrellitas } from '../sistemas/efectos.js';
 import { Menu } from '../sistemas/menu.js';
 
@@ -36,7 +36,13 @@ export class EscenaVictoria extends Phaser.Scene {
   }
 
   create() {
-    const { width: ancho, height: alto } = this.scale;
+    // El lienzo tiene mas pixeles que el juego, asi que la camara va con ese
+    // zoom y aqui se sigue pensando en la pantalla de 640 x 360 de siempre.
+    // Hay que recentrarla: con zoom, una camara sin tocar mira el centro de su
+    // propio tamano en pixeles, que ya no es el centro del juego.
+    this.cameras.main.setZoom(RENDER.densidad);
+    this.cameras.main.centerOn(MUNDO.ancho / 2, MUNDO.alto / 2);
+    const { ancho, alto } = MUNDO;
     const datos = PERSONAJES[this.personajeId];
     // los menus van sobre la portada, ya desenfocada de antemano
     pintarFondoDeMenu(this, ancho, alto);
@@ -191,9 +197,9 @@ export class EscenaVictoria extends Phaser.Scene {
       })
       .setOrigin(0, 0.5);
 
-    this.add
-      .image(derecha - 54, cy + 64, datos.moneda)
-      .setScale(1);
+    // La textura del premio se genera a la densidad del render, asi que hay que
+    // devolverla a su tamano de juego.
+    aEscalaDeJuego(this.add.image(derecha - 54, cy + 64, datos.moneda));
 
     this.add
       .text(derecha, cy + 64, String(this.monedas), {

@@ -5,7 +5,9 @@
 // recibe un array y apila una fila por jugador.
 // ---------------------------------------------------------------------------
 
+import { MUNDO } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
+import { aEscalaDeJuego } from './dibujo.js';
 
 const FILA = { ancho: 196, alto: 32, margen: 8, separacion: 6 };
 
@@ -15,6 +17,9 @@ export class Hud {
     this.jugadores = jugadores;
     this.totalMonedas = totalMonedas;
     this.filas = [];
+    // todo lo que se dibuja aqui queda clavado en pantalla; de eso se ocupa el
+    // repartidor de planos, que lo mueve con la camara
+    this.piezas = [];
 
     jugadores.forEach((jugador, i) => {
       const y = FILA.margen + i * (FILA.alto + FILA.separacion);
@@ -23,21 +28,18 @@ export class Hud {
       const panel = escena.add
         .rectangle(FILA.margen, y, FILA.ancho, FILA.alto, COLORES.panel, 0.62)
         .setOrigin(0, 0)
-        .setScrollFactor(0)
         .setDepth(100)
         .setStrokeStyle(2, COLORES.panelBorde, 0.9);
 
       // carita del nino, sobre un disco claro para que se recorte bien
       const disco = escena.add
         .circle(FILA.margen + 17, centroY, 12, 0xfdf3e0, 1)
-        .setScrollFactor(0)
         .setDepth(101)
         .setStrokeStyle(1.5, 0xffffff, 0.9);
 
       const cara = escena.add
         .image(FILA.margen + 17, centroY, jugador.datos.cara)
         .setDisplaySize(24, 24)
-        .setScrollFactor(0)
         .setDepth(102);
 
       const nombre = escena.add
@@ -47,13 +49,11 @@ export class Hud {
           color: COLORES.textoClaro,
         })
         .setOrigin(0, 0.5)
-        .setScrollFactor(0)
         .setDepth(101);
 
-      const icono = escena.add
-        .image(FILA.margen + 124, centroY, jugador.datos.moneda)
-        .setScrollFactor(0)
-        .setDepth(101);
+      const icono = aEscalaDeJuego(
+        escena.add.image(FILA.margen + 124, centroY, jugador.datos.moneda).setDepth(101),
+      );
 
       const contador = escena.add
         .text(FILA.margen + 140, centroY, '0', {
@@ -62,17 +62,22 @@ export class Hud {
           color: COLORES.textoAcento,
         })
         .setOrigin(0, 0.5)
-        .setScrollFactor(0)
         .setDepth(101);
 
       // setDisplaySize deja su propia escala: hay que recordarla para poder
       // animar la carita sin deformarla.
-      this.filas.push({ panel, disco, cara, nombre, icono, contador, escalaCara: cara.scaleX });
+      this.piezas.push(panel, disco, cara, nombre, icono, contador);
+      this.filas.push({
+        panel, disco, cara, nombre, icono, contador,
+        escalaCara: cara.scaleX,
+        escalaIcono: icono.scaleX,
+      });
     });
 
     if (nivel) {
-      escena.add
-        .text(escena.scale.width - 10, 10, `Nivel ${nivel.numero} de ${nivel.total}`, {
+      this.piezas.push(
+        escena.add
+        .text(MUNDO.ancho - 10, 10, `Nivel ${nivel.numero} de ${nivel.total}`, {
           fontFamily: FUENTE.familia,
           fontSize: '14px',
           color: COLORES.textoAcento,
@@ -80,11 +85,12 @@ export class Hud {
           strokeThickness: 5,
         })
         .setOrigin(1, 0)
-        .setScrollFactor(0)
-        .setDepth(101);
+        .setDepth(101),
+      );
 
-      escena.add
-        .text(escena.scale.width - 10, 27, nivel.nombre, {
+      this.piezas.push(
+        escena.add
+        .text(MUNDO.ancho - 10, 27, nivel.nombre, {
           fontFamily: FUENTE.familia,
           fontSize: '12px',
           color: COLORES.textoClaro,
@@ -92,14 +98,14 @@ export class Hud {
           strokeThickness: 4,
         })
         .setOrigin(1, 0)
-        .setScrollFactor(0)
-        .setDepth(101);
+        .setDepth(101),
+      );
     }
 
     this.ayuda = escena.add
       .text(
-        escena.scale.width - 12,
-        escena.scale.height - 6,
+        MUNDO.ancho - 12,
+        MUNDO.alto - 6,
         'Esc  pausa      H  cajas de colisión',
         {
           fontFamily: FUENTE.familia,
@@ -108,9 +114,9 @@ export class Hud {
         },
       )
       .setOrigin(1, 1)
-      .setScrollFactor(0)
       .setDepth(100)
       .setAlpha(0.75);
+    this.piezas.push(this.ayuda);
   }
 
   actualizar() {
@@ -122,7 +128,7 @@ export class Hud {
         fila.contador.setText(texto);
         this.escena.tweens.add({
           targets: fila.icono,
-          scale: { from: 1.5, to: 1 },
+          scale: { from: fila.escalaIcono * 1.5, to: fila.escalaIcono },
           duration: 200,
           ease: 'Back.easeOut',
         });

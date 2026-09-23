@@ -5,7 +5,13 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
+import { RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
+
+// Las texturas se generan a la densidad del render, asi que un objeto recien
+// creado mide D veces de mas y su escala "natural" es esta, no 1. Todo lo que
+// anime la escala tiene que ir en proporcion.
+const BASE = () => 1 / RENDER.densidad;
 
 // Nube de estrellitas: se usa al eliminar a un enemigo.
 export function estrellitas(escena, x, y, cantidad = 9) {
@@ -15,7 +21,7 @@ export function estrellitas(escena, x, y, cantidad = 9) {
     const estrella = escena.add
       .image(x, y, TEXTURAS.estrella)
       .setDepth(40)
-      .setScale(Phaser.Math.FloatBetween(0.7, 1.2));
+      .setScale(BASE() * Phaser.Math.FloatBetween(0.7, 1.2));
 
     escena.tweens.add({
       targets: estrella,
@@ -23,7 +29,7 @@ export function estrellitas(escena, x, y, cantidad = 9) {
       y: y + Math.sin(angulo) * distancia - 14,
       alpha: { from: 1, to: 0 },
       angle: Phaser.Math.Between(-220, 220),
-      scale: 0.2,
+      scale: BASE() * 0.2,
       duration: Phaser.Math.Between(340, 520),
       ease: 'Quad.easeOut',
       onComplete: () => estrella.destroy(),
@@ -33,12 +39,12 @@ export function estrellitas(escena, x, y, cantidad = 9) {
 
 // Destello al recoger una moneda (sushi o bloque, segun el personaje).
 export function brilloMoneda(escena, x, y, textura = TEXTURAS.moneda) {
-  const brillo = escena.add.image(x, y, textura).setDepth(40);
+  const brillo = escena.add.image(x, y, textura).setDepth(40).setScale(BASE());
   escena.tweens.add({
     targets: brillo,
     y: y - 34,
     alpha: { from: 1, to: 0 },
-    scale: { from: 1, to: 1.9 },
+    scale: { from: BASE(), to: BASE() * 1.9 },
     duration: 320,
     ease: 'Quad.easeOut',
     onComplete: () => brillo.destroy(),

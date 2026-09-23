@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
+import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { panelDeco } from '../sistemas/dibujo.js';
 
@@ -22,7 +23,13 @@ export class EscenaTitulo extends Phaser.Scene {
   }
 
   create() {
-    const { width: ancho, height: alto } = this.scale;
+    // El lienzo tiene mas pixeles que el juego, asi que la camara va con ese
+    // zoom y aqui se sigue pensando en la pantalla de 640 x 360 de siempre.
+    // Hay que recentrarla: con zoom, una camara sin tocar mira el centro de su
+    // propio tamano en pixeles, que ya no es el centro del juego.
+    this.cameras.main.setZoom(RENDER.densidad);
+    this.cameras.main.centerOn(MUNDO.ancho / 2, MUNDO.alto / 2);
+    const { ancho, alto } = MUNDO;
 
     const fuente = this.textures.get(TEXTURAS.portada).getSourceImage();
     const escala = Math.max(ancho / fuente.width, alto / fuente.height);

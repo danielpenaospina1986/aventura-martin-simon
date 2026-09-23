@@ -3,11 +3,15 @@
 //
 // Por cada ilustracion de partida (src/assets/fondos-origen/) hace dos cosas:
 //
-//   1. Tapa las marcas registradas que traiga. Una ciudad se puede dibujar sin
-//      problema, pero un logotipo o un nombre de marca, mejor no. En vez de
-//      difuminarlos (que deja borrones feos, y mas ahora que los fondos van sin
-//      velo), se posa una PALOMA encima, de las que ya vuelan por el juego. Se
-//      come unas letras, el rotulo deja de leerse y ademas tiene su gracia.
+//   1. Pone parches donde haga falta. De momento NO hace falta en ninguna: el
+//      juego es un regalo de Daniel para sus hijos, sin ningun fin comercial,
+//      asi que los rotulos y los logotipos que salgan en las ilustraciones se
+//      quedan como estan. Taparlos con palomas convertia a las palomas en las
+//      protagonistas del cuadro.
+//
+//      El mecanismo se conserva por si algun dia hiciera falta: cada parche
+//      dice su zona y de que tipo es ('paloma' posa una bandada encima, 'sol'
+//      dibuja un sol art deco, y sin tipo rellena con un color de muestra).
 //   2. La desenfoca, que es lo que la manda al fondo: el detalle de la
 //      ilustracion competia con el personaje y los premios. El color no se
 //      toca.
@@ -35,40 +39,16 @@ const PALOMAS = [
 const CIUDADES = [
   { nombre: 'space-coast', parches: [] },
   { nombre: 'medellin', parches: [] },
-  {
-    nombre: 'atlanta',
-    // Esta ilustracion venia con marcas registradas bien visibles.
-    parches: [
-      // los aros son cinco y muy grandes: ahi si va un sol art deco
-      { tipo: 'sol', zona: [872, 368, 330, 165], muestra: [840, 300] },
-      // el emblema del acuario sobre la banda azul
-      { tipo: 'paloma', zona: [456, 406, 92, 60], pose: 0 },
-      // el rotulo rojo de la marca de refrescos
-      { tipo: 'paloma', zona: [238, 512, 162, 48], pose: 1 },
-      // la botella con su logotipo
-      { tipo: 'paloma', zona: [226, 344, 66, 140], pose: 2 },
-      // "world of ..." sobre el edificio
-      { tipo: 'paloma', zona: [52, 498, 196, 68], pose: 0 },
-      // el nombre del acuario
-      { tipo: 'paloma', zona: [440, 522, 240, 40], pose: 2 },
-      // el pie del monumento
-      { tipo: 'paloma', zona: [930, 686, 218, 40], pose: 1 },
-    ],
-  },
-  {
-    nombre: 'miami',
-    // nombres de hoteles reales en los rotulos
-    parches: [
-      // el nombre del hotel, escrito dos veces: en el toldo y en el rotulo
-      // vertical de la fachada
-      { tipo: 'paloma', zona: [196, 352, 200, 52], pose: 2 },
-      { tipo: 'paloma', zona: [238, 62, 74, 280], pose: 0 },
-      // los rotulos del fondo
-      { tipo: 'paloma', zona: [700, 218, 150, 44], pose: 1 },
-      { tipo: 'paloma', zona: [905, 220, 130, 120], pose: 0 },
-      { tipo: 'paloma', zona: [1030, 225, 90, 60], pose: 1 },
-    ],
-  },
+  // Atlanta y Miami traen rotulos y emblemas de marcas de verdad. Se dejan: el
+  // juego no es comercial y taparlos estropeaba la ilustracion. Las zonas que
+  // se llegaron a parchear quedan apuntadas por si alguna vez hicieran falta:
+  //   aros [872,368,330,165] · emblema [456,406,92,60] · rotulo [238,512,162,48]
+  //   botella [226,344,66,140] · "world of" [52,498,196,68]
+  //   nombre [440,522,240,40] · pie del monumento [930,686,218,40]
+  { nombre: 'atlanta', parches: [] },
+  //   hotel [196,352,200,52] y [238,62,74,280] · fondo [700,218,150,44],
+  //   [905,220,130,120] y [1030,225,90,60]
+  { nombre: 'miami', parches: [] },
   { nombre: 'cartagena', parches: [] },
 ];
 

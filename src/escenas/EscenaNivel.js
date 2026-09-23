@@ -8,14 +8,14 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, CAMARA, ENEMIGO, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS } from '../config/ajustes.js';
+import { AGUA, CAMARA, ENEMIGO, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
 import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
-import { pintarFondo } from '../sistemas/dibujo.js';
-import { montarPrimerPlano } from '../sistemas/planos.js';
+import { aEscalaDeJuego, pintarFondo } from '../sistemas/dibujo.js';
+import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
 import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
@@ -45,7 +45,13 @@ export class EscenaNivel extends Phaser.Scene {
   }
 
   create() {
-    const { width: ancho, height: alto } = this.scale;
+    // El lienzo tiene mas pixeles que el juego, asi que la camara va con ese
+    // zoom y aqui se sigue pensando en la pantalla de 640 x 360 de siempre.
+    // Hay que recentrarla: con zoom, una camara sin tocar mira el centro de su
+    // propio tamano en pixeles, que ya no es el centro del juego.
+    this.cameras.main.setZoom(RENDER.densidad);
+    this.cameras.main.centerOn(MUNDO.ancho / 2, MUNDO.alto / 2);
+    const { ancho, alto } = MUNDO;
     this.fondo = pintarFondo(this, ancho, alto, {
       textura: TEXTURAS.fondoDe(this.datosNivel.fondo || ''),
     });
@@ -54,11 +60,16 @@ export class EscenaNivel extends Phaser.Scene {
     this.nivel = construirNivel(this, this.datosNivel, {
       texturaMoneda: this.datosPersonaje.moneda,
     });
+    // Cada plano se mueve a su velocidad respecto a la camara. Se lleva a mano
+    // y no con scrollFactor, porque scrollFactor y el zoom de la camara no se
+    // llevan bien.
+    this.planos = new Planos();
     this.fondo.ajustarParallax(this.nivel.ancho);
+    this.planos.anadir(this.fondo.imagen, this.fondo.velocidad || 0);
 
-    // El plano de delante: ramas, postes y matas que cruzan pegados a la
+    // El plano de delante: ramas, faroles y matas que cruzan pegados a la
     // camara. De momento son los mismos en las cinco ciudades.
-    montarPrimerPlano(this, ancho, alto, this.nivel.ancho, this.datosNivel.frente);
+    montarPrimerPlano(this, ancho, alto, this.nivel.ancho, this.datosNivel.frente, this.planos);
     this.enemigos = this.nivel.enemigos;
     this.jefe = this.nivel.jefe;
     this.terminado = false;
@@ -80,6 +91,14 @@ export class EscenaNivel extends Phaser.Scene {
       numero: this.indiceNivel + 1,
       total: TOTAL_NIVELES,
       nombre: this.datosNivel.nombre,
+    });
+    this.planos.fijar(this.hud.piezas);
+
+    // Los planos se colocan justo antes de dibujar, no en el update: la camara
+    // no termina de seguir al nino hasta despues, y hacerlo antes dejaba el HUD
+    // temblando un fotograma por detras.
+    this.events.on('prerender', () => {
+      if (this.planos) this.planos.actualizar(this.cameras.main);
     });
 
     const principal = this.jugadores[0];
@@ -439,6 +458,7 @@ export class EscenaNivel extends Phaser.Scene {
       jugador.y + (LANZAMIENTO.salidaY || 0),
       TEXTURAS.bloque,
     );
+    aEscalaDeJuego(proyectil);
 
     proyectil.setDepth(8);
     proyectil.sentido = dir;
@@ -477,6 +497,7 @@ export class EscenaNivel extends Phaser.Scene {
       banera.y - 20,
       TEXTURAS.agua,
     );
+    aEscalaDeJuego(agua);
     agua.setDepth(9);
     agua.body.setAllowGravity(true);
     agua.body.setGravityY(AGUA.gravedad - this.physics.world.gravity.y);
@@ -493,6 +514,7 @@ export class EscenaNivel extends Phaser.Scene {
 
   soltarCaida(paloma) {
     const caida = this.peligros.create(paloma.x, paloma.y + 16, TEXTURAS.caida);
+    aEscalaDeJuego(caida);
     caida.setDepth(9);
     caida.body.setAllowGravity(true);
     caida.body.setGravityY(PALOMA.caida.gravedad - this.physics.world.gravity.y);
@@ -524,7 +546,7 @@ export class EscenaNivel extends Phaser.Scene {
     // entra por el lado contrario al que mira la camara, para que se la vea venir
     const camara = this.cameras.main;
     const desdeLaDerecha = Math.random() < 0.72;
-    const x = desdeLaDerecha ? camara.scrollX + this.scale.width + 70 : camara.scrollX - 70;
+    const x = desdeLaDerecha ? camara.scrollX + MUNDO.ancho + 70 : camara.scrollX - 70;
     const fila = Phaser.Math.FloatBetween(PALOMA.alturaMinFila, PALOMA.alturaMaxFila);
     const y = fila * MUNDO.casilla;
 
