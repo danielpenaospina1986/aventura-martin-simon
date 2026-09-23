@@ -7,10 +7,12 @@ import Phaser from 'phaser';
 import { MUNDO, FISICA, RENDER } from './config/ajustes.js';
 import { EscenaCarga } from './escenas/EscenaCarga.js';
 import { EscenaTitulo } from './escenas/EscenaTitulo.js';
+import { EscenaNombre } from './escenas/EscenaNombre.js';
 import { EscenaSeleccion } from './escenas/EscenaSeleccion.js';
 import { EscenaNivel } from './escenas/EscenaNivel.js';
 import { EscenaPausa } from './escenas/EscenaPausa.js';
 import { EscenaVictoria } from './escenas/EscenaVictoria.js';
+import { EscenaFinal } from './escenas/EscenaFinal.js';
 
 // Los textos se rasterizan al tamano que se les pide y luego la camara los
 // amplia, asi que con zoom saldrian borrosos. Se les sube la resolucion a la
@@ -45,7 +47,16 @@ const configuracion = {
       debug: false,
     },
   },
-  scene: [EscenaCarga, EscenaTitulo, EscenaSeleccion, EscenaNivel, EscenaPausa, EscenaVictoria],
+  scene: [
+    EscenaCarga,
+    EscenaTitulo,
+    EscenaNombre,
+    EscenaSeleccion,
+    EscenaNivel,
+    EscenaPausa,
+    EscenaVictoria,
+    EscenaFinal,
+  ],
 };
 
 export const juego = new Phaser.Game(configuracion);

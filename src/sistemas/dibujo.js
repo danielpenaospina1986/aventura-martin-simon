@@ -551,6 +551,49 @@ export function generarTexturas(escena) {
   });
 
   // nube de decoracion
+  // --- corazones y vidas ----------------------------------------------------
+  //
+  // Un corazon de los de siempre: dos lobulos y una punta, con su contorno de
+  // tinta y un brillo arriba a la izquierda, como todo en el juego.
+  //
+  // El contorno se hace pintando el corazon dos veces, el de atras un poco mas
+  // grande y en tinta. (Graphics no tiene translate, asi que cada copia lleva
+  // sus propias coordenadas.)
+  const formaCorazon = (g, cx, cy, ancho, alto, color) => {
+    g.fillStyle(color, 1);
+    g.fillCircle(cx - ancho * 0.21, cy - alto * 0.17, ancho * 0.29);
+    g.fillCircle(cx + ancho * 0.21, cy - alto * 0.17, ancho * 0.29);
+    g.fillTriangle(
+      cx - ancho * 0.48, cy - alto * 0.08,
+      cx + ancho * 0.48, cy - alto * 0.08,
+      cx, cy + alto * 0.46,
+    );
+  };
+
+  const corazon = (relleno, conBrillo) => (g) => {
+    formaCorazon(g, 13, 12, 26, 24, TINTA);
+    formaCorazon(g, 13, 11.4, 22, 20, relleno);
+    if (conBrillo) brillo(g, 8, 7, 2.6);
+  };
+
+  generar(escena, TEXTURAS.corazon, 26, 24, corazon(COLORES.corazon, true));
+  generar(escena, TEXTURAS.corazonVacio, 26, 24, corazon(COLORES.corazonApagado, false));
+
+  // La vida extra: el mismo corazon pero dorado y con alitas, para que no se
+  // confunda con los corazones normales.
+  generar(escena, TEXTURAS.vidaExtra, 40, 28, (g) => {
+    g.fillStyle(TINTA, 1);
+    g.fillEllipse(6, 13, 15, 10);
+    g.fillEllipse(34, 13, 15, 10);
+    g.fillStyle(0xfaf0d8, 1);
+    g.fillEllipse(6, 12.6, 12, 7);
+    g.fillEllipse(34, 12.6, 12, 7);
+
+    formaCorazon(g, 20, 14, 24, 22, TINTA);
+    formaCorazon(g, 20, 13.4, 20, 18, COLORES.vidaExtra);
+    brillo(g, 15, 9, 2.4);
+  });
+
   // --- primer plano ---------------------------------------------------------
   //
   // Van en silueta, sin detalle, por dos razones: asi se leen como algo que

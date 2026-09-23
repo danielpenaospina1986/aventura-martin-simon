@@ -72,6 +72,11 @@ export const COLORES = {
   frenteOscuro: 0x2b211c,
   frenteHoja: 0x4a3b2c,
 
+  corazon: 0xd94f4f,
+  corazonBrillo: 0xf0857f,
+  corazonApagado: 0x5a4a4a,
+  vidaExtra: 0xe8c65a,
+
   textoClaro: '#ffffff',
   textoSuave: '#d7e3f0',
   textoOscuro: '#16202c',
@@ -118,6 +123,9 @@ export const TEXTURAS = {
   banderaCo: 'tex-bandera-co',
   banderaUs: 'tex-bandera-us',
   puerta: 'tex-puerta',
+  corazon: 'tex-corazon',
+  corazonVacio: 'tex-corazon-vacio',
+  vidaExtra: 'tex-vida-extra',
   enemigo: 'tex-enemigo',
   baneraQuieta: 'tex-banera-quieta',
   baneraAnda1: 'tex-banera-anda1',

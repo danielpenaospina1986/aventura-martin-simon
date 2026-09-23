@@ -105,7 +105,7 @@ export class EscenaTitulo extends Phaser.Scene {
         .setOrigin(1, 0.5);
     });
 
-    const comenzar = () => this.scene.start('seleccion');
+    const comenzar = () => this.scene.start('nombre');
     this.input.keyboard.once('keydown-ENTER', comenzar);
     this.input.keyboard.once('keydown-SPACE', comenzar);
     this.input.once('pointerdown', comenzar);

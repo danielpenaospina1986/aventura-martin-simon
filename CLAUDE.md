@@ -66,6 +66,8 @@ aventura-martin-simon/
       EscenaNivel.js
       EscenaVictoria.js
       EscenaPausa.js
+      EscenaNombre.js   quien juega: se teclea el nombre de la sesion
+      EscenaFinal.js    fin de partida y tablero de mejores puntajes
     entidades/
       Jugador.js        movimiento, habilidades, estados
       Enemigo.js        caminar y dar la vuelta en bordes y paredes
@@ -73,7 +75,9 @@ aventura-martin-simon/
       controles.js      mapeo de teclas por jugador (preparado para 2 jugadores)
       constructor-nivel.js  convierte el mapa de texto en objetos del mundo
       planos.js         el plano de delante de la camara multiplanar
-      hud.js            monedas y nombre del personaje
+      hud.js            monedas, corazones, vidas y nombre del personaje
+      sesion.js         quien esta jugando (el nombre, hasta 10 letras)
+      puntajes.js       el tablero de los diez mejores
       dibujo.js         fabrica de graficos provisionales (rectangulos)
     assets/
       fondo-barrio.jpg          fondo del juego (version tratada, la que se carga)
@@ -230,7 +234,19 @@ Los dos recogen lo mismo: **rollos de sushi**. Antes cada uno tenia su premio
 
 Filosofia: juego **generoso y sin castigos fuertes**.
 
-- **Sin vidas y sin game over.**
+### Corazones y vidas
+
+- Cada golpe quita **un corazon**. Se empieza cada tablero con **cinco**.
+- Al quedarse sin corazones se pierde **una vida** y se sigue jugando desde el
+  ultimo checkpoint, con los cinco corazones repuestos.
+- Las vidas son **tres para toda la partida** y se arrastran de un tablero a
+  otro. Al perder la ultima se acaba la partida (`EscenaFinal`), que no es un
+  regano: cuenta hasta donde llego y ofrece volver a intentarlo.
+- Algunos bichos, **al azar**, sueltan un corazon en vez de monedas; algunas
+  palomas derribadas dejan una **vida extra** donde cayeron. El azar se guarda en
+  la escena (`probabilidadCorazon`, `probabilidadVidaExtra`) para poder apagarlo
+  desde las pruebas.
+
 - Tocar un enemigo de lado o caer a un hueco: el personaje parpadea y reaparece en el
   ultimo checkpoint. **No pierde monedas.**
 - Saltar encima de un enemigo lo elimina.
@@ -243,10 +259,20 @@ Filosofia: juego **generoso y sin castigos fuertes**.
 ## 7. Pantallas
 
 ```
-titulo -> seleccion de personaje -> nivel -> victoria
-                                              |-> jugar otra vez
-                                              |-> cambiar personaje
+titulo -> quien juega -> seleccion de personaje -> nivel -> victoria
+                                                     |        |-> jugar otra vez
+                                                     |        |-> cambiar personaje
+                                                     |-> sin vidas -> fin de partida
 ```
+
+En **quien juega** se teclea el nombre (hasta 10 letras), que hace de
+identificador de la sesion: es lo que se apunta en el tablero de mejores
+puntajes. Se guarda en el navegador para no escribirlo cada vez.
+
+El **tablero de mejores puntajes** guarda solo los **diez** mejores: en cuanto
+entra uno nuevo, el que queda en el puesto once se borra, para no ir llenando el
+navegador de partidas viejas. Vive en el navegador de cada equipo, asi que cada
+casa tiene el suyo.
 
 - **Esc** pausa el nivel y permite volver al menu.
 
@@ -594,6 +620,21 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Entran **corazones y vidas**. Cada golpe quita un corazon (se
+  empieza con cinco por tablero); sin corazones se pierde una vida (tres por
+  partida) y al perder la ultima se acaba. Sigue sin haber castigo fuerte: al
+  perder una vida se sigue desde el checkpoint con los corazones repuestos.
+- **2026-09-23** — El jugador **escribe su nombre al entrar** y ese nombre es el
+  identificador de la sesion. Se teclea dentro del juego, letra a letra, y no
+  con un cuadro del navegador: asi no se sale del juego ni sale un teclado con
+  otra tipografia.
+- **2026-09-23** — El tablero de puntajes guarda **solo diez**. Del puesto once
+  para abajo se borra, que era justo lo que pidio Daniel para no llenar la
+  memoria de partidas cortas que ya no le importan a nadie.
+- **2026-09-23** — El azar de los regalos (que un bicho suelte corazon, que una
+  paloma deje vida) se guarda en la escena y no se lee de la constante: con el
+  azar suelto, medir en una prueba cuantas monedas da un bicho era echarlo a
+  cara o cruz.
 - **2026-09-23** — Entran los dibujos de verdad para el premio (sushi, igual
   para los dos), el bloque que lanza Samaon, las banderas de los checkpoints y
   la puerta de salida. Las banderas son la del **pais de cada ciudad** (Medellin

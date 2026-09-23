@@ -127,6 +127,27 @@ export const PUNTOS = {
   minimo: 0,      // el marcador nunca baja de aqui
 };
 
+// Corazones y vidas.
+//
+// El nino no muere de un golpe: cada golpe le quita un corazon, y empieza cada
+// tablero con cinco. Cuando se le acaban los corazones pierde una vida y vuelve
+// al ultimo checkpoint con los corazones repuestos. Las vidas, en cambio, se
+// arrastran de un tablero a otro: son tres para toda la partida, y al perder la
+// ultima se acabo.
+export const VIDA = {
+  corazonesPorNivel: 5,
+  vidasIniciales: 3,
+  // de cada cuantos bichos sale un corazon, y de cada cuantas palomas una vida
+  probabilidadCorazon: 0.3,
+  probabilidadVidaExtra: 0.25,
+  // lo que mide cada cosa en pantalla
+  corazon: { ancho: 26, alto: 24, enHud: 15 },
+  vidaExtra: { ancho: 30, alto: 28, enHud: 16 },
+  // el premio suelto espera un poco antes de desaparecer
+  duracionMs: 9000,
+  parpadeoDesdeMs: 6000,
+};
+
 // El premio que se recoge: un rollo de sushi, igual para los dos ninos.
 export const PREMIO = {
   ancho: 28,

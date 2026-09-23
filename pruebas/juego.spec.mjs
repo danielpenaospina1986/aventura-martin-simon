@@ -47,6 +47,11 @@ async function esperarEscena(page, clave) {
 async function entrarAlNivel(page, personaje = 'martin') {
   await abrirJuego(page);
   await page.keyboard.press('Enter');
+
+  // Entre el titulo y la seleccion se pregunta quien juega.
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
   await esperarEscena(page, 'seleccion');
 
   // En la seleccion, Samaon (simon) va primero y Martain (martin) segundo.
@@ -66,6 +71,14 @@ async function entrarAlNivel(page, personaje = 'martin') {
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'nivel');
   await page.waitForTimeout(600); // fundido de entrada
+
+  // Se apaga el azar de los regalos: unos bichos sueltan corazon en vez de
+  // monedas, y con eso suelto no hay forma de medir cuanto da un bicho.
+  await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    n.probabilidadCorazon = 0;
+    n.probabilidadVidaExtra = 0;
+  });
 }
 
 const estadoJugador = (page) =>
@@ -90,7 +103,7 @@ const estadoJugador = (page) =>
 
 // ---------------------------------------------------------------------------
 
-test('las tres pantallas se ven bien y no hay errores en la consola', async ({ page }) => {
+test('las cuatro pantallas se ven bien y no hay errores en la consola', async ({ page }) => {
   const errores = vigilarErrores(page);
 
   await abrirJuego(page);
@@ -98,14 +111,20 @@ test('las tres pantallas se ven bien y no hay errores en la consola', async ({ p
   await page.screenshot({ path: `${CAPTURAS}/01-titulo.png` });
 
   await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: `${CAPTURAS}/02-nombre.png` });
+
+  await page.keyboard.press('Enter');
   await esperarEscena(page, 'seleccion');
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${CAPTURAS}/02-seleccion.png` });
+  await page.screenshot({ path: `${CAPTURAS}/03-seleccion.png` });
 
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'nivel');
   await page.waitForTimeout(800);
-  await page.screenshot({ path: `${CAPTURAS}/03-nivel-martin.png` });
+  await page.screenshot({ path: `${CAPTURAS}/04-nivel.png` });
 
   expect(errores).toEqual([]);
 });
@@ -244,6 +263,11 @@ test('saltar encima de un enemigo lo elimina', async ({ page }) => {
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
     const enemigo = n.enemigos.getChildren()[0];
+    // fuera los premios de alrededor: si no, el nino recoge alguno de camino y
+    // la cuenta de monedas mide dos cosas a la vez
+    n.nivel.monedas.getChildren().forEach((m) => {
+      if (Math.abs(m.x - enemigo.x) < 120) m.destroy();
+    });
     enemigo.body.setVelocity(0, 0);
     enemigo.direccion = 0;
     j.setPosition(enemigo.x, enemigo.y - 90);
@@ -568,6 +592,158 @@ test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ pa
   expect(despues.golpes).toBe(1);
   expect(despues.y).toBeLessThan(330); // ha vuelto arriba
   expect(despues.x).toBeLessThan(25 * 32); // ha vuelto al principio
+});
+
+test('el niño empieza con cinco corazones y cada golpe le quita uno', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const corazones = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    const paso = [j.corazones];
+    for (let i = 0; i < 3; i += 1) {
+      j.invulnerableHasta = 0;
+      n.herirJugador(j);
+      await new Promise((r) => setTimeout(r, 60));
+      paso.push(j.corazones);
+    }
+    return paso;
+  });
+
+  expect(corazones).toEqual([5, 4, 3, 2]);
+});
+
+test('sin corazones se pierde una vida y se reponen', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    const vidasAntes = n.vidas;
+    for (let i = 0; i < 5; i += 1) {
+      j.invulnerableHasta = 0;
+      n.herirJugador(j);
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    return { vidasAntes, vidas: n.vidas, corazones: j.corazones };
+  });
+
+  expect(resultado.vidasAntes).toBe(3);
+  expect(resultado.vidas).toBe(2);
+  expect(resultado.corazones).toBe(5); // repuestos, a seguir jugando
+});
+
+test('al perder las tres vidas se acaba la partida', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    for (let v = 0; v < 3; v += 1) {
+      for (let c = 0; c < 5; c += 1) {
+        j.invulnerableHasta = 0;
+        n.herirJugador(j);
+        await new Promise((r) => setTimeout(r, 30));
+      }
+    }
+  });
+
+  await esperarEscena(page, 'final');
+  const vidas = await page.evaluate(() => window.juego.scene.getScene('nivel').vidas);
+  expect(vidas).toBe(0);
+});
+
+test('un corazon repone y una vida extra suma', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.invulnerableHasta = 0;
+    n.herirJugador(j);
+    await new Promise((r) => setTimeout(r, 80));
+    const tocado = j.corazones;
+
+    n.soltarRegalo(j.x, j.y - 30, 'corazon');
+    await new Promise((r) => setTimeout(r, 500));
+    const trasCorazon = j.corazones;
+
+    const vidasAntes = n.vidas;
+    n.soltarRegalo(j.x, j.y - 30, 'vida');
+    await new Promise((r) => setTimeout(r, 500));
+    return { tocado, trasCorazon, vidasAntes, vidas: n.vidas };
+  });
+
+  expect(resultado.tocado).toBe(4);
+  expect(resultado.trasCorazon).toBe(5);
+  expect(resultado.vidas).toBe(resultado.vidasAntes + 1);
+});
+
+test('a la paloma se le salta encima y al segundo golpe se cae', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const mod = await import('/src/entidades/Paloma.js');
+    const j = n.jugadores[0];
+    const p = new mod.Paloma(n, j.x + 200, 120, -1);
+    n.palomas.add(p);
+
+    p.recibirGolpe();
+    const tras1 = p.estado;
+    p.recibirGolpe();
+    const tras2 = p.estado;
+
+    for (let i = 0; i < 40 && p.estado !== 'suelo'; i += 1) {
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    return { tras1, tras2, final: p.estado };
+  });
+
+  expect(resultado.tras1).toBe('aturdida');
+  expect(resultado.tras2).toBe('cae');
+  expect(resultado.final).toBe('suelo');
+});
+
+test('el tablero de puntajes solo guarda los diez mejores', async ({ page }) => {
+  await abrirJuego(page);
+
+  const resultado = await page.evaluate(async () => {
+    const mod = await import('/src/sistemas/puntajes.js');
+    mod.borrarPuntajes();
+    for (let i = 1; i <= 14; i += 1) mod.anotarPuntaje(`Jugador${i}`, i * 10, {});
+    const diez = mod.mejoresPuntajes();
+    const tras = mod.anotarPuntaje('Campeon', 999, {});
+    mod.borrarPuntajes();
+    return {
+      cuantos: diez.length,
+      masAlto: diez[0].puntos,
+      masBajo: diez[diez.length - 1].puntos,
+      primeroTras: tras[0].nombre,
+      cuantosTras: tras.length,
+    };
+  });
+
+  expect(resultado.cuantos).toBe(10);
+  expect(resultado.masAlto).toBe(140);
+  expect(resultado.masBajo).toBe(50); // del puesto once para abajo se borra
+  expect(resultado.primeroTras).toBe('Campeon');
+  expect(resultado.cuantosTras).toBe(10);
+});
+
+test('el nombre del jugador se recorta a diez letras y se guarda', async ({ page }) => {
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+
+  await page.keyboard.type('Samaonelmejordetodos', { delay: 15 });
+  const escrito = await page.evaluate(() => window.juego.scene.getScene('nombre').nombre);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+
+  const guardado = await page.evaluate(() => window.localStorage.getItem('aventura-jugador'));
+  expect(escrito).toBe('Samaonelme');
+  expect(guardado).toBe('Samaonelme');
 });
 
 test('el marcador nunca baja de cero', async ({ page }) => {

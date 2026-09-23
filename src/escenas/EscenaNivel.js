@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, CAMARA, ENEMIGO, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER } from '../config/ajustes.js';
+import { AGUA, CAMARA, ENEMIGO, JEFE, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER, VIDA } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -42,6 +42,9 @@ export class EscenaNivel extends Phaser.Scene {
       jefesDerrotados: d.jefesDerrotados || 0,
       enemigosVencidos: d.enemigosVencidos || 0,
     };
+
+    // Las vidas son de la partida entera; los corazones, de cada tablero.
+    this.vidas = d.vidas === undefined ? VIDA.vidasIniciales : d.vidas;
   }
 
   create() {
@@ -79,6 +82,8 @@ export class EscenaNivel extends Phaser.Scene {
     // lo que sueltan los bichos: agua con jabon y lo de las palomas
     this.peligros = this.physics.add.group();
     this.palomas = this.physics.add.group({ allowGravity: false });
+    // corazones y vidas que sueltan los bichos, esperando en el suelo
+    this.regalos = this.physics.add.group({ allowGravity: true });
     this.proximaPaloma = this.esperaDePaloma();
 
     this.physics.world.setBounds(0, 0, this.nivel.ancho, this.nivel.alto + 400);
@@ -95,7 +100,7 @@ export class EscenaNivel extends Phaser.Scene {
       numero: this.indiceNivel + 1,
       total: TOTAL_NIVELES,
       nombre: this.datosNivel.nombre,
-    });
+    }, this.vidas);
     this.planos.fijar(this.hud.piezas);
 
     // Los planos se colocan justo antes de dibujar, no en el update: la camara
@@ -139,6 +144,14 @@ export class EscenaNivel extends Phaser.Scene {
     jugador.golpes = this.acumulado.golpes;
     jugador.jefesDerrotados = this.acumulado.jefesDerrotados;
     jugador.enemigosVencidos = this.acumulado.enemigosVencidos;
+    jugador.corazones = VIDA.corazonesPorNivel;
+
+    // Cada cuanto un bicho suelta corazon y una paloma una vida. Se guarda en
+    // la escena y no se lee de la constante para poder apagarlo desde las
+    // pruebas: con el azar suelto, medir cuantas monedas da un bicho era una
+    // moneda al aire.
+    this.probabilidadCorazon = VIDA.probabilidadCorazon;
+    this.probabilidadVidaExtra = VIDA.probabilidadVidaExtra;
 
     this.jugadores = [jugador];
   }
@@ -175,6 +188,12 @@ export class EscenaNivel extends Phaser.Scene {
       });
     });
     this.physics.add.collider(this.palomas, solidos);
+    this.physics.add.collider(this.regalos, solidos);
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.regalos, (a, b) => {
+        this.recogerRegalo(jugador, this.regalos.contains(a) ? a : b);
+      });
+    });
 
     // lo que tiran los bichos hace dano al nino y se deshace contra el suelo
     this.jugadores.forEach((jugador) => {
@@ -318,6 +337,8 @@ export class EscenaNivel extends Phaser.Scene {
     if (!jugador.herir()) return false;
 
     jugador.golpes += 1;
+    jugador.corazones = Math.max(0, jugador.corazones - 1);
+
     const antes = jugador.monedas;
     jugador.monedas = Math.max(PUNTOS.minimo, jugador.monedas + PUNTOS.porGolpe);
     const perdidas = antes - jugador.monedas;
@@ -326,7 +347,99 @@ export class EscenaNivel extends Phaser.Scene {
       textoFlotante(this, jugador.x, jugador.y - 40, `-${perdidas}`, '#ff6b6b');
     }
     this.hud.animarCara(jugador);
+    this.hud.animarCorazones(jugador);
+
+    if (jugador.corazones <= 0) this.perderVida(jugador);
     return true;
+  }
+
+  // Se acabaron los corazones: se pierde una vida. Si quedaba la ultima, se
+  // acabo la partida; si no, se reponen los corazones y a seguir.
+  perderVida(jugador) {
+    this.vidas -= 1;
+    this.hud.actualizarVidas(this.vidas);
+
+    if (this.vidas > 0) {
+      jugador.corazones = VIDA.corazonesPorNivel;
+
+    // Cada cuanto un bicho suelta corazon y una paloma una vida. Se guarda en
+    // la escena y no se lee de la constante para poder apagarlo desde las
+    // pruebas: con el azar suelto, medir cuantas monedas da un bicho era una
+    // moneda al aire.
+    this.probabilidadCorazon = VIDA.probabilidadCorazon;
+    this.probabilidadVidaExtra = VIDA.probabilidadVidaExtra;
+      textoFlotante(this, jugador.x, jugador.y - 60, '¡Una vida menos!', '#ff6b6b');
+      return;
+    }
+
+    this.terminado = true;
+    this.cameras.main.fadeOut(600, 0, 0, 0);
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      this.scene.start('final', {
+        personajeId: this.personajeId,
+        indiceNivel: this.indiceNivel,
+        nombreNivel: this.datosNivel.nombre,
+        monedas: jugador.monedas,
+        recogidas: jugador.recogidas,
+        golpes: jugador.golpes,
+        jefesDerrotados: jugador.jefesDerrotados,
+        enemigosVencidos: jugador.enemigosVencidos,
+        vidas: this.vidas,
+      });
+    });
+  }
+
+  // Deja un corazon o una vida donde ha caido el bicho.
+  soltarRegalo(x, y, clase) {
+    const esVida = clase === 'vida';
+    const textura = esVida ? TEXTURAS.vidaExtra : TEXTURAS.corazon;
+    const medida = esVida ? VIDA.vidaExtra : VIDA.corazon;
+
+    const regalo = this.regalos.create(x, y, textura);
+    regalo.setDisplaySize(medida.ancho, medida.alto).setDepth(7);
+    regalo.clase = clase;
+    regalo.body.setSize(medida.ancho / regalo.scaleX, medida.alto / regalo.scaleY, true);
+    regalo.body.setVelocity(0, -80);
+
+    // se balancea un poco, para que se vea que es un premio
+    this.tweens.add({
+      targets: regalo,
+      scaleX: regalo.scaleX * 1.12,
+      duration: 520,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+
+    // no se queda para siempre: avisa parpadeando y se va
+    this.time.delayedCall(VIDA.parpadeoDesdeMs, () => {
+      if (!regalo.active) return;
+      this.tweens.add({
+        targets: regalo,
+        alpha: { from: 1, to: 0.2 },
+        duration: 220,
+        yoyo: true,
+        repeat: -1,
+      });
+    });
+    this.time.delayedCall(VIDA.duracionMs, () => regalo.active && regalo.destroy());
+    return regalo;
+  }
+
+  recogerRegalo(jugador, regalo) {
+    if (!regalo || !regalo.active) return;
+
+    if (regalo.clase === 'vida') {
+      this.vidas += 1;
+      this.hud.actualizarVidas(this.vidas);
+      textoFlotante(this, regalo.x, regalo.y - 24, '¡Una vida más!', COLORES.textoAcento);
+    } else {
+      jugador.corazones = Math.min(VIDA.corazonesPorNivel, jugador.corazones + 1);
+      this.hud.animarCorazones(jugador);
+      textoFlotante(this, regalo.x, regalo.y - 24, '¡Corazón!', '#ff9a9a');
+    }
+    estrellitas(this, regalo.x, regalo.y, 5);
+    regalo.destroy();
   }
 
   // Saltar encima de una paloma la golpea. Aguanta dos: al primero se queda
@@ -348,8 +461,14 @@ export class EscenaNivel extends Phaser.Scene {
   // La paloma derribada deja su premio donde cayo.
   premiarPaloma(paloma) {
     const jugador = this.jugadores[0];
-    jugador.monedas += PUNTOS.porEnemigo;
     jugador.enemigosVencidos += 1;
+
+    // Algunas palomas dejan una vida en el sitio donde se estamparon.
+    if (Math.random() < this.probabilidadVidaExtra) {
+      this.soltarRegalo(paloma.x, paloma.y - 14, 'vida');
+      return;
+    }
+    jugador.monedas += PUNTOS.porEnemigo;
     textoFlotante(this, paloma.x, paloma.y - 24, `+${PUNTOS.porEnemigo}`, COLORES.textoAcento);
   }
 
@@ -359,9 +478,15 @@ export class EscenaNivel extends Phaser.Scene {
 
     // los bichos pequenos tambien dan premio
     const jugador = this.jugadores[0];
-    jugador.monedas += PUNTOS.porEnemigo;
+    // Unos bichos dan corazon en vez de monedas; al azar, para que sea una
+    // alegria y no una cuenta.
+    if (Math.random() < this.probabilidadCorazon) {
+      this.soltarRegalo(enemigo.x, enemigo.y - 10, 'corazon');
+    } else {
+      jugador.monedas += PUNTOS.porEnemigo;
+      textoFlotante(this, enemigo.x, enemigo.y - 22, `+${PUNTOS.porEnemigo}`, COLORES.textoAcento);
+    }
     jugador.enemigosVencidos += 1;
-    textoFlotante(this, enemigo.x, enemigo.y - 22, `+${PUNTOS.porEnemigo}`, COLORES.textoAcento);
 
     enemigo.destroy();
   }
@@ -412,6 +537,7 @@ export class EscenaNivel extends Phaser.Scene {
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
         enemigosVencidos: jugador.enemigosVencidos,
+        vidas: this.vidas,
       });
     });
   }

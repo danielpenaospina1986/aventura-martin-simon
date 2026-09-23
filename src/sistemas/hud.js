@@ -5,14 +5,16 @@
 // recibe un array y apila una fila por jugador.
 // ---------------------------------------------------------------------------
 
-import { MUNDO, PREMIO } from '../config/ajustes.js';
+import { MUNDO, PREMIO, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { aEscalaDeJuego } from './dibujo.js';
 
 const FILA = { ancho: 196, alto: 32, margen: 8, separacion: 6 };
+const CORAZONES = { x: 10, y: 48, paso: 17 };
+const VIDAS = { x: 10, y: 70 };
 
 export class Hud {
-  constructor(escena, jugadores, totalMonedas, nivel = null) {
+  constructor(escena, jugadores, totalMonedas, nivel = null, vidas = VIDA.vidasIniciales) {
     this.escena = escena;
     this.jugadores = jugadores;
     this.totalMonedas = totalMonedas;
@@ -75,6 +77,36 @@ export class Hud {
       });
     });
 
+    // --- corazones: los golpes que aguanta en este tablero ---
+    this.corazones = [];
+    for (let i = 0; i < VIDA.corazonesPorNivel; i += 1) {
+      const c = escena.add
+        .image(CORAZONES.x + i * CORAZONES.paso, CORAZONES.y, TEXTURAS.corazon)
+        .setOrigin(0, 0.5)
+        .setDisplaySize(VIDA.corazon.enHud, VIDA.corazon.enHud * 0.92)
+        .setDepth(101);
+      this.corazones.push(c);
+      this.piezas.push(c);
+    }
+
+    // --- vidas: las que quedan de la partida entera ---
+    this.iconoVida = escena.add
+      .image(VIDAS.x + 2, VIDAS.y, TEXTURAS.vidaExtra)
+      .setOrigin(0, 0.5)
+      .setDisplaySize(VIDA.vidaExtra.enHud * 1.4, VIDA.vidaExtra.enHud)
+      .setDepth(101);
+    this.textoVidas = escena.add
+      .text(VIDAS.x + 30, VIDAS.y, `x ${vidas}`, {
+        fontFamily: FUENTE.familia,
+        fontSize: '13px',
+        color: COLORES.textoClaro,
+        stroke: '#1b1410',
+        strokeThickness: 4,
+      })
+      .setOrigin(0, 0.5)
+      .setDepth(101);
+    this.piezas.push(this.iconoVida, this.textoVidas);
+
     if (nivel) {
       this.piezas.push(
         escena.add
@@ -118,6 +150,42 @@ export class Hud {
       .setDepth(100)
       .setAlpha(0.75);
     this.piezas.push(this.ayuda);
+  }
+
+  // Enciende y apaga los corazones segun los que le queden.
+  animarCorazones(jugador) {
+    const vivos = jugador.corazones === undefined ? VIDA.corazonesPorNivel : jugador.corazones;
+    this.corazones.forEach((c, i) => {
+      const encendido = i < vivos;
+      const clave = encendido ? TEXTURAS.corazon : TEXTURAS.corazonVacio;
+      if (c.texture.key !== clave) {
+        c.setTexture(clave);
+        // setTexture no mantiene el tamano si el dibujo es de otra medida
+        c.setDisplaySize(VIDA.corazon.enHud, VIDA.corazon.enHud * 0.92);
+        if (encendido) {
+          this.escena.tweens.add({
+            targets: c,
+            scaleX: { from: c.scaleX * 1.6, to: c.scaleX },
+            scaleY: { from: c.scaleY * 1.6, to: c.scaleY },
+            duration: 220,
+            ease: 'Back.easeOut',
+          });
+        }
+      }
+      c.setAlpha(encendido ? 1 : 0.55);
+    });
+  }
+
+  actualizarVidas(vidas) {
+    if (!this.textoVidas) return;
+    this.textoVidas.setText(`x ${vidas}`);
+    this.escena.tweens.add({
+      targets: this.iconoVida,
+      scaleX: { from: this.iconoVida.scaleX * 1.5, to: this.iconoVida.scaleX },
+      scaleY: { from: this.iconoVida.scaleY * 1.5, to: this.iconoVida.scaleY },
+      duration: 240,
+      ease: 'Back.easeOut',
+    });
   }
 
   actualizar() {
