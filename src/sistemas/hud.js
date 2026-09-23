@@ -7,7 +7,7 @@
 
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 
-const FILA = { ancho: 286, alto: 44, margen: 12, separacion: 8 };
+const FILA = { ancho: 196, alto: 32, margen: 8, separacion: 6 };
 
 export class Hud {
   constructor(escena, jugadores, totalMonedas, nivel = null) {
@@ -29,19 +29,19 @@ export class Hud {
 
       // carita del nino, sobre un disco claro para que se recorte bien
       const disco = escena.add
-        .circle(FILA.margen + 24, centroY, 17, 0xfdf3e0, 1)
+        .circle(FILA.margen + 17, centroY, 12, 0xfdf3e0, 1)
         .setScrollFactor(0)
         .setDepth(101)
-        .setStrokeStyle(2, 0xffffff, 0.9);
+        .setStrokeStyle(1.5, 0xffffff, 0.9);
 
       const cara = escena.add
-        .image(FILA.margen + 24, centroY, jugador.datos.cara)
-        .setDisplaySize(34, 34)
+        .image(FILA.margen + 17, centroY, jugador.datos.cara)
+        .setDisplaySize(24, 24)
         .setScrollFactor(0)
         .setDepth(102);
 
       const nombre = escena.add
-        .text(FILA.margen + 50, centroY, jugador.datos.nombre, {
+        .text(FILA.margen + 34, centroY, jugador.datos.nombre, {
           fontFamily: FUENTE.familia,
           fontSize: `${FUENTE.hud}px`,
           color: COLORES.textoClaro,
@@ -51,12 +51,12 @@ export class Hud {
         .setDepth(101);
 
       const icono = escena.add
-        .image(FILA.margen + 176, centroY, jugador.datos.moneda)
+        .image(FILA.margen + 124, centroY, jugador.datos.moneda)
         .setScrollFactor(0)
         .setDepth(101);
 
       const contador = escena.add
-        .text(FILA.margen + 196, centroY, '0', {
+        .text(FILA.margen + 140, centroY, '0', {
           fontFamily: FUENTE.familia,
           fontSize: `${FUENTE.hud}px`,
           color: COLORES.textoAcento,
@@ -72,9 +72,9 @@ export class Hud {
 
     if (nivel) {
       escena.add
-        .text(escena.scale.width - 14, 16, `Nivel ${nivel.numero} de ${nivel.total}`, {
+        .text(escena.scale.width - 10, 10, `Nivel ${nivel.numero} de ${nivel.total}`, {
           fontFamily: FUENTE.familia,
-          fontSize: '18px',
+          fontSize: '14px',
           color: COLORES.textoAcento,
           stroke: '#1b1410',
           strokeThickness: 5,
@@ -84,9 +84,9 @@ export class Hud {
         .setDepth(101);
 
       escena.add
-        .text(escena.scale.width - 14, 40, nivel.nombre, {
+        .text(escena.scale.width - 10, 27, nivel.nombre, {
           fontFamily: FUENTE.familia,
-          fontSize: '16px',
+          fontSize: '12px',
           color: COLORES.textoClaro,
           stroke: '#1b1410',
           strokeThickness: 4,
@@ -99,11 +99,11 @@ export class Hud {
     this.ayuda = escena.add
       .text(
         escena.scale.width - 12,
-        escena.scale.height - 10,
+        escena.scale.height - 6,
         'Esc  pausa      H  cajas de colisión',
         {
           fontFamily: FUENTE.familia,
-          fontSize: '14px',
+          fontSize: '11px',
           color: COLORES.textoSuave,
         },
       )

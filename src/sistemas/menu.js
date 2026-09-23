@@ -12,7 +12,7 @@ export class Menu {
     this.opciones = opciones;
     this.indice = config.indiceInicial || 0;
     this.horizontal = config.horizontal || false;
-    this.separacion = config.separacion || (this.horizontal ? 260 : 52);
+    this.separacion = config.separacion || (this.horizontal ? 175 : 34);
     this.tamano = config.tamano || FUENTE.opcion;
 
     const x = config.x ?? escena.scale.width / 2;
@@ -28,7 +28,7 @@ export class Menu {
           fontSize: `${this.tamano}px`,
           color: COLORES.textoSuave,
           stroke: '#16202c',
-          strokeThickness: 5,
+          strokeThickness: 4,
         })
         .setOrigin(0.5)
         .setDepth(20)

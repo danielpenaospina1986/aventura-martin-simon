@@ -212,7 +212,7 @@ export function construirNivel(escena, nivel, opciones = {}) {
         color: COLORES.textoClaro,
         align: 'center',
         stroke: '#16202c',
-        strokeThickness: 5,
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       .setDepth(3)

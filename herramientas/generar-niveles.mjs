@@ -3,113 +3,139 @@
 //
 // Los mapas se escriben aqui por tramos y la herramienta los convierte en los
 // archivos de src/niveles/. Se hace asi, y no a mano, porque un mapa es una
-// rejilla de 100 x 17 caracteres y alinear eso a ojo es imposible.
+// rejilla de 90 x 11 caracteres y alinear eso a ojo es imposible.
 //
-//   node herramientas/generar-niveles.mjs
-//   npm run validar        (comprueba que los cinco se pueden terminar)
+//   npm run niveles     (escribe los mapas)
+//   npm run validar     (comprueba que los cinco se pueden terminar)
 //
-// Los archivos que salen SI son editables a mano si se quiere retocar una
-// casilla suelta: son texto plano con una regla de columnas arriba.
+// EL TABLERO TIENE TRES ALTURAS, y solo tres:
 //
-// Recordatorio de lo que puede hacer un personaje (lo calcula el validador):
-//   salto ....... 3,58 casillas de alto
-//   distancia ... 4,11 casillas en llano
-// Asi que: desniveles de 3 casillas y huecos de 3 casillas van sobrados.
+//   fila 0-2   franja libre arriba, reservada para los bichos voladores
+//   fila 3     TERCER nivel   (se llega saltando desde el segundo)
+//   fila 6     SEGUNDO nivel  (se llega saltando desde el suelo)
+//   fila 9     SUELO          (por donde se camina)
+//   fila 10    subsuelo
+//
+// Entre altura y altura hay 3 casillas (96 px) y el salto llega a 3,58, asi que
+// se sube de una a otra pero nunca del suelo al tercero de un tiron. Encima de
+// cada altura quedan 2 casillas libres, que es lo que necesita el personaje.
 // ---------------------------------------------------------------------------
 
 import { writeFileSync } from 'node:fs';
 
-const FILAS = 17;
-const SUELO_BASE = 14; // fila donde esta el suelo de casi todo
+const FILAS = 11;
+const SUELO = 9;
+const MEDIO = 6;
+const ALTO = 3;
+
+// donde se apoyan las cosas que van sobre cada altura
+const SOBRE_SUELO = SUELO - 1;
+const SOBRE_MEDIO = MEDIO - 1;
+const SOBRE_ALTO = ALTO - 1;
 
 // --- utilidades para pintar sobre la rejilla --------------------------------
 
-function crearLienzo(columnas) {
-  return Array.from({ length: FILAS }, () => Array(columnas).fill('.'));
-}
+const crearLienzo = (columnas) =>
+  Array.from({ length: FILAS }, () => Array(columnas).fill('.'));
 
-// Un tramo de terreno: se rellena desde filaTope hasta abajo del todo.
-function terreno(mapa, desde, hasta, filaTope = SUELO_BASE) {
+function suelo(mapa, desde, hasta) {
   for (let col = desde; col <= hasta; col += 1) {
-    for (let fila = filaTope; fila < FILAS; fila += 1) mapa[fila][col] = '#';
+    for (let fila = SUELO; fila < FILAS; fila += 1) mapa[fila][col] = '#';
   }
 }
 
-function plataforma(mapa, col, fila, largo) {
+function plataforma(mapa, col, largo, fila) {
   for (let i = 0; i < largo; i += 1) mapa[fila][col + i] = '=';
 }
 
-function repisa(mapa, col, fila, largo) {
-  for (let i = 0; i < largo; i += 1) mapa[fila][col + i] = '#';
+const plataformaMedia = (mapa, col, largo) => plataforma(mapa, col, largo, MEDIO);
+const plataformaAlta = (mapa, col, largo) => plataforma(mapa, col, largo, ALTO);
+
+function repisaAlta(mapa, col, largo) {
+  for (let i = 0; i < largo; i += 1) mapa[ALTO][col + i] = '#';
 }
 
 function poner(mapa, fila, col, texto) {
   for (let i = 0; i < texto.length; i += 1) mapa[fila][col + i] = texto[i];
 }
 
-function monedasEn(mapa, fila, col, cantidad, paso = 1) {
+function premios(mapa, fila, col, cantidad, paso = 1) {
   for (let i = 0; i < cantidad; i += 1) mapa[fila][col + i * paso] = 'C';
 }
 
-// Arco de monedas sobre un hueco: sigue la curva del salto.
-function arcoDeMonedas(mapa, colInicio, ancho, filaBase) {
+// Arco de premios sobre un hueco: sigue la curva del salto.
+function arco(mapa, colInicio, ancho, filaBase) {
   for (let i = 0; i < ancho; i += 1) {
     const centro = (ancho - 1) / 2;
-    const altura = Math.round(1.6 * (1 - ((i - centro) / (centro + 0.5)) ** 2));
+    const altura = Math.round(1.5 * (1 - ((i - centro) / (centro + 0.5)) ** 2));
     mapa[filaBase - altura][colInicio + i] = 'C';
   }
+}
+
+// El jefe mide el doble que un nino, asi que no se le puede saltar encima desde
+// el suelo: el salto no llega. Cada arena lleva una plataforma a un lado, para
+// subirse y dejarse caer sobre el.
+function plataformaDelJefe(mapa, col) {
+  plataformaMedia(mapa, col, 3);
+}
+
+// pared que cierra el tablero por la derecha, para que el jefe no se escape
+function cerrar(mapa, columnas) {
+  for (let f = ALTO; f < FILAS; f += 1) mapa[f][columnas - 1] = '#';
 }
 
 // --- los cinco tableros -----------------------------------------------------
 
 const NIVELES = [];
 
-// ---------------------------------------------------------------- 1. El barrio
+// --------------------------------------------------------------- 1. Space Coast
 {
-  const columnas = 96;
+  const columnas = 84;
   const m = crearLienzo(columnas);
 
-  terreno(m, 0, 25);
-  terreno(m, 29, 51);
-  terreno(m, 55, 69);
-  terreno(m, 72, 95);
-  repisa(m, 95, 10, 1); // pared que cierra la arena del jefe
-  for (let f = 10; f <= 13; f += 1) m[f][95] = '#';
+  suelo(m, 0, 23);
+  suelo(m, 27, 45);
+  suelo(m, 49, 62);
+  suelo(m, 65, 83);
+  cerrar(m, columnas);
 
-  poner(m, 13, 3, 'P');
-  monedasEn(m, 13, 8, 3);
-  plataforma(m, 13, 11, 4);
-  monedasEn(m, 10, 14, 2);
+  poner(m, SOBRE_SUELO, 3, 'P');
+  premios(m, SOBRE_SUELO, 7, 3);
 
-  poner(m, 13, 20, 'E');
-  monedasEn(m, 13, 22, 2);
+  plataformaMedia(m, 12, 4);
+  premios(m, SOBRE_MEDIO, 13, 3);
 
-  arcoDeMonedas(m, 26, 3, 12); // sobre el primer hueco
+  poner(m, SOBRE_SUELO, 19, 'E');
+  premios(m, SOBRE_SUELO, 21, 2);
 
-  plataforma(m, 32, 11, 3);
-  monedasEn(m, 10, 33, 1);
-  plataforma(m, 37, 9, 3);
-  monedasEn(m, 8, 38, 1);
-  plataforma(m, 42, 7, 3);
-  monedasEn(m, 6, 43, 1);
+  arco(m, 24, 3, SOBRE_SUELO);
 
-  poner(m, 13, 48, 'K');
+  plataformaMedia(m, 29, 4);
+  premios(m, SOBRE_MEDIO, 30, 2);
+  plataformaAlta(m, 34, 4);
+  premios(m, SOBRE_ALTO, 35, 3);
+  plataformaMedia(m, 40, 3);
 
-  monedasEn(m, 13, 56, 2);
-  poner(m, 13, 58, 'E');
-  poner(m, 13, 61, 'E');
-  poner(m, 13, 64, 'E');
-  monedasEn(m, 13, 66, 2);
+  poner(m, SOBRE_SUELO, 43, 'K');
+  arco(m, 46, 3, SOBRE_SUELO);
 
-  monedasEn(m, 12, 70, 2);
-  plataforma(m, 72, 11, 2);
-  repisa(m, 74, 8, 6);
-  monedasEn(m, 7, 74, 6);
+  premios(m, SOBRE_SUELO, 50, 2);
+  poner(m, SOBRE_SUELO, 53, 'E');
+  poner(m, SOBRE_SUELO, 56, 'E');
+  premios(m, SOBRE_SUELO, 59, 2);
+  plataformaMedia(m, 52, 5);
+  premios(m, SOBRE_MEDIO, 53, 4);
 
-  poner(m, 13, 80, 'K');
-  monedasEn(m, 13, 82, 3);
-  poner(m, 13, 87, 'J');
-  poner(m, 13, 94, 'M');
+  arco(m, 63, 2, SOBRE_SUELO);
+
+  plataformaMedia(m, 66, 3);
+  repisaAlta(m, 69, 5);
+  premios(m, SOBRE_ALTO, 69, 5);
+
+  poner(m, SOBRE_SUELO, 71, 'K');
+  plataformaDelJefe(m, 72);
+  poner(m, SOBRE_SUELO, 77, 'J');
+  poner(m, SOBRE_SUELO, 82, 'M');
 
   NIVELES.push({
     archivo: 'nivel1.js',
@@ -118,62 +144,68 @@ const NIVELES = [];
     fondo: 'space-coast',
     mapa: m,
     pistas: [
-      { col: 5, fila: 11, texto: '← →  para moverte' },
-      { col: 12, fila: 9, texto: 'Espacio para saltar' },
-      { col: 31, fila: 10, texto: 'Sube por las plataformas' },
-      { col: 57, fila: 11, texto: 'Pulsa X para atacar' },
-      { col: 75, fila: 11, texto: 'Ahí arriba hay premios' },
-      { col: 84, fila: 9, texto: '¡El jefe!' },
-      { col: 84, fila: 10, texto: 'Sáltale encima o atácale: aguanta 3 golpes' },
+      { col: 4, fila: 7, texto: '← →  moverte' },
+      { col: 12, fila: 4, texto: 'Espacio: saltar' },
+      { col: 35, fila: 1, texto: 'Tres alturas' },
+      { col: 54, fila: 7, texto: 'X: atacar' },
+      { col: 77, fila: 5, texto: '¡El jefe!' },
     ],
   });
 }
 
-// --------------------------------------------------------------- 2. Los tejados
+// ------------------------------------------------------------------ 2. Medellin
 {
-  const columnas = 104;
+  const columnas = 92;
   const m = crearLienzo(columnas);
 
-  terreno(m, 0, 19);
-  terreno(m, 23, 40, 13); // se sube un escalon
-  terreno(m, 44, 62, 12);
-  terreno(m, 66, 78, 13);
-  terreno(m, 82, 103);
-  for (let f = 10; f <= 13; f += 1) m[f][103] = '#';
+  suelo(m, 0, 20);
+  suelo(m, 24, 40);
+  suelo(m, 44, 58);
+  suelo(m, 62, 74);
+  suelo(m, 78, 91);
+  cerrar(m, columnas);
 
-  poner(m, 13, 3, 'P');
-  monedasEn(m, 13, 7, 3);
-  poner(m, 13, 15, 'E');
+  poner(m, SOBRE_SUELO, 3, 'P');
+  premios(m, SOBRE_SUELO, 6, 3);
+  poner(m, SOBRE_SUELO, 14, 'E');
 
-  arcoDeMonedas(m, 20, 3, 12);
-  plataforma(m, 21, 11, 2);
+  plataformaMedia(m, 9, 4);
+  premios(m, SOBRE_MEDIO, 10, 3);
+  plataformaAlta(m, 15, 4);
+  premios(m, SOBRE_ALTO, 16, 3);
 
-  monedasEn(m, 12, 26, 3);
-  poner(m, 12, 31, 'E');
-  plataforma(m, 34, 10, 3);
-  monedasEn(m, 9, 35, 2);
+  arco(m, 21, 3, SOBRE_SUELO);
 
-  arcoDeMonedas(m, 41, 3, 11);
+  premios(m, SOBRE_SUELO, 26, 3);
+  poner(m, SOBRE_SUELO, 31, 'E');
+  plataformaMedia(m, 29, 5);
+  premios(m, SOBRE_MEDIO, 30, 4);
+  plataformaAlta(m, 35, 4);
+  premios(m, SOBRE_ALTO, 36, 3);
 
-  poner(m, 11, 47, 'K');
-  monedasEn(m, 11, 50, 2);
-  poner(m, 11, 53, 'E');
-  poner(m, 11, 56, 'E');
-  plataforma(m, 58, 9, 3);
-  monedasEn(m, 8, 59, 2);
+  arco(m, 41, 3, SOBRE_SUELO);
 
-  arcoDeMonedas(m, 63, 3, 11);
-  monedasEn(m, 12, 68, 3);
-  poner(m, 12, 73, 'E');
-  plataforma(m, 75, 10, 3);
-  monedasEn(m, 9, 76, 2);
+  poner(m, SOBRE_SUELO, 46, 'K');
+  poner(m, SOBRE_SUELO, 50, 'E');
+  poner(m, SOBRE_SUELO, 54, 'E');
+  premios(m, SOBRE_SUELO, 56, 2);
+  plataformaMedia(m, 47, 4);
+  premios(m, SOBRE_MEDIO, 48, 3);
 
-  arcoDeMonedas(m, 79, 3, 12);
+  arco(m, 59, 3, SOBRE_SUELO);
 
-  poner(m, 13, 85, 'K');
-  monedasEn(m, 13, 88, 3);
-  poner(m, 13, 94, 'J');
-  poner(m, 13, 102, 'M');
+  premios(m, SOBRE_SUELO, 64, 3);
+  poner(m, SOBRE_SUELO, 69, 'E');
+  plataformaMedia(m, 63, 4);
+  repisaAlta(m, 67, 5);
+  premios(m, SOBRE_ALTO, 67, 5);
+
+  arco(m, 75, 3, SOBRE_SUELO);
+
+  poner(m, SOBRE_SUELO, 79, 'K');
+  plataformaDelJefe(m, 80);
+  poner(m, SOBRE_SUELO, 85, 'J');
+  poner(m, SOBRE_SUELO, 90, 'M');
 
   NIVELES.push({
     archivo: 'nivel2.js',
@@ -182,70 +214,70 @@ const NIVELES = [];
     fondo: 'medellin',
     mapa: m,
     pistas: [
-      { col: 6, fila: 11, texto: 'Arriba, por la ladera' },
-      { col: 34, fila: 8, texto: 'Arriba hay más premios' },
-      { col: 85, fila: 10, texto: '¡El jefe de Medellín!' },
+      { col: 9, fila: 1, texto: 'Sube por la ladera' },
+      { col: 67, fila: 1, texto: 'Premio gordo' },
+      { col: 84, fila: 5, texto: '¡El jefe de Medellín!' },
     ],
   });
 }
 
-// --------------------------------------------------------------- 3. El mercado
+// ------------------------------------------------------------------- 3. Atlanta
 {
-  const columnas = 108;
+  const columnas = 92;
   const m = crearLienzo(columnas);
 
-  terreno(m, 0, 22);
-  terreno(m, 26, 44);
-  terreno(m, 48, 66);
-  terreno(m, 70, 86);
-  terreno(m, 90, 107);
-  for (let f = 10; f <= 13; f += 1) m[f][107] = '#';
+  suelo(m, 0, 18);
+  suelo(m, 22, 36);
+  suelo(m, 40, 54);
+  suelo(m, 58, 72);
+  suelo(m, 76, 91);
+  cerrar(m, columnas);
 
-  poner(m, 13, 3, 'P');
-  monedasEn(m, 13, 6, 4);
-  poner(m, 13, 13, 'E');
-  poner(m, 13, 17, 'E');
+  poner(m, SOBRE_SUELO, 3, 'P');
+  premios(m, SOBRE_SUELO, 6, 3);
+  poner(m, SOBRE_SUELO, 11, 'E');
+  poner(m, SOBRE_SUELO, 15, 'E');
 
-  // toldos del mercado: plataformas bajas y seguidas
-  plataforma(m, 10, 11, 3);
-  monedasEn(m, 10, 11, 2);
-  plataforma(m, 16, 10, 3);
-  monedasEn(m, 9, 17, 2);
+  plataformaMedia(m, 8, 4);
+  premios(m, SOBRE_MEDIO, 9, 3);
+  plataformaAlta(m, 13, 5);
+  premios(m, SOBRE_ALTO, 14, 4);
 
-  arcoDeMonedas(m, 23, 3, 12);
+  arco(m, 19, 3, SOBRE_SUELO);
 
-  plataforma(m, 28, 11, 3);
-  plataforma(m, 33, 9, 3);
-  monedasEn(m, 8, 34, 2);
-  plataforma(m, 38, 11, 3);
-  poner(m, 13, 30, 'E');
-  poner(m, 13, 36, 'E');
-  monedasEn(m, 13, 41, 3);
+  premios(m, SOBRE_SUELO, 24, 3);
+  poner(m, SOBRE_SUELO, 29, 'E');
+  poner(m, SOBRE_SUELO, 33, 'E');
+  plataformaMedia(m, 26, 5);
+  premios(m, SOBRE_MEDIO, 27, 4);
+  plataformaAlta(m, 32, 4);
+  premios(m, SOBRE_ALTO, 33, 3);
 
-  arcoDeMonedas(m, 45, 3, 12);
+  arco(m, 37, 3, SOBRE_SUELO);
 
-  poner(m, 13, 50, 'K');
-  monedasEn(m, 13, 53, 3);
-  poner(m, 13, 57, 'E');
-  poner(m, 13, 60, 'E');
-  poner(m, 13, 63, 'E');
-  repisa(m, 54, 9, 5);
-  monedasEn(m, 8, 54, 5);
-  plataforma(m, 51, 11, 2);
+  poner(m, SOBRE_SUELO, 42, 'K');
+  premios(m, SOBRE_SUELO, 45, 3);
+  poner(m, SOBRE_SUELO, 50, 'E');
+  plataformaMedia(m, 44, 5);
+  premios(m, SOBRE_MEDIO, 45, 4);
+  plataformaAlta(m, 49, 4);
+  premios(m, SOBRE_ALTO, 50, 3);
 
-  arcoDeMonedas(m, 67, 3, 12);
+  arco(m, 55, 3, SOBRE_SUELO);
 
-  monedasEn(m, 13, 72, 3);
-  plataforma(m, 77, 11, 4);
-  monedasEn(m, 10, 78, 3);
-  poner(m, 13, 83, 'E');
+  premios(m, SOBRE_SUELO, 60, 3);
+  poner(m, SOBRE_SUELO, 65, 'E');
+  poner(m, SOBRE_SUELO, 69, 'E');
+  plataformaMedia(m, 62, 4);
+  repisaAlta(m, 66, 5);
+  premios(m, SOBRE_ALTO, 66, 5);
 
-  arcoDeMonedas(m, 87, 3, 12);
+  arco(m, 73, 3, SOBRE_SUELO);
 
-  poner(m, 13, 92, 'K');
-  monedasEn(m, 13, 95, 3);
-  poner(m, 13, 99, 'J');
-  poner(m, 13, 106, 'M');
+  poner(m, SOBRE_SUELO, 78, 'K');
+  plataformaDelJefe(m, 79);
+  poner(m, SOBRE_SUELO, 85, 'J');
+  poner(m, SOBRE_SUELO, 90, 'M');
 
   NIVELES.push({
     archivo: 'nivel3.js',
@@ -254,61 +286,71 @@ const NIVELES = [];
     fondo: 'atlanta',
     mapa: m,
     pistas: [
-      { col: 8, fila: 8, texto: 'Salta por los tejados' },
-      { col: 56, fila: 11, texto: 'Aquí hay muchos bichos' },
-      { col: 93, fila: 10, texto: '¡El jefe de Atlanta!' },
+      { col: 13, fila: 1, texto: 'Hasta arriba' },
+      { col: 50, fila: 7, texto: 'Aquí hay muchos bichos' },
+      { col: 84, fila: 5, texto: '¡El jefe de Atlanta!' },
     ],
   });
 }
 
-// -------------------------------------------------------------- 4. La quebrada
+// --------------------------------------------------------------------- 4. Miami
 {
-  const columnas = 112;
+  const columnas = 100;
   const m = crearLienzo(columnas);
 
-  terreno(m, 0, 16);
-  terreno(m, 20, 30);
-  terreno(m, 34, 43);
-  terreno(m, 47, 57);
-  terreno(m, 61, 72);
-  terreno(m, 76, 88);
-  terreno(m, 92, 111);
-  for (let f = 10; f <= 13; f += 1) m[f][111] = '#';
+  suelo(m, 0, 14);
+  suelo(m, 18, 28);
+  suelo(m, 32, 42);
+  suelo(m, 46, 56);
+  suelo(m, 60, 70);
+  suelo(m, 74, 84);
+  suelo(m, 88, 99);
+  cerrar(m, columnas);
 
-  poner(m, 13, 3, 'P');
-  monedasEn(m, 13, 6, 3);
-  poner(m, 13, 12, 'E');
+  poner(m, SOBRE_SUELO, 3, 'P');
+  premios(m, SOBRE_SUELO, 6, 3);
+  poner(m, SOBRE_SUELO, 11, 'E');
+  plataformaMedia(m, 7, 4);
+  premios(m, SOBRE_MEDIO, 8, 3);
 
-  arcoDeMonedas(m, 17, 3, 12);
-  monedasEn(m, 13, 22, 3);
-  plataforma(m, 26, 11, 3);
-  monedasEn(m, 10, 27, 2);
+  arco(m, 15, 3, SOBRE_SUELO);
+  premios(m, SOBRE_SUELO, 20, 3);
+  plataformaMedia(m, 19, 4);
+  plataformaAlta(m, 23, 4);
+  premios(m, SOBRE_ALTO, 24, 3);
 
-  arcoDeMonedas(m, 31, 3, 12);
-  poner(m, 13, 37, 'E');
-  monedasEn(m, 13, 40, 2);
+  arco(m, 29, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 35, 'E');
+  premios(m, SOBRE_SUELO, 38, 3);
+  plataformaMedia(m, 33, 4);
+  premios(m, SOBRE_MEDIO, 34, 3);
 
-  arcoDeMonedas(m, 44, 3, 12);
-  poner(m, 13, 49, 'K');
-  plataforma(m, 52, 11, 3);
-  monedasEn(m, 10, 53, 3);
+  arco(m, 43, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 48, 'K');
+  premios(m, SOBRE_SUELO, 51, 3);
+  plataformaMedia(m, 47, 5);
+  plataformaAlta(m, 52, 4);
+  premios(m, SOBRE_ALTO, 53, 3);
 
-  arcoDeMonedas(m, 58, 3, 12);
-  poner(m, 13, 63, 'E');
-  poner(m, 13, 67, 'E');
-  monedasEn(m, 13, 69, 3);
+  arco(m, 57, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 62, 'E');
+  poner(m, SOBRE_SUELO, 66, 'E');
+  premios(m, SOBRE_SUELO, 68, 2);
+  plataformaMedia(m, 61, 5);
+  premios(m, SOBRE_MEDIO, 62, 4);
 
-  arcoDeMonedas(m, 73, 3, 12);
-  repisa(m, 79, 9, 5);
-  monedasEn(m, 8, 79, 5);
-  plataforma(m, 76, 11, 2);
-  poner(m, 13, 85, 'E');
+  arco(m, 71, 3, SOBRE_SUELO);
+  premios(m, SOBRE_SUELO, 76, 3);
+  poner(m, SOBRE_SUELO, 81, 'E');
+  plataformaMedia(m, 75, 4);
+  repisaAlta(m, 79, 5);
+  premios(m, SOBRE_ALTO, 79, 5);
 
-  arcoDeMonedas(m, 89, 3, 12);
-  poner(m, 13, 94, 'K');
-  monedasEn(m, 13, 97, 3);
-  poner(m, 13, 102, 'J');
-  poner(m, 13, 110, 'M');
+  arco(m, 85, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 89, 'K');
+  plataformaDelJefe(m, 88);
+  poner(m, SOBRE_SUELO, 94, 'J');
+  poner(m, SOBRE_SUELO, 98, 'M');
 
   NIVELES.push({
     archivo: 'nivel4.js',
@@ -317,65 +359,70 @@ const NIVELES = [];
     fondo: 'miami',
     mapa: m,
     pistas: [
-      { col: 5, fila: 11, texto: 'Cuidado con los huecos' },
-      { col: 50, fila: 11, texto: 'Con calma y salto largo' },
-      { col: 96, fila: 10, texto: '¡El jefe de Miami!' },
+      { col: 4, fila: 7, texto: 'Cuidado con los huecos' },
+      { col: 79, fila: 1, texto: 'Premio gordo' },
+      { col: 93, fila: 5, texto: '¡El jefe de Miami!' },
     ],
   });
 }
 
-// ------------------------------------------------------------------ 5. La cima
+// ----------------------------------------------------------------- 5. Cartagena
 {
-  const columnas = 116;
+  const columnas = 100;
   const m = crearLienzo(columnas);
 
-  terreno(m, 0, 18);
-  terreno(m, 22, 36, 13);
-  terreno(m, 40, 52, 12);
-  terreno(m, 56, 68, 11);
-  terreno(m, 72, 84, 10);
-  terreno(m, 88, 98, 12);
-  terreno(m, 102, 115);
-  for (let f = 9; f <= 13; f += 1) m[f][115] = '#';
+  suelo(m, 0, 16);
+  suelo(m, 20, 32);
+  suelo(m, 36, 48);
+  suelo(m, 52, 62);
+  suelo(m, 66, 78);
+  suelo(m, 82, 99);
+  cerrar(m, columnas);
 
-  poner(m, 13, 3, 'P');
-  monedasEn(m, 13, 6, 3);
-  poner(m, 13, 14, 'E');
+  poner(m, SOBRE_SUELO, 3, 'P');
+  premios(m, SOBRE_SUELO, 6, 3);
+  poner(m, SOBRE_SUELO, 12, 'E');
+  plataformaMedia(m, 8, 4);
+  premios(m, SOBRE_MEDIO, 9, 3);
+  plataformaAlta(m, 13, 4);
+  premios(m, SOBRE_ALTO, 14, 3);
 
-  arcoDeMonedas(m, 19, 3, 12);
-  monedasEn(m, 12, 24, 3);
-  poner(m, 12, 29, 'E');
-  plataforma(m, 32, 10, 3);
-  monedasEn(m, 9, 33, 2);
+  arco(m, 17, 3, SOBRE_SUELO);
+  premios(m, SOBRE_SUELO, 22, 3);
+  poner(m, SOBRE_SUELO, 27, 'E');
+  plataformaMedia(m, 21, 5);
+  premios(m, SOBRE_MEDIO, 22, 4);
+  plataformaAlta(m, 27, 4);
+  premios(m, SOBRE_ALTO, 28, 3);
 
-  arcoDeMonedas(m, 37, 3, 11);
-  poner(m, 11, 43, 'K');
-  monedasEn(m, 11, 46, 3);
-  poner(m, 11, 50, 'E');
+  arco(m, 33, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 38, 'K');
+  premios(m, SOBRE_SUELO, 41, 3);
+  poner(m, SOBRE_SUELO, 46, 'E');
+  plataformaMedia(m, 39, 5);
+  premios(m, SOBRE_MEDIO, 40, 4);
+  plataformaAlta(m, 44, 4);
+  premios(m, SOBRE_ALTO, 45, 3);
 
-  arcoDeMonedas(m, 53, 3, 10);
-  monedasEn(m, 10, 58, 3);
-  poner(m, 10, 62, 'E');
-  poner(m, 10, 65, 'E');
-  plataforma(m, 66, 8, 3);
-  monedasEn(m, 7, 67, 2);
+  arco(m, 49, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 54, 'E');
+  poner(m, SOBRE_SUELO, 58, 'E');
+  premios(m, SOBRE_SUELO, 60, 2);
+  plataformaMedia(m, 53, 5);
+  premios(m, SOBRE_MEDIO, 54, 4);
 
-  arcoDeMonedas(m, 69, 3, 9);
-  monedasEn(m, 9, 74, 3);
-  poner(m, 9, 79, 'E');
-  repisa(m, 76, 6, 5);
-  monedasEn(m, 5, 76, 5);
-  plataforma(m, 73, 7, 2);
+  arco(m, 63, 3, SOBRE_SUELO);
+  premios(m, SOBRE_SUELO, 68, 3);
+  poner(m, SOBRE_SUELO, 73, 'E');
+  plataformaMedia(m, 67, 4);
+  repisaAlta(m, 71, 6);
+  premios(m, SOBRE_ALTO, 71, 6);
 
-  arcoDeMonedas(m, 85, 3, 11);
-  poner(m, 11, 90, 'E');
-  monedasEn(m, 11, 93, 3);
-
-  arcoDeMonedas(m, 99, 3, 12);
-  poner(m, 13, 104, 'K');
-  monedasEn(m, 13, 106, 3);
-  poner(m, 13, 110, 'J');
-  poner(m, 13, 114, 'M');
+  arco(m, 79, 3, SOBRE_SUELO);
+  poner(m, SOBRE_SUELO, 83, 'K');
+  plataformaDelJefe(m, 85);
+  poner(m, SOBRE_SUELO, 92, 'J');
+  poner(m, SOBRE_SUELO, 98, 'M');
 
   NIVELES.push({
     archivo: 'nivel5.js',
@@ -384,9 +431,9 @@ const NIVELES = [];
     fondo: 'cartagena',
     mapa: m,
     pistas: [
-      { col: 6, fila: 11, texto: 'Hacia las murallas' },
-      { col: 74, fila: 4, texto: 'El premio gordo' },
-      { col: 106, fila: 10, texto: '¡El jefe final de Cartagena!' },
+      { col: 8, fila: 1, texto: 'Hacia las murallas' },
+      { col: 71, fila: 1, texto: 'El premio gordo' },
+      { col: 90, fila: 5, texto: '¡El jefe final!' },
     ],
   });
 }
@@ -395,7 +442,7 @@ const NIVELES = [];
 
 const LEYENDA = `//   #  suelo solido
 //   =  plataforma que se atraviesa desde abajo
-//   C  moneda (sushi para Martin, bloque para Simon)
+//   C  premio (sushi para Martain, bloque para Samaon)
 //   E  enemigo
 //   J  jefe
 //   K  checkpoint
@@ -403,14 +450,11 @@ const LEYENDA = `//   #  suelo solido
 //   P  inicio del jugador
 //   .  vacio`;
 
-function regla(columnas) {
-  return (
-    '// col:  ' +
-    Array.from({ length: Math.ceil(columnas / 10) + 1 }, (_, i) => String(i * 10).padEnd(10, ' '))
-      .join('')
-      .slice(0, columnas)
-  );
-}
+const regla = (columnas) =>
+  '// col:  ' +
+  Array.from({ length: Math.ceil(columnas / 10) + 1 }, (_, i) => String(i * 10).padEnd(10, ' '))
+    .join('')
+    .slice(0, columnas);
 
 NIVELES.forEach((nivel, indice) => {
   const filas = nivel.mapa.map((f) => f.join(''));
@@ -428,6 +472,10 @@ NIVELES.forEach((nivel, indice) => {
 // Se puede editar con el bloc de notas. Leyenda:
 //
 ${LEYENDA}
+//
+// El tablero tiene TRES alturas: el suelo (fila 9), el nivel medio (fila 6) y
+// el alto (fila 3). Las tres filas de arriba se dejan libres a proposito, para
+// los bichos voladores que vendran.
 //
 // Este archivo lo genera herramientas/generar-niveles.mjs. Se puede retocar a
 // mano, pero si se vuelve a ejecutar la herramienta se sobrescribe.
@@ -455,13 +503,12 @@ export default ${nivel.constante};
 
   writeFileSync(`src/niveles/${nivel.archivo}`, contenido, 'utf8');
   console.log(
-    `  ${nivel.archivo.padEnd(11)} ${nivel.nombre.padEnd(14)} ${filas[0].length}x${filas.length}  ` +
-      `monedas ${String(cuenta('C')).padStart(2)}  enemigos ${cuenta('E')}  ` +
+    `  ${nivel.archivo.padEnd(11)} ${nivel.nombre.padEnd(12)} ${filas[0].length}x${filas.length}  ` +
+      `premios ${String(cuenta('C')).padStart(2)}  enemigos ${cuenta('E')}  ` +
       `checkpoints ${cuenta('K')}  jefe ${cuenta('J')}  meta ${cuenta('M')}`,
   );
 });
 
-// indice de niveles
 const indice = `// ---------------------------------------------------------------------------
 // LOS NIVELES, EN ORDEN
 // Anadir uno nuevo es crearlo en herramientas/generar-niveles.mjs y sumarlo a

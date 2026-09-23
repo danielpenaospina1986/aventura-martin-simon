@@ -11,7 +11,7 @@
 import Phaser from 'phaser';
 import { COLORES, FONDO, TEXTURAS, TINTA } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { MUNDO } from '../config/ajustes.js';
+import { ENEMIGO, JEFE, MUNDO } from '../config/ajustes.js';
 
 function generar(escena, clave, ancho, alto, pintar) {
   if (escena.textures.exists(clave)) return;
@@ -228,67 +228,83 @@ export function generarTexturas(escena) {
     g.strokeRect(0.75, 10.75, 24.5, 9.5);
   });
 
-  // enemigo: un bichito redondo con ojos enormes
-  generar(escena, TEXTURAS.enemigo, 28, 24, (g) => {
-    // piececillos
-    tintaRedonda(g, 3, 18, 8, 6, 3, COLORES.enemigoOscuro, 2);
-    tintaRedonda(g, 17, 18, 8, 6, 3, COLORES.enemigoOscuro, 2);
-    // cuerpo
-    tintaCirculo(g, 14, 12, 11, COLORES.enemigo, 2.5);
-    // ojos
-    tintaCirculo(g, 10, 10, 5, 0xffffff, 2);
-    tintaCirculo(g, 20, 10, 4.4, 0xffffff, 2);
-    g.fillStyle(TINTA, 1);
-    g.fillCircle(11, 11, 2.4);
-    g.fillCircle(21, 11, 2.2);
-    // boquita
-    g.lineStyle(2, TINTA, 1);
-    g.beginPath();
-    g.arc(15, 16, 4, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160), false);
-    g.strokePath();
-    brillo(g, 8, 6, 2);
-  });
+  // Enemigo: un bicho redondo con ojos enormes, de la altura de los ninos.
+  generar(escena, TEXTURAS.enemigo, ENEMIGO.ancho, ENEMIGO.alto, (g) => {
+    const a = ENEMIGO.ancho;
+    const h = ENEMIGO.alto;
+    const cx = a / 2;
 
-  // el jefe: el mismo bicho pero enorme, con cuernos y mala cara (72 x 72)
-  const jefe = (colorCuerpo) => (g) => {
-    // patas
-    tintaRedonda(g, 8, 58, 18, 14, 6, COLORES.jefeOscuro, 3);
-    tintaRedonda(g, 46, 58, 18, 14, 6, COLORES.jefeOscuro, 3);
-    // cuernos
-    g.fillStyle(COLORES.jefeCuerno, 1);
-    g.fillTriangle(8, 22, 26, 20, 13, 1);
-    g.fillTriangle(64, 22, 46, 20, 59, 1);
-    g.lineStyle(3, TINTA, 1);
-    g.strokeTriangle(8, 22, 26, 20, 13, 1);
-    g.strokeTriangle(64, 22, 46, 20, 59, 1);
+    // piernecillas
+    tintaRedonda(g, cx - 24, h - 20, 20, 20, 9, COLORES.enemigoOscuro, 3);
+    tintaRedonda(g, cx + 4, h - 20, 20, 20, 9, COLORES.enemigoOscuro, 3);
     // cuerpo
-    tintaCirculo(g, 36, 38, 30, colorCuerpo, 3.5);
-    // cejas de enfado
+    tintaCirculo(g, cx, h * 0.46, a * 0.44, COLORES.enemigo, 4);
+    // ojos
+    tintaCirculo(g, cx - 12, h * 0.4, 13, 0xffffff, 3);
+    tintaCirculo(g, cx + 13, h * 0.4, 11, 0xffffff, 3);
+    g.fillStyle(TINTA, 1);
+    g.fillCircle(cx - 10, h * 0.42, 6);
+    g.fillCircle(cx + 15, h * 0.42, 5);
+    // cejas y boca
     g.lineStyle(4, TINTA, 1);
     g.beginPath();
-    g.moveTo(14, 24);
-    g.lineTo(32, 31);
-    g.moveTo(58, 24);
-    g.lineTo(40, 31);
+    g.moveTo(cx - 24, h * 0.26);
+    g.lineTo(cx - 4, h * 0.31);
+    g.moveTo(cx + 26, h * 0.26);
+    g.lineTo(cx + 6, h * 0.31);
+    g.strokePath();
+    g.beginPath();
+    g.arc(cx, h * 0.58, 12, Phaser.Math.DegToRad(20), Phaser.Math.DegToRad(160), false);
+    g.strokePath();
+    brillo(g, cx - 20, h * 0.24, 5);
+  });
+
+  // El jefe: el mismo bicho pero al doble de altura que un nino.
+  const jefe = (colorCuerpo) => (g) => {
+    const a = JEFE.ancho;
+    const h = JEFE.alto;
+    const cx = a / 2;
+    const radio = a * 0.4;
+    const centroY = h * 0.5;
+
+    // patas
+    tintaRedonda(g, cx - 56, h - 38, 44, 38, 16, COLORES.jefeOscuro, 5);
+    tintaRedonda(g, cx + 12, h - 38, 44, 38, 16, COLORES.jefeOscuro, 5);
+    // cuernos
+    g.fillStyle(COLORES.jefeCuerno, 1);
+    g.fillTriangle(cx - 62, centroY - radio * 0.7, cx - 20, centroY - radio * 0.85, cx - 48, 6);
+    g.fillTriangle(cx + 62, centroY - radio * 0.7, cx + 20, centroY - radio * 0.85, cx + 48, 6);
+    g.lineStyle(5, TINTA, 1);
+    g.strokeTriangle(cx - 62, centroY - radio * 0.7, cx - 20, centroY - radio * 0.85, cx - 48, 6);
+    g.strokeTriangle(cx + 62, centroY - radio * 0.7, cx + 20, centroY - radio * 0.85, cx + 48, 6);
+    // cuerpo
+    tintaCirculo(g, cx, centroY, radio, colorCuerpo, 6);
+    // cejas de enfado
+    g.lineStyle(8, TINTA, 1);
+    g.beginPath();
+    g.moveTo(cx - 48, centroY - 40);
+    g.lineTo(cx - 14, centroY - 22);
+    g.moveTo(cx + 48, centroY - 40);
+    g.lineTo(cx + 14, centroY - 22);
     g.strokePath();
     // ojos
-    tintaCirculo(g, 24, 38, 11, 0xffffff, 2.5);
-    tintaCirculo(g, 48, 38, 11, 0xffffff, 2.5);
+    tintaCirculo(g, cx - 28, centroY - 2, 25, 0xffffff, 5);
+    tintaCirculo(g, cx + 28, centroY - 2, 25, 0xffffff, 5);
     g.fillStyle(TINTA, 1);
-    g.fillCircle(27, 39, 5);
-    g.fillCircle(51, 39, 5);
+    g.fillCircle(cx - 22, centroY + 2, 12);
+    g.fillCircle(cx + 34, centroY + 2, 12);
     // boca con dientes
     g.fillStyle(COLORES.jefeOscuro, 1);
-    g.fillRoundedRect(22, 52, 28, 10, 4);
-    g.lineStyle(2.5, TINTA, 1);
-    g.strokeRoundedRect(22, 52, 28, 10, 4);
+    g.fillRoundedRect(cx - 34, centroY + 34, 68, 24, 9);
+    g.lineStyle(5, TINTA, 1);
+    g.strokeRoundedRect(cx - 34, centroY + 34, 68, 24, 9);
     g.fillStyle(0xffffff, 1);
-    g.fillRect(27, 52, 5, 5);
-    g.fillRect(40, 52, 5, 5);
-    brillo(g, 18, 22, 3.5);
+    g.fillRect(cx - 22, centroY + 34, 12, 12);
+    g.fillRect(cx + 10, centroY + 34, 12, 12);
+    brillo(g, cx - 42, centroY - radio * 0.6, 8);
   };
-  generar(escena, TEXTURAS.jefe, 72, 72, jefe(COLORES.jefe));
-  generar(escena, TEXTURAS.jefeEnfadado, 72, 72, jefe(0xb583cc));
+  generar(escena, TEXTURAS.jefe, JEFE.ancho, JEFE.alto, jefe(COLORES.jefe));
+  generar(escena, TEXTURAS.jefeEnfadado, JEFE.ancho, JEFE.alto, jefe(0xb583cc));
 
   // checkpoint: banderin apagado y encendido
   const banderin = (color) => (g) => {

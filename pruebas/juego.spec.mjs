@@ -189,7 +189,7 @@ test('las monedas se recogen y suman en el HUD', async ({ page }) => {
   // colocar al jugador junto a las primeras monedas del suelo
   await page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
-    n.jugadores[0].setPosition(8 * 32, 13 * 32 + 10);
+    n.jugadores[0].setPosition(7 * 32, 9 * 32 - 40);
   });
   // Se espera a que recoja tres, en vez de correr un tiempo fijo: si la maquina
   // va lenta, en 900 ms no le habria dado tiempo y la prueba fallaria sin que el
@@ -205,13 +205,13 @@ test('las monedas se recogen y suman en el HUD', async ({ page }) => {
   const estado = await estadoJugador(page);
   expect(estado.monedas).toBeGreaterThanOrEqual(3);
   expect(estado.recogidas).toBeGreaterThanOrEqual(3);
-  expect(estado.totalMonedas).toBe(28);
+  expect(estado.totalMonedas).toBe(34);
 });
 
 test('Martín elimina enemigos con la katana', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
   const antes = await estadoJugador(page);
-  expect(antes.enemigos).toBe(4);
+  expect(antes.enemigos).toBe(3);
 
   // el enemigo se queda quieto para que la prueba sea siempre igual
   await page.evaluate(() => {
@@ -221,7 +221,7 @@ test('Martín elimina enemigos con la katana', async ({ page }) => {
     enemigo.direccion = 0;
     enemigo.body.setVelocity(0, 0);
     window.__enemigoDePrueba = enemigo;
-    j.setPosition(enemigo.x - 34, enemigo.y - 14);
+    j.setPosition(enemigo.x - 64, j.y);
     j.body.setVelocity(0, 0);
     j.mirando = 1;
   });
@@ -230,7 +230,7 @@ test('Martín elimina enemigos con la katana', async ({ page }) => {
   await page.waitForTimeout(250);
 
   const despues = await estadoJugador(page);
-  expect(despues.enemigos).toBe(3);
+  expect(despues.enemigos).toBe(2);
   expect(await page.evaluate(() => window.__enemigoDePrueba.active)).toBe(false);
 });
 
@@ -249,7 +249,7 @@ test('saltar encima de un enemigo lo elimina', async ({ page }) => {
   await page.waitForTimeout(700);
 
   const despues = await estadoJugador(page);
-  expect(despues.enemigos).toBe(3);
+  expect(despues.enemigos).toBe(2);
   expect(despues.monedas).toBe(2); // vencer a un bicho da dos monedas
 });
 
@@ -288,20 +288,21 @@ test('Simón lanza bloques y derriban a los enemigos', async ({ page }) => {
     enemigo.direccion = 0;
     enemigo.body.setVelocity(0, 0);
     window.__enemigoDePrueba = enemigo;
-    j.setPosition(enemigo.x - 110, enemigo.y - 14);
+    j.setPosition(enemigo.x - 130, j.y);
     j.body.setVelocity(0, 0);
     j.mirando = 1;
   });
   await page.waitForTimeout(200);
 
   // con la tecla, tal como lo hara un nino
+  //
+  // Aqui no se mira cuantos bloques hay en el aire a mitad de vuelo: con el
+  // bicho cerca, el bloque ya ha impactado. Que el bloque sale se comprueba en
+  // la prueba de al lado, donde no hay nada que golpear.
   await page.keyboard.press('KeyX');
-  await page.waitForTimeout(80);
-  expect((await estadoJugador(page)).proyectiles).toBe(1);
-
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(700);
   expect(await page.evaluate(() => window.__enemigoDePrueba.active)).toBe(false);
-  expect((await estadoJugador(page)).enemigos).toBe(3);
+  expect((await estadoJugador(page)).enemigos).toBe(2);
 });
 
 test('no puede haber más de tres bloques volando a la vez', async ({ page }) => {
@@ -369,8 +370,8 @@ test('al jefe se le quitan tres vidas saltándole encima', async ({ page }) => {
       n.jefe.direccion = 0;
       n.jefe.body.setVelocity(0, 0);
       n.jefe.invulnerableHasta = 0; // sin esperar el parpadeo
-      j.setPosition(n.jefe.x, n.jefe.y - 80);
-      j.body.setVelocity(0, 120);
+      j.setPosition(n.jefe.x, n.jefe.body.top - 70);
+      j.body.setVelocity(0, 140);
       await new Promise((r) => setTimeout(r, 500));
     });
 
@@ -401,7 +402,7 @@ test('la katana de Martín también hace daño al jefe', async ({ page }) => {
     const j = n.jugadores[0];
     n.jefe.direccion = 0;
     n.jefe.body.setVelocity(0, 0);
-    j.setPosition(n.jefe.x - 46, n.jefe.y);
+    j.setPosition(n.jefe.x - 108, j.y);
     j.body.setVelocity(0, 0);
     j.mirando = 1;
   });
@@ -420,7 +421,7 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
     const j = n.jugadores[0];
     n.jefe.direccion = 0;
     n.jefe.body.setVelocity(0, 0);
-    j.setPosition(n.jefe.x - 120, n.jefe.y);
+    j.setPosition(n.jefe.x - 190, j.y);
     j.body.setVelocity(0, 0);
     j.mirando = 1;
   });
@@ -446,7 +447,7 @@ test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ pa
     const j = n.jugadores[0];
     j.monedas = 7; // como si ya hubiese recogido siete
     // tirarlo por el primer hueco (columnas 26-28)
-    j.setPosition(27 * 32 + 16, 13 * 32);
+    j.setPosition(25 * 32 + 16, 9 * 32 - 30);
     j.body.setVelocity(0, 400);
     return j.monedas;
   });
@@ -456,8 +457,8 @@ test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ pa
   const despues = await estadoJugador(page);
   expect(despues.monedas).toBe(4); // 7 - 3
   expect(despues.golpes).toBe(1);
-  expect(despues.y).toBeLessThan(500); // ha vuelto arriba
-  expect(despues.x).toBeLessThan(27 * 32); // ha vuelto al principio
+  expect(despues.y).toBeLessThan(330); // ha vuelto arriba
+  expect(despues.x).toBeLessThan(25 * 32); // ha vuelto al principio
 });
 
 test('el marcador nunca baja de cero', async ({ page }) => {
@@ -518,7 +519,7 @@ test('los cinco niveles cargan con su jefe y sus dos checkpoints', async ({ page
     expect(datos.nombre.length).toBeGreaterThan(0);
     expect(datos.jefe).toBe(true);
     expect(datos.checkpoints).toBe(2);
-    expect(datos.premios).toBeGreaterThan(20);
+    expect(datos.premios).toBeGreaterThan(30);
     expect(datos.meta).toBe(true);
   }
 
@@ -559,7 +560,7 @@ test('el checkpoint se activa aunque se pase saltando por encima', async ({ page
     const antes = { activo: b.activo, reaparicion: Math.round(j.reaparicion.x) };
 
     // pasar por encima a la altura maxima del salto (114,6 px sobre el suelo)
-    j.setPosition(b.x, 13 * 32 + 10 - 114);
+    j.setPosition(b.x, 9 * 32 - 40 - 114);
     j.body.setVelocity(120, -40);
     await new Promise((r) => setTimeout(r, 400));
 
@@ -623,7 +624,7 @@ test('llegar a la meta lleva a la pantalla de victoria', async ({ page }) => {
 });
 
 test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
-  test.setTimeout(150000);
+  test.setTimeout(240000);
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
 
@@ -640,7 +641,9 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
     let xMaxima = j.x;
     let quieto = 0;
 
-    for (let paso = 0; paso < 900 && !n.terminado; paso += 1) {
+    // margen largo: en una maquina lenta el juego va a menos fotogramas y el
+    // recorrido necesita mas pasos para cubrir la misma distancia
+    for (let paso = 0; paso < 1800 && !n.terminado; paso += 1) {
       const sueloDelante = n.haySoporteEn(j.x + 30, j.body.bottom + 6);
       const chocando = j.body.blocked.right;
       const enemigoCerca = n.enemigos

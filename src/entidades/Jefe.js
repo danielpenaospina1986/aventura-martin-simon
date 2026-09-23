@@ -23,8 +23,11 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
     escena.add.existing(this);
     escena.physics.add.existing(this);
 
-    this.body.setSize(JEFE.ancho - 12, JEFE.alto - 10, false);
-    this.body.setOffset(6, 10);
+    this.body.setSize(JEFE.caja.ancho, JEFE.caja.alto, false);
+    this.body.setOffset(
+      (JEFE.ancho - JEFE.caja.ancho) / 2,
+      JEFE.alto - JEFE.caja.alto,
+    );
     this.body.setMaxVelocity(260, 900);
 
     this.direccion = direccion;
@@ -43,12 +46,20 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
   }
 
   // Tres puntitos encima de la cabeza: se apagan segun recibe golpes.
+  //
+  // Van sobre una chapa oscura a proposito: sueltos, se confundian con los
+  // premios, que tambien son redondos y rojos.
   crearBarraDeVida() {
+    this.chapa = this.escena.add
+      .rectangle(0, 0, JEFE.vidas * 34 + 16, 30, COLORES.decoFondo, 0.85)
+      .setStrokeStyle(2, COLORES.decoMarco, 0.95)
+      .setDepth(10);
+
     this.puntos = [];
     for (let i = 0; i < JEFE.vidas; i += 1) {
       const punto = this.escena.add
-        .circle(0, 0, 6, COLORES.jefeVida)
-        .setStrokeStyle(2, 0x16202c, 0.8)
+        .circle(0, 0, 11, COLORES.jefeVida)
+        .setStrokeStyle(3, 0x16202c, 0.8)
         .setDepth(11);
       this.puntos.push(punto);
     }
@@ -56,10 +67,11 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
   }
 
   colocarBarraDeVida() {
-    const separacion = 18;
+    const separacion = 34;
+    if (this.chapa) this.chapa.setPosition(this.x, this.y - JEFE.alto / 2 - 20);
     const inicio = this.x - ((JEFE.vidas - 1) * separacion) / 2;
     this.puntos.forEach((punto, i) => {
-      punto.setPosition(inicio + i * separacion, this.y - JEFE.alto / 2 - 16);
+      punto.setPosition(inicio + i * separacion, this.y - JEFE.alto / 2 - 20);
       punto.setFillStyle(i < this.vidas ? COLORES.jefeVida : COLORES.jefeVidaVacia);
     });
   }
@@ -119,6 +131,8 @@ export class Jefe extends Phaser.Physics.Arcade.Sprite {
   destroy(fromScene) {
     if (this.puntos) this.puntos.forEach((punto) => punto.destroy());
     this.puntos = null;
+    if (this.chapa) this.chapa.destroy();
+    this.chapa = null;
     super.destroy(fromScene);
   }
 }

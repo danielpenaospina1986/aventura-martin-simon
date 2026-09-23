@@ -16,20 +16,23 @@ function katana(jugador, escena) {
   const y = jugador.y + KATANA.desfaseY;
   const x = jugador.x + dir * (jugador.datos.ancho / 2 + 10);
 
-  // arco blanco breve
-  const arco = escena.add
+  // Si el personaje tiene pose de ataque, el arco ya viene dibujado en ella y
+  // pintar otro encima queda doble.
+  const arco = jugador.datos.poses && jugador.datos.poses.atacar ? null : escena.add
     .image(x, y, TEXTURAS.arcoKatana)
     .setDepth(30)
     .setFlipX(dir < 0)
     .setScale(0.85);
-  escena.tweens.add({
-    targets: arco,
-    alpha: { from: 1, to: 0 },
-    scaleX: dir < 0 ? -1.2 : 1.2,
-    scaleY: 1.2,
-    duration: KATANA.duracionMs,
-    onComplete: () => arco.destroy(),
-  });
+  if (arco) {
+    escena.tweens.add({
+      targets: arco,
+      alpha: { from: 1, to: 0 },
+      scaleX: dir < 0 ? -1.2 : 1.2,
+      scaleY: 1.2,
+      duration: KATANA.duracionMs,
+      onComplete: () => arco.destroy(),
+    });
+  }
 
   // zona de dano: se comprueba una sola vez, en el momento del golpe
   const zona = new Phaser.Geom.Rectangle(

@@ -16,8 +16,11 @@ export class Enemigo extends Phaser.Physics.Arcade.Sprite {
     escena.add.existing(this);
     escena.physics.add.existing(this);
 
-    this.body.setSize(24, 18, false);
-    this.body.setOffset(2, 4);
+    this.body.setSize(ENEMIGO.caja.ancho, ENEMIGO.caja.alto, false);
+    this.body.setOffset(
+      (ENEMIGO.ancho - ENEMIGO.caja.ancho) / 2,
+      ENEMIGO.alto - ENEMIGO.caja.alto,
+    );
     this.body.setMaxVelocity(200, 900);
 
     this.direccion = direccion;

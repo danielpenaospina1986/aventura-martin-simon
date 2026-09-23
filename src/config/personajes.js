@@ -10,16 +10,33 @@ export const PERSONAJES = {
   martin: {
     id: 'martin',
     nombre: 'Martaín',
-    textura: TEXTURAS.martin,
+    textura: TEXTURAS.martinQuieto,
     cara: TEXTURAS.caraMartin,
+    poses: {
+      quieto: TEXTURAS.martinQuieto,
+      // ciclo de cuatro: contacto, paso bajo, empuje, vuelo
+      correr: [
+        TEXTURAS.martinCorre1,
+        TEXTURAS.martinCorre2,
+        TEXTURAS.martinCorre3,
+        TEXTURAS.martinCorre4,
+      ],
+      aire: TEXTURAS.martinCorre4,
+      // la segunda de ataque ya trae dibujado el arco de la katana
+      atacar: TEXTURAS.martinAtaque2,
+      golpe: TEXTURAS.martinGolpe,
+      victoria: TEXTURAS.martinVictoria,
+    },
+    msPorPaso: 105,
+    margenPie: 2,
     moneda: TEXTURAS.monedaMartin,
     nombreMoneda: 'sushis',
-    ancho: 22,
-    alto: 44,
-    color: 0xd93b3b,        // rojo
-    colorPelo: 0xe9d6ac,    // castaño muy claro
+    ancho: 86,
+    alto: 86,
+    color: 0xd93b3b,        // rojo (solo para el dibujo de respaldo)
+    colorPelo: 0xe9d6ac,
     altoPelo: 9,
-    caja: { ancho: 16, alto: 40 },  // un poco mas pequena que el dibujo
+    caja: { ancho: 24, alto: 58 },  // mas estrecho que Samaon: es el delgado
     habilidad: 'katana',
     nombreHabilidad: 'Golpe de katana',
     descripcion: 'Delgado y ágil.\nCorta a los enemigos\ncon un golpe de katana.',
@@ -50,15 +67,15 @@ export const PERSONAJES = {
       victoria: TEXTURAS.simonVictoria,
     },
     msPorPaso: 95, // lo que dura cada pose del ciclo de carrera
-    margenPie: 2,   // aire que queda bajo los pies dentro del lienzo
+    margenPie: 3,   // aire que queda bajo los pies dentro del lienzo
     moneda: TEXTURAS.monedaSimon,
     nombreMoneda: 'bloques',
-    ancho: 68,
-    alto: 68,
+    ancho: 86,
+    alto: 86,
     color: 0xef7d1e,        // naranja (solo para el dibujo de respaldo)
     colorPelo: 0x1b1b22,
     altoPelo: 10,
-    caja: { ancho: 28, alto: 54 },
+    caja: { ancho: 30, alto: 58 },
     habilidad: 'lanzar',
     nombreHabilidad: 'Lanzar bloques',
     descripcion: 'Grande y fuerte.\nLanza bloques que\nderriban enemigos.',

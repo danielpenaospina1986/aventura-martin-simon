@@ -88,11 +88,11 @@ export const NOMBRE_FUENTE = 'JuegoDeco';
 
 export const FUENTE = {
   familia: `"${NOMBRE_FUENTE}", "Trebuchet MS", "Segoe UI", sans-serif`,
-  titulo: 54,
-  subtitulo: 26,
-  opcion: 28,
-  hud: 22,
-  pista: 16,
+  titulo: 36,
+  subtitulo: 18,
+  opcion: 19,
+  hud: 15,
+  pista: 12,
 };
 
 // Claves de textura. Un solo lugar donde se nombran los graficos.
@@ -120,6 +120,15 @@ export const TEXTURAS = {
   caraMartin: 'tex-cara-martin',
   caraSimon: 'tex-cara-simon',
   martin: 'tex-martin',
+  martinQuieto: 'tex-martin-quieto',
+  martinCorre1: 'tex-martin-corre1',
+  martinCorre2: 'tex-martin-corre2',
+  martinCorre3: 'tex-martin-corre3',
+  martinCorre4: 'tex-martin-corre4',
+  martinAtaque1: 'tex-martin-ataque1',
+  martinAtaque2: 'tex-martin-ataque2',
+  martinGolpe: 'tex-martin-golpe',
+  martinVictoria: 'tex-martin-victoria',
   simon: 'tex-simon',
   simonQuieto: 'tex-simon-quieto',
   simonCorre1: 'tex-simon-corre1',

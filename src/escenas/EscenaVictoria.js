@@ -41,12 +41,12 @@ export class EscenaVictoria extends Phaser.Scene {
     pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
 
     this.add
-      .text(ancho / 2, 58, this.hayOtroNivel ? '¡Nivel superado!' : '¡Lo lograste!', {
+      .text(ancho / 2, 38, this.hayOtroNivel ? '¡Nivel superado!' : '¡Lo lograste!', {
         fontFamily: FUENTE.familia,
-        fontSize: '54px',
+        fontSize: '34px',
         color: COLORES.textoAcento,
         stroke: '#1b1410',
-        strokeThickness: 9,
+        strokeThickness: 6,
       })
       .setOrigin(0.5);
 
@@ -55,9 +55,9 @@ export class EscenaVictoria extends Phaser.Scene {
       : `${datos.nombre} se ha pasado los ${TOTAL_NIVELES} niveles`;
 
     this.add
-      .text(ancho / 2, 104, subtitulo, {
+      .text(ancho / 2, 68, subtitulo, {
         fontFamily: FUENTE.familia,
-        fontSize: '22px',
+        fontSize: '15px',
         color: COLORES.textoClaro,
         stroke: '#1b1410',
         strokeThickness: 5,
@@ -68,11 +68,11 @@ export class EscenaVictoria extends Phaser.Scene {
     // si el personaje tiene pose de celebracion, se usa esa; si no, su carita
     const celebra = datos.poses && datos.poses.victoria;
     const figura = this.add
-      .image(150, 300, celebra || datos.cara)
-      .setDisplaySize(celebra ? 190 : 150, celebra ? 190 : 150);
+      .image(100, 205, celebra || datos.cara)
+      .setDisplaySize(celebra ? 130 : 100, celebra ? 130 : 100);
     this.tweens.add({
       targets: figura,
-      y: figura.y - 18,
+      y: figura.y - 12,
       duration: 420,
       yoyo: true,
       repeat: -1,
@@ -81,10 +81,10 @@ export class EscenaVictoria extends Phaser.Scene {
     this.time.addEvent({
       delay: 620,
       loop: true,
-      callback: () => estrellitas(this, 150, 270, 7),
+      callback: () => estrellitas(this, 100, 180, 7),
     });
 
-    this.pintarMarcador(ancho / 2 + 90, 300);
+    this.pintarMarcador(ancho / 2 + 62, 198);
 
     // Lo que se arrastra al siguiente nivel: la partida es de los cinco.
     const partida = {
@@ -115,9 +115,9 @@ export class EscenaVictoria extends Phaser.Scene {
 
     new Menu(this, opciones, {
       x: ancho / 2,
-      y: this.hayOtroNivel ? 434 : 448,
-      separacion: 40,
-      tamano: 24,
+      y: this.hayOtroNivel ? 296 : 306,
+      separacion: 27,
+      tamano: 16,
     });
   }
 
@@ -125,33 +125,33 @@ export class EscenaVictoria extends Phaser.Scene {
 
   pintarMarcador(cx, cy) {
     const datos = PERSONAJES[this.personajeId];
-    const anchoPanel = 470;
-    panelDeco(this, cx, cy, anchoPanel, 300);
+    const anchoPanel = 320;
+    panelDeco(this, cx, cy, anchoPanel, 204, { escalon: 10 });
 
-    const izquierda = cx - anchoPanel / 2 + 34;
-    const derecha = cx + anchoPanel / 2 - 34;
+    const izquierda = cx - anchoPanel / 2 + 22;
+    const derecha = cx + anchoPanel / 2 - 22;
 
     const linea = (y, texto, valor, color = COLORES.textoSuave) => {
       this.add
         .text(izquierda, y, texto, {
           fontFamily: FUENTE.familia,
-          fontSize: '20px',
+          fontSize: '13px',
           color,
         })
         .setOrigin(0, 0.5);
       this.add
         .text(derecha, y, valor, {
           fontFamily: FUENTE.familia,
-          fontSize: '20px',
+          fontSize: '13px',
           color,
         })
         .setOrigin(1, 0.5);
     };
 
     this.add
-      .text(cx, cy - 106, 'Marcador', {
+      .text(cx, cy - 72, 'Marcador', {
         fontFamily: FUENTE.familia,
-        fontSize: '26px',
+        fontSize: '17px',
         color: COLORES.textoAcento,
       })
       .setOrigin(0.5);
@@ -159,53 +159,53 @@ export class EscenaVictoria extends Phaser.Scene {
     const perdido = this.golpes * Math.abs(PUNTOS.porGolpe);
     const bonus = this.jefesDerrotados * PUNTOS.porJefe;
 
-    linea(cy - 62, `${datos.nombreMoneda} recogidos`, `+${this.recogidas}`, COLORES.textoClaro);
+    linea(cy - 42, `${datos.nombreMoneda} recogidos`, `+${this.recogidas}`, COLORES.textoClaro);
     linea(
-      cy - 32,
+      cy - 21,
       this.golpes === 1 ? '1 golpe o caída' : `${this.golpes} golpes o caídas`,
       perdido ? `-${perdido}` : '0',
       this.golpes ? '#ff8f8f' : COLORES.textoSuave,
     );
     linea(
-      cy + 14,
+      cy + 1,
       this.enemigosVencidos === 1 ? '1 bicho vencido' : `${this.enemigosVencidos} bichos vencidos`,
       `+${this.enemigosVencidos * PUNTOS.porEnemigo}`,
       COLORES.textoClaro,
     );
-    linea(cy + 44, this.jefesDerrotados ? 'Jefes derrotados' : 'Sin jefe', `+${bonus}`, COLORES.textoClaro);
+    linea(cy + 23, this.jefesDerrotados ? 'Jefes derrotados' : 'Sin jefe', `+${bonus}`, COLORES.textoClaro);
 
     // raya de separacion
     const raya = this.add.graphics();
     raya.lineStyle(2, COLORES.decoMarcoOscuro, 0.9);
     raya.beginPath();
-    raya.moveTo(izquierda, cy + 68);
-    raya.lineTo(derecha, cy + 68);
+    raya.moveTo(izquierda, cy + 42);
+    raya.lineTo(derecha, cy + 42);
     raya.strokePath();
 
     this.add
-      .text(izquierda, cy + 98, 'Total', {
+      .text(izquierda, cy + 64, 'Total', {
         fontFamily: FUENTE.familia,
-        fontSize: '30px',
+        fontSize: '20px',
         color: COLORES.textoAcento,
       })
       .setOrigin(0, 0.5);
 
     this.add
-      .image(derecha - 82, cy + 98, datos.moneda)
-      .setScale(1.5);
+      .image(derecha - 54, cy + 64, datos.moneda)
+      .setScale(1);
 
     this.add
-      .text(derecha, cy + 98, String(this.monedas), {
+      .text(derecha, cy + 64, String(this.monedas), {
         fontFamily: FUENTE.familia,
-        fontSize: '38px',
+        fontSize: '25px',
         color: COLORES.textoAcento,
       })
       .setOrigin(1, 0.5);
 
     this.add
-      .text(cx, cy + 130, this.mensaje(), {
+      .text(cx, cy + 88, this.mensaje(), {
         fontFamily: FUENTE.familia,
-        fontSize: '15px',
+        fontSize: '10px',
         color: COLORES.textoSuave,
         align: 'center',
       })

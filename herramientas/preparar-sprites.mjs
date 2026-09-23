@@ -40,6 +40,20 @@ const PERSONAJES = [
       { archivo: 'hoja-extras', nombres: ['golpe', 'victoria'] },
     ],
   },
+  {
+    nombre: 'martin',
+    origen: 'src/assets/martin-origen',
+    destino: 'src/assets/martin',
+    poses: ['quieto'],
+    // La hoja trae, en orden de lectura: dolor, victoria, el ciclo de carrera
+    // de cuatro y dos de ataque con la katana.
+    hojas: [
+      {
+        archivo: 'hoja',
+        nombres: ['golpe', 'victoria', 'corre1', 'corre2', 'corre3', 'corre4', 'ataque1', 'ataque2'],
+      },
+    ],
+  },
 ];
 
 // El navegador solo se usa como lienzo de dibujo: las imagenes se le pasan ya

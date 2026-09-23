@@ -34,16 +34,16 @@ export class EscenaTitulo extends Phaser.Scene {
       0.82,
       0.82,
     );
-    velo.fillRect(0, alto - 180, ancho, 180);
+    velo.fillRect(0, alto - 118, ancho, 118);
 
     this.add
       .text(
         ancho / 2,
-        alto - 122,
+        alto - 80,
         '← →  o  A D   moverse        ↑  W  o  Espacio   saltar        X  o  F   habilidad',
         {
           fontFamily: FUENTE.familia,
-          fontSize: '17px',
+          fontSize: '12px',
           color: COLORES.textoSuave,
           align: 'center',
         },
@@ -51,12 +51,12 @@ export class EscenaTitulo extends Phaser.Scene {
       .setOrigin(0.5);
 
     const empezar = this.add
-      .text(ancho / 2, alto - 66, 'Pulsa Enter o haz clic para empezar', {
+      .text(ancho / 2, alto - 42, 'Pulsa Enter o haz clic para empezar', {
         fontFamily: FUENTE.familia,
         fontSize: `${FUENTE.opcion}px`,
         color: COLORES.textoAcento,
         stroke: '#1b1410',
-        strokeThickness: 7,
+        strokeThickness: 5,
       })
       .setOrigin(0.5);
 

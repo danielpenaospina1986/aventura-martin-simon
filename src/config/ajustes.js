@@ -5,9 +5,19 @@
 // ---------------------------------------------------------------------------
 
 export const MUNDO = {
-  ancho: 960,      // resolucion interna
-  alto: 540,
+  // Resolucion interna. Es pequena a proposito: al escalarse a la ventana, todo
+  // se ve al doble de tamano que antes, que es lo que pide un dibujo animado.
+  // La casilla y la fisica no cambian: solo se ve menos mundo, mas grande.
+  ancho: 640,
+  alto: 360,
   casilla: 32,     // grilla de 32x32
+
+  // El tablero tiene tres alturas por las que moverse, y una franja arriba que
+  // se deja libre para los bichos voladores que vendran.
+  filas: 11,
+  nivelSuelo: 9,    // fila donde esta el suelo
+  nivelMedio: 6,    // se llega saltando desde el suelo
+  nivelAlto: 3,     // se llega saltando desde el medio
 };
 
 export const FISICA = {
@@ -38,17 +48,22 @@ export const JUGADOR = {
 };
 
 export const KATANA = {
-  alcance: 38,      // hacia adelante desde el centro del jugador
-  alto: 34,
+  alcance: 52,      // hacia adelante desde el centro del jugador
+  // La zona de golpe cubre del pecho a los pies, para que alcance igual a un
+  // bicho que a un jefe, que son de alturas muy distintas.
+  alto: 64,
+  desfaseY: 10,
   duracionMs: 170,  // cuanto se ve el arco blanco
   recargaMs: 280,
-  desfaseY: -2,
 };
 
 // Simon lanza bloques hacia adelante. Antes los construia para subir; ahora es
 // un golpe, como la katana de Martin, para que los dos puedan pelear con el jefe.
 export const LANZAMIENTO = {
   velocidad: 480,      // a que velocidad sale el bloque
+  // Sale a la altura de la cadera, no del pecho: desde mas arriba pasaba por
+  // encima de los enemigos.
+  salidaY: 10,
   // Sale casi recto y va cayendo. Con mas impulso hacia arriba describia un
   // arco alto y pasaba por encima de los enemigos, que son bajitos.
   elevacion: -30,
@@ -77,20 +92,28 @@ export const JEFE = {
   parpadeoMs: 110,
   reboteJugador: 470,   // impulso del jugador al saltarle encima
   empujonAlHerir: 90,   // cuanto retrocede el jefe al recibir un golpe
-  ancho: 72,
-  alto: 72,
+  // El jefe mide el doble que un nino. No se le puede saltar encima desde el
+  // suelo: hay que subir a la plataforma de su arena y dejarse caer.
+  ancho: 172,
+  alto: 172,
+  caja: { ancho: 148, alto: 158 },
 };
 
 export const ENEMIGO = {
   velocidad: 58,
-  sondaBorde: 6,    // cuanto mira por delante para detectar el borde
+  sondaBorde: 8,    // cuanto mira por delante para detectar el borde
+  // Los bichos son del tamano de los ninos: si son mucho mas bajos, cuesta
+  // darles y no dan ningun respeto.
+  ancho: 76,
+  alto: 86,
+  caja: { ancho: 52, alto: 74 },
 };
 
 export const CAMARA = {
   suavizado: 0.12,
-  zonaMuertaAncho: 160,
-  zonaMuertaAlto: 120,
-  desfaseY: -20,
+  zonaMuertaAncho: 110,
+  zonaMuertaAlto: 90,
+  desfaseY: -10,
 };
 
 // Valores derivados, usados para comprobar que los niveles son jugables.

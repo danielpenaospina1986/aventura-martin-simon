@@ -23,7 +23,7 @@ codigo los identificadores siguen siendo `simon` y `martin`.
 | Motor | Phaser **4.2.1** (ultima estable) |
 | Empaquetador | Vite **8.3.0** |
 | Lenguaje | JavaScript (ES modules), sin TypeScript |
-| Resolucion interna | **960 x 540** |
+| Resolucion interna | **640 x 360** (pequena a proposito: al escalarse, todo se ve al doble) |
 | Escalado | `Phaser.Scale.FIT` + `CENTER_BOTH` (se adapta a la ventana sin deformarse) |
 | Modo | antialias **encendido** (el estilo es dibujo animado, no pixel art) |
 | Tipografia | Chailce Noggin, completada a mano (ver seccion 10) |
@@ -124,17 +124,20 @@ es la habilidad.
 > de seleccion y arriba, junto al contador de monedas, mientras se juega.
 
 ### Martain (Martin) — el samurai
-- Fisico: delgado. Rectangulo provisional de **22 x 44 px**, color rojo.
-- Pelo: castano muy claro (franja arriba del rectangulo).
-- Arte final: samurai con katana.
+- **Dibujo propio**: samurai con gorra al reves, kimono, katana y sandalias.
+- Sprite de **86 x 86 px**, caja de colision de **24 x 58** (mas estrecho que
+  Samaon: es el delgado).
+- **Nueve poses**: quieto, ciclo de carrera de cuatro (contacto, paso bajo,
+  empuje, vuelo), dos de ataque, dolor y victoria. La de ataque ya trae dibujado
+  el arco de la katana, asi que no se pinta otro encima.
 - **Habilidad:** golpe de katana hacia adelante. Aparece un arco blanco breve
   delante de el que elimina a los enemigos que toque.
 
 ### Samaon (Simon) — el constructor
 - **Ya tiene dibujo propio** (no es un rectangulo). Sudadera azul con parches,
   vaqueros y zapatos hechos de piezas de construccion.
-- Sprite de **68 x 68 px** (lienzo cuadrado con todas las poses a la misma
-  altura), caja de colision de **28 x 54**.
+- Sprite de **86 x 86 px** (lienzo cuadrado con todas las poses a la misma
+  altura), caja de colision de **30 x 58**.
 - **Nueve poses dibujadas**: quieto, ciclo de carrera de cinco (contacto, paso
   bajo, empuje, empuje, vuelo), lanzar, recibir golpe y victoria. La de vuelo,
   con los dos pies en el aire, se usa tambien para cuando esta saltando.
@@ -146,9 +149,15 @@ es la habilidad.
   - Antes construia bloques para subir. Se cambio para que los dos personajes
     tengan un golpe y los dos puedan pelear con el jefe.
 
-### El jefe
+### Los bichos y el jefe
 
-Al final del nivel espera un bicho grande (**72 x 72 px**) con **3 vidas**. Camina de
+Los bichos miden **76 x 86**, la misma altura que los ninos: mas bajos costaba
+darles y no daban ningun respeto.
+
+Al final del nivel espera el jefe, que mide **172 x 172**, el doble que un nino,
+con **3 vidas**. Como no se le puede saltar encima desde el suelo (el salto no
+llega), cada arena lleva una **plataforma a un lado** para subirse y dejarse caer
+sobre el. Con la katana o con un bloque se le alcanza desde el suelo. Camina de
 un lado a otro de su arena y da la vuelta en los bordes; no persigue.
 
 - Se le hace dano de tres maneras, para que los dos ninos puedan con el:
@@ -238,6 +247,21 @@ es una casilla de 32 x 32.
 | `M` | meta |
 | `P` | posicion de inicio |
 | `.` | vacio |
+
+### Las tres alturas
+
+El tablero tiene **tres alturas y solo tres**, y una franja libre arriba:
+
+```
+ fila 0-2   franja libre, reservada para los bichos voladores que vendran
+ fila 3     TERCER nivel   (se llega saltando desde el segundo)
+ fila 6     SEGUNDO nivel  (se llega saltando desde el suelo)
+ fila 9     SUELO          (por donde se camina)
+ fila 10    subsuelo
+```
+
+Entre altura y altura hay 3 casillas (96 px) y el salto llega a 3,58, asi que se
+sube de una a otra pero nunca del suelo al tercero de un tiron.
 
 ### Los cinco tableros
 
@@ -417,6 +441,17 @@ baja.
 - **2026-09-22** — La portada se colorea mapeando la luz de cada punto a una rampa
   de color (tinta, rojo, teja, naranja, mostaza, crema), como se hacia en los
   carteles de los anos 30, en vez de inventar un color por objeto.
+- **2026-09-22** — La ventana del juego baja a **640 x 360**. Es la forma limpia
+  de que todo se vea al doble de grande sin tocar la casilla ni la fisica: solo
+  se ve menos mundo, mas grande. Los textos y los paneles se reescalaron a mano.
+- **2026-09-22** — El tablero pasa a tener **tres alturas** y una franja libre
+  arriba para los voladores. Los cinco mapas se rehicieron con esa estructura.
+- **2026-09-22** — Los personajes pasan a **86 px**, los bichos a la misma altura
+  y el jefe a **172**, el doble. Al agrandarlos, la katana y los bloques, que
+  salian a la altura del pecho, pasaban por encima de los bichos; ahora la zona
+  de golpe va del pecho a los pies.
+- **2026-09-22** — La barra de vida del jefe va sobre una chapa oscura: sueltos,
+  sus puntos rojos se confundian con los premios, que tambien son rojos.
 - **2026-09-22** — Cuidado con `setScale` en los personajes: sus texturas son
   lienzos de 260 px, asi que "escalar un poco" los hacia gigantes en los menus.
   Se fija el tamano en pixeles con setDisplaySize.

@@ -38,6 +38,15 @@ import simonCorre5 from '../assets/simon/corre5.png';
 import simonLanza from '../assets/simon/lanza.png';
 import simonGolpe from '../assets/simon/golpe.png';
 import simonVictoria from '../assets/simon/victoria.png';
+import martinQuieto from '../assets/martin/quieto.png';
+import martinCorre1 from '../assets/martin/corre1.png';
+import martinCorre2 from '../assets/martin/corre2.png';
+import martinCorre3 from '../assets/martin/corre3.png';
+import martinCorre4 from '../assets/martin/corre4.png';
+import martinAtaque1 from '../assets/martin/ataque1.png';
+import martinAtaque2 from '../assets/martin/ataque2.png';
+import martinGolpe from '../assets/martin/golpe.png';
+import martinVictoria from '../assets/martin/victoria.png';
 
 export class EscenaCarga extends Phaser.Scene {
   constructor() {
@@ -61,6 +70,15 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.simonLanza, simonLanza);
     this.load.image(TEXTURAS.simonGolpe, simonGolpe);
     this.load.image(TEXTURAS.simonVictoria, simonVictoria);
+    this.load.image(TEXTURAS.martinQuieto, martinQuieto);
+    this.load.image(TEXTURAS.martinCorre1, martinCorre1);
+    this.load.image(TEXTURAS.martinCorre2, martinCorre2);
+    this.load.image(TEXTURAS.martinCorre3, martinCorre3);
+    this.load.image(TEXTURAS.martinCorre4, martinCorre4);
+    this.load.image(TEXTURAS.martinAtaque1, martinAtaque1);
+    this.load.image(TEXTURAS.martinAtaque2, martinAtaque2);
+    this.load.image(TEXTURAS.martinGolpe, martinGolpe);
+    this.load.image(TEXTURAS.martinVictoria, martinVictoria);
   }
 
   create() {

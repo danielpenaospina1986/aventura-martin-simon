@@ -376,7 +376,7 @@ export class EscenaNivel extends Phaser.Scene {
     const dir = jugador.mirando;
     const proyectil = this.proyectiles.create(
       jugador.x + dir * (jugador.datos.ancho / 2 + 10),
-      jugador.y - 6,
+      jugador.y + (LANZAMIENTO.salidaY || 0),
       TEXTURAS.bloque,
     );
 

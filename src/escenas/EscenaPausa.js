@@ -22,13 +22,13 @@ export class EscenaPausa extends Phaser.Scene {
     this.add.rectangle(0, 0, ancho, alto, 0x0a0f18, 0.72).setOrigin(0, 0);
 
     this.add
-      .rectangle(ancho / 2, alto / 2 - 6, 440, 300, COLORES.panel, 0.9)
-      .setStrokeStyle(3, COLORES.panelBorde, 1);
+      .rectangle(ancho / 2, alto / 2 - 4, 300, 200, COLORES.panel, 0.92)
+      .setStrokeStyle(2, COLORES.panelBorde, 1);
 
     this.add
-      .text(ancho / 2, alto / 2 - 108, 'Pausa', {
+      .text(ancho / 2, alto / 2 - 72, 'Pausa', {
         fontFamily: FUENTE.familia,
-        fontSize: '46px',
+        fontSize: '30px',
         color: COLORES.textoAcento,
         fontStyle: 'bold',
       })
@@ -41,13 +41,13 @@ export class EscenaPausa extends Phaser.Scene {
         { etiqueta: 'Cambiar personaje', alElegir: () => this.salirA('seleccion') },
         { etiqueta: 'Volver al menú', alElegir: () => this.salirA('titulo') },
       ],
-      { x: ancho / 2, y: alto / 2 - 20, separacion: 52, tamano: 26 },
+      { x: ancho / 2, y: alto / 2 - 14, separacion: 34, tamano: 17 },
     );
 
     this.add
-      .text(ancho / 2, alto / 2 + 130, 'Esc  seguir jugando', {
+      .text(ancho / 2, alto / 2 + 86, 'Esc  seguir jugando', {
         fontFamily: FUENTE.familia,
-        fontSize: '15px',
+        fontSize: '11px',
         color: COLORES.textoSuave,
       })
       .setOrigin(0.5)
