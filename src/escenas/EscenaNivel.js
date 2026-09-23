@@ -16,6 +16,7 @@ import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
 import { aEscalaDeJuego, escalaDeJuego, pintarFondo } from '../sistemas/dibujo.js';
 import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
+import { ciudadDe } from '../config/ciudades.js';
 import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
@@ -72,7 +73,10 @@ export class EscenaNivel extends Phaser.Scene {
 
     // El plano de delante: ramas, faroles y matas que cruzan pegados a la
     // camara. De momento son los mismos en las cinco ciudades.
-    montarPrimerPlano(this, ancho, alto, this.nivel.ancho, this.datosNivel.frente, this.planos);
+    // Cada ciudad tiene sus adornos de primer plano; las que no traen los
+    // suyos se quedan con los provisionales.
+    const suyos = ciudadDe(this.datosNivel.fondo || '').frente;
+    montarPrimerPlano(this, ancho, alto, this.nivel.ancho, suyos, this.planos);
     this.enemigos = this.nivel.enemigos;
     this.jefe = this.nivel.jefe;
     this.terminado = false;

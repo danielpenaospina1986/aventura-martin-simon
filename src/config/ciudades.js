@@ -17,10 +17,27 @@
 // convierten el suelo en una cuadricula.
 // ---------------------------------------------------------------------------
 
+// Los adornos del primer plano, los que cruzan pegados a la camara. Las medidas
+// estan pensadas contra el nino, que mide 86 px: una palmera es el doble de
+// alta que el, un bus le saca la cabeza, una olla le llega por la cintura.
+//
+//   desde    de que borde cuelga: 'abajo' (a nivel de suelo) o 'arriba'
+//   alto     lo que mide en pantalla; el ancho sale solo, sin deformar
+//   cada     cada cuantos pixeles aparece uno
+//   desfase  donde empieza la serie, para que no salgan todos alineados
+import { TEXTURAS } from './estilo.js';
+
 export const CIUDADES = {
   // Costa espacial: arena de playa y hormigon de plataforma de lanzamiento.
   'space-coast': {
     pais: 'us',
+    // costa y cabo de lanzamiento: palmeras, un vecino de otro planeta dandose
+    // un bano, y un astronauta flotando alla arriba
+    frente: [
+      { textura: TEXTURAS.frentePalmera, desde: 'abajo', alto: 172, cada: 760, desfase: 340 },
+      { textura: TEXTURAS.frenteAlien, desde: 'abajo', alto: 124, cada: 1180, desfase: 900 },
+      { textura: TEXTURAS.frenteAstronauta, desde: 'arriba', alto: 104, cada: 1020, desfase: 520 },
+    ],
     pavimento: { patron: 'arena', claro: 0xe6d2a6, medio: 0xd2b98a, oscuro: 0xb09763 },
     subsuelo: { patron: 'estratos', claro: 0xb49b70, medio: 0x9c8460, oscuro: 0x7d6848 },
     cornisa: { cuerpo: 0xd8c49b, borde: 0x8d7850 },
@@ -29,6 +46,14 @@ export const CIUDADES = {
   // Medellin: acera de baldosa y ladrillo rojo debajo.
   medellin: {
     pais: 'co',
+    // la ciudad de la hinchada verde, los frijoles y los guayacanes en flor
+    frente: [
+      { textura: TEXTURAS.frenteGuayacan, desde: 'abajo', alto: 196, cada: 880, desfase: 300 },
+      { textura: TEXTURAS.frenteBus1, desde: 'abajo', alto: 146, cada: 1240, desfase: 760 },
+      { textura: TEXTURAS.frentePalmeraAlta, desde: 'abajo', alto: 232, cada: 1060, desfase: 1180 },
+      { textura: TEXTURAS.frenteBus2, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600 },
+      { textura: TEXTURAS.frenteFrijoles, desde: 'abajo', alto: 92, cada: 1140, desfase: 480 },
+    ],
     pavimento: { patron: 'baldosa', claro: 0xcfc4b0, medio: 0xb5a893, oscuro: 0x8d8070 },
     subsuelo: { patron: 'adoquin', claro: 0xa85f45, medio: 0x8e4d37, oscuro: 0x6b3828 },
     cornisa: { cuerpo: 0xc08f5e, borde: 0x6b4526 },

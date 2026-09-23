@@ -20,6 +20,7 @@
 // el nivel solo tiene que traer su propia lista en `frente`.
 // ---------------------------------------------------------------------------
 
+import { MUNDO } from '../config/ajustes.js';
 import { PLANOS, TEXTURAS } from '../config/estilo.js';
 
 // ---------------------------------------------------------------------------
@@ -104,7 +105,11 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
   lista.forEach((adorno) => {
     if (!escena.textures.exists(adorno.textura)) return;
     const fuente = escena.textures.get(adorno.textura).getSourceImage();
-    const escala = adorno.ancho / fuente.width;
+    // se puede pedir por alto (lo normal, que es lo que se compara con el nino)
+    // o por ancho; lo otro sale solo, sin deformar el dibujo
+    const escala = adorno.alto
+      ? adorno.alto / fuente.height
+      : adorno.ancho / fuente.width;
     const altoEnPantalla = fuente.height * escala;
 
     for (let x = adorno.desfase; x < hasta; x += adorno.cada) {
@@ -112,16 +117,20 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
       const meneo = Math.sin(x * 0.017) * adorno.cada * 0.16;
       const arriba = adorno.desde === 'arriba';
 
+      // Los de abajo se apoyan en la LINEA DE SUELO, que es donde camina el
+      // nino, y no en el borde de la pantalla: asi se leen como cosas que estan
+      // ahi mismo, delante de el, en vez de asomar por el canto de abajo.
+      const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
       const pieza = escena.add
-        .image(x + meneo, arriba ? -6 : alto + 6, adorno.textura)
+        .image(x + meneo, arriba ? -6 : suelo, adorno.textura)
         .setOrigin(0.5, arriba ? 0 : 1)
         .setScale(escala)
         .setAlpha(adorno.alpha ?? PLANOS.frente.alpha)
         .setDepth(PLANOS.frente.profundidad);
       if (planos) planos.anadir(pieza, velocidad);
 
-      // los de abajo se hunden un poco, para que no se vea donde apoyan
-      if (!arriba) pieza.setY(alto + Math.min(14, altoEnPantalla * 0.12));
+      // se hunden un pelin, para que no se vea la linea donde apoyan
+      if (!arriba) pieza.setY(suelo + Math.min(10, altoEnPantalla * 0.06));
 
       piezas.push(pieza);
     }

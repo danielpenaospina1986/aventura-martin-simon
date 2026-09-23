@@ -154,6 +154,16 @@ export const TEXTURAS = {
   arcoKatana: 'tex-arco-katana',
   nube: 'tex-nube',
   // primer plano: siluetas que cruzan por delante de todo
+  // adornos de primer plano dibujados a mano, por ciudad
+  frentePalmera: 'tex-frente-palmera',
+  frenteAlien: 'tex-frente-alien',
+  frenteAstronauta: 'tex-frente-astronauta',
+  frenteBus1: 'tex-frente-bus1',
+  frenteBus2: 'tex-frente-bus2',
+  frenteFrijoles: 'tex-frente-frijoles',
+  frentePalmeraAlta: 'tex-frente-palmera-alta',
+  frenteGuayacan: 'tex-frente-guayacan',
+
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',
   frenteMata: 'tex-frente-mata',

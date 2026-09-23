@@ -106,6 +106,42 @@ const PERSONAJES = [
     ],
   },
   {
+    // Los adornos del primer plano, los que cruzan pegados a la camara.
+    nombre: 'frente',
+    // Las palmeras tienen las hojas del mismo verde que la lamina: por tono se
+    // las comia el recorte y quedaba solo el tronco.
+    colorExacto: true,
+    tolerancia: 60,
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'frente',
+        // cada uno a lo suyo: una palmera y una olla no miden lo mismo
+        porPieza: true,
+        // Las zonas van a mano para saber con certeza cual es cual: aqui el
+        // orden que saca el detector no coincide con el de lectura, porque las
+        // banderas de los buses y las copas de las palmeras desplazan los
+        // recuadros.
+        nombres: [
+          'palmera', 'alien', 'astronauta', 'bus1',
+          'bus2', 'frijoles', 'palmera-alta', 'guayacan',
+        ],
+        zonas: [
+          { x: 80, y: 45, ancho: 240, alto: 300 },     // palmera de playa
+          { x: 360, y: 60, ancho: 310, alto: 300 },    // alien en la banera
+          { x: 695, y: 55, ancho: 295, alto: 300 },    // astronauta flotando
+          { x: 1020, y: 50, ancho: 355, alto: 310 },   // bus con hinchas
+          { x: 50, y: 400, ancho: 375, alto: 320 },    // bus con confeti
+          { x: 445, y: 425, ancho: 320, alto: 295 },   // olla de frijoles
+          { x: 780, y: 370, ancho: 175, alto: 355 },   // palmera alta
+          { x: 980, y: 385, ancho: 395, alto: 345 },   // guayacan en flor
+        ],
+      },
+    ],
+  },
+  {
     nombre: 'martin',
     origen: 'src/assets/martin-origen',
     destino: 'src/assets/martin',
@@ -150,11 +186,28 @@ await pagina.evaluate(() => {
     return h < 0 ? h + 360 : h;
   };
 
-  window.detectorDeFondo = (p, ancho, alto, tolerancia) => {
+  // "colorExacto" compara el color tal cual, en vez del tono. Hace falta cuando
+  // el dibujo tiene partes del MISMO color que el fondo (las hojas verdes de
+  // una palmera sobre una lamina verde): por tono se las come, y por color solo
+  // se va el verde plano del fondo, que es uniforme.
+  window.detectorDeFondo = (p, ancho, alto, tolerancia, colorExacto) => {
     const en = (x, y) => {
       const i = (y * ancho + x) * 4;
       return [p[i], p[i + 1], p[i + 2]];
     };
+
+    if (colorExacto) {
+      const [r0, g0, b0] = en(2, 2);
+      const margen = tolerancia || 42;
+      const cerca = (i, extra) =>
+        Math.abs(p[i] - r0) + Math.abs(p[i + 1] - g0) + Math.abs(p[i + 2] - b0) <
+        margen + extra;
+      window.__modoFondo = `color exacto (${r0},${g0},${b0})`;
+      return {
+        esFondo: (i) => cerca(i, 0),
+        esResiduo: (i) => cerca(i, margen * 0.7),
+      };
+    }
 
     // Se mira TODO el borde, no solo las cuatro esquinas. Una hoja puede traer
     // dos fondos a la vez: el verde de la lamina y el verde mas oscuro del
@@ -263,7 +316,13 @@ for (const personaje of PERSONAJES) {
     const zonas = hoja.zonas
       ? hoja.zonas
       : hoja.porManchas
-        ? await buscarPorManchas(pagina, datos, personaje.tolerancia, hoja.separacion)
+        ? await buscarPorManchas(
+          pagina,
+          datos,
+          personaje.tolerancia,
+          hoja.separacion,
+          personaje.colorExacto,
+        )
         : await buscarPoses(pagina, datos, personaje.tolerancia);
     console.log(`  ${hoja.archivo}: encontradas ${zonas.length} poses`);
     for (let i = 0; i < zonas.length && i < hoja.nombres.length; i += 1) {
@@ -298,6 +357,7 @@ for (const personaje of PERSONAJES) {
       altoPersonaje: ALTO_PERSONAJE,
       lienzoAncho: LIENZO.ancho,
       lienzoAlto: LIENZO.alto,
+      colorExacto: personaje.colorExacto || false,
     });
     medidas.push(m);
   }
@@ -345,6 +405,7 @@ for (const personaje of PERSONAJES) {
       factor: factores.get(trabajo.grupo),
       contorno: personaje.contorno === undefined ? CONTORNO : personaje.contorno,
       tinta: TINTA,
+      colorExacto: personaje.colorExacto || false,
     });
     if (!resultado.url) continue;
 
@@ -369,8 +430,8 @@ await navegador.close();
 // Busca los dibujos sueltos dentro de una hoja. Quita el fondo, mira que filas
 // y que columnas tienen algo, y de ahi saca los rectangulos. Descarta lo que sea
 // demasiado bajo para ser un personaje: son las etiquetas escritas debajo.
-async function buscarPoses(pagina, origen, tolerancia) {
-  return pagina.evaluate(async ({ origen, tolerancia }) => {
+async function buscarPoses(pagina, origen, tolerancia, colorExacto = false) {
+  return pagina.evaluate(async ({ origen, tolerancia, colorExacto }) => {
     const imagen = new Image();
     imagen.src = origen;
     await imagen.decode();
@@ -385,7 +446,7 @@ async function buscarPoses(pagina, origen, tolerancia) {
 
     const datos = ctx.getImageData(0, 0, ancho, alto);
     const p = datos.data;
-    const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia);
+    const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
 
     const hay = new Uint8Array(ancho * alto);
     for (let i = 0; i < ancho * alto; i += 1) hay[i] = esFondo(i * 4) ? 0 : 1;
@@ -431,7 +492,7 @@ async function buscarPoses(pagina, origen, tolerancia) {
       }
     }
     return zonas;
-  }, { origen, tolerancia });
+  }, { origen, tolerancia, colorExacto });
 }
 
 // Busca los dibujos de una hoja por MANCHAS, no por filas y columnas.
@@ -441,9 +502,9 @@ async function buscarPoses(pagina, origen, tolerancia) {
 // que rellenan los huecos entre uno y otro. Aqui se buscan las manchas de
 // tinta, se juntan las que estan cerca (una estrellita pertenece a su paloma) y
 // cada grupo resultante es un dibujo.
-async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34) {
+async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34, colorExacto = false) {
   return pagina.evaluate(
-    async ({ origen, tolerancia, separacion }) => {
+    async ({ origen, tolerancia, separacion, colorExacto }) => {
       const imagen = new Image();
       imagen.src = origen;
       await imagen.decode();
@@ -457,7 +518,7 @@ async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34) {
       ctx.drawImage(imagen, 0, 0);
 
       const p = ctx.getImageData(0, 0, ancho, alto).data;
-      const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia);
+      const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
 
       // 1. las manchas, por vecindad de 4
       const visto = new Uint8Array(ancho * alto);
@@ -541,7 +602,7 @@ async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34) {
         alto: g.y2 - g.y1 + 1,
       }));
     },
-    { origen, tolerancia, separacion },
+    { origen, tolerancia, separacion, colorExacto },
   );
 }
 
@@ -563,6 +624,7 @@ async function recortarPose(pagina, opciones) {
         tolerancia,
         contorno,
         tinta,
+        colorExacto,
       }) => {
         const imagen = new Image();
         imagen.src = origen;
@@ -592,7 +654,7 @@ async function recortarPose(pagina, opciones) {
         const datos = ctx.getImageData(0, 0, ancho, alto);
         const p = datos.data;
         const visto = new Uint8Array(ancho * alto);
-        const { esFondo, esResiduo } = window.detectorDeFondo(p, ancho, alto, tolerancia);
+        const { esFondo, esResiduo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
 
         const pila = [];
         for (let x = 0; x < ancho; x += 1) pila.push([x, 0], [x, alto - 1]);

@@ -418,10 +418,17 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   acera art deco en Miami y piedra colonial en Cartagena. La casilla se repite
   en mosaico, asi que el dibujo casa consigo mismo por los cuatro lados y nunca
   lleva marco.
-- **El plano de delante es provisional y el mismo en las cinco ciudades.** La
-  idea es que cada una tenga los suyos: un nivel solo tiene que traer su lista
-  en el campo `frente` y `planos.js` la usa en vez de la de serie. Los de abajo
-  van mas claros y separados, porque por ahi es por donde se camina.
+- **El plano de delante es de cada ciudad.** Su lista va en `frente`, dentro de
+  `src/config/ciudades.js`. Space Coast tiene palmeras, un vecino de otro
+  planeta dandose un bano y un astronauta flotando arriba; Medellin, guayacanes
+  en flor, buses de la hinchada, una palmera alta y una olla de frijoles. Las
+  tres que faltan siguen con los adornos provisionales (ramas, farol, matorral),
+  que es lo que se usa cuando una ciudad no trae los suyos.
+- Los adornos de suelo se **apoyan en la linea de suelo**, la misma por donde
+  camina el nino, y no en el borde de abajo de la pantalla: asi se leen como
+  cosas que estan ahi mismo. Las medidas se piensan **contra el nino**, que mide
+  86 px: una palmera es el doble de alta que el, un bus le saca la cabeza, una
+  olla le llega por la cintura.
 
 ## 10. Arte y licencias
 
@@ -650,6 +657,11 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Space Coast y Medellin estrenan su **primer plano propio**.
+  Para recortarlos hizo falta un modo nuevo en la herramienta: comparar el
+  **color exacto** en vez del tono, porque las hojas de las palmeras son del
+  mismo verde que la lamina y por tono se las comia el recorte, dejando solo el
+  tronco.
 - **2026-09-23** — Un golpe deja al nino **donde estaba**, parpadeando, en vez
   de devolverlo al checkpoint. Al checkpoint se vuelve solo al quedarse sin
   corazones o al caer por un hueco.
