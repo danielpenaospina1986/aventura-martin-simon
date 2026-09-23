@@ -60,6 +60,7 @@ aventura-martin-simon/
       personajes.js     datos de Martin y Simon (medidas, colores, habilidad)
       estilo.js         paleta, tipografias y medidas visuales centralizadas
       ciudades.js       el pavimento y las cornisas de cada ciudad
+      historia.js       todos los textos del cuento, en un solo sitio
     escenas/
       EscenaTitulo.js
       EscenaSeleccion.js
@@ -67,6 +68,7 @@ aventura-martin-simon/
       EscenaVictoria.js
       EscenaPausa.js
       EscenaNombre.js   quien juega: se teclea el nombre de la sesion
+      EscenaRelato.js   las vinetas del cuento
       EscenaFinal.js    fin de partida y tablero de mejores puntajes
     entidades/
       Jugador.js        movimiento, habilidades, estados
@@ -78,6 +80,7 @@ aventura-martin-simon/
       hud.js            monedas, corazones, vidas y nombre del personaje
       sesion.js         quien esta jugando (el nombre, hasta 10 letras)
       puntajes.js       el tablero de los diez mejores
+      cuento.js         cuando se cuenta cada cosa
       dibujo.js         fabrica de graficos provisionales (rectangulos)
     assets/
       fondo-barrio.jpg          fondo del juego (version tratada, la que se carga)
@@ -122,6 +125,44 @@ npm run probar
 **Regla de oro:** lo visual esta centralizado (`config/estilo.js` y `sistemas/dibujo.js`)
 para que cambiar rectangulos por sprites mas adelante sea reemplazar archivos, no
 reescribir la logica del juego.
+
+## 3bis. Historia
+
+**"La gran fuga del bano".** Es la hora del bano. Mama llena la banera y llama a
+Samaon y Martain, pero ellos salen corriendo y se escapan por las cinco ciudades
+que han marcado su vida. **Ganar es terminar la partida sin banarse.**
+
+Todo el mundo del juego quiere banarlos: los bichos son baneras con ojos que les
+tiran agua con jabon, y cada jefe es un guardian del bano. El tono es de
+**travesura, nunca de miedo**: los jefes son comicos y, cuando pierden, los
+empapados son ellos.
+
+### Las cinco ciudades
+
+| # | Ciudad | Que es para ellos |
+|---|---|---|
+| 1 | Space Coast | Donde nacieron los dos |
+| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos |
+| 3 | Atlanta | Donde viven ahora |
+| 4 | Miami | Las vacaciones de siempre, y la casa de la tia |
+| 5 | Cartagena | El paseo que no se les olvida |
+
+### Como se cuenta
+
+Todos los textos estan en `src/config/historia.js`; quien los pinta es
+`EscenaRelato` (paneles `panelDeco`, se pasan con **Enter** o clic) y quien
+decide cuando salen es `sistemas/cuento.js`. **Esc se salta el cuento entero**,
+no vineta a vineta: quien ya se lo sabe, a jugar.
+
+- **Intro** de cuatro vinetas al empezar partida nueva.
+- **Tarjeta** de ciudad antes de cada tablero, con su recuerdo.
+- **Cada jefe** dice una frase al empezar la pelea y otra al perder.
+- **Final** despues de Cartagena: se salvaron del bano... por hoy.
+
+El juego habla el idioma del cuento: un golpe es **mojarse** (el nino chorrea y
+suelta burbujas), quedarse sin corazones es **"¡Te banaron!"** y el fin de
+partida, **"¡A la banera!"**. Siempre en broma. Las reglas de corazones, vidas y
+puntaje **no cambian**: solo como se cuentan.
 
 ## 4. Personajes
 
@@ -662,6 +703,14 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — El juego estrena **historia**: "La gran fuga del bano". Los
+  textos viven todos en `config/historia.js`, las vinetas las pinta
+  `EscenaRelato` y cuando sale cada una lo decide `sistemas/cuento.js`. Ninguna
+  regla cambia; cambian los textos.
+- **2026-09-23** — `EscenaRelato` se **reutiliza** encadenandose consigo misma
+  (la intro llama a la tarjeta de ciudad), asi que todo su estado se rearma en
+  `init()`. Al principio no se rearmaba la bandera de "ya me estoy yendo" y la
+  segunda tanda de vinetas nacia sorda: no respondia a ninguna tecla.
 - **2026-09-23** — La pantalla de entrada enseña el **tablero de los mejores**
   debajo de la caja de empezar, y se le quitan los controles: se aprenden
   jugando, que el primer tablero los va diciendo con sus carteles segun hacen

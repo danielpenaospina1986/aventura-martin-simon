@@ -37,6 +37,44 @@ export function estrellitas(escena, x, y, cantidad = 9) {
   }
 }
 
+// Mojarse: burbujas que suben y un par de gotas que caen. Es el "golpe" de
+// este juego, asi que se dibuja con agua y no con estrellas.
+export function burbujas(escena, x, y, cantidad = 7) {
+  for (let i = 0; i < cantidad; i += 1) {
+    const radio = Phaser.Math.Between(2, 5);
+    const burbuja = escena.add
+      .circle(x + Phaser.Math.Between(-16, 16), y + Phaser.Math.Between(-6, 10), radio, 0xeaf7ff, 0.9)
+      .setStrokeStyle(1.4, 0x8fd3ff, 0.95)
+      .setDepth(41);
+
+    escena.tweens.add({
+      targets: burbuja,
+      y: burbuja.y - Phaser.Math.Between(26, 52),
+      x: burbuja.x + Phaser.Math.Between(-12, 12),
+      alpha: { from: 0.95, to: 0 },
+      scale: { from: 0.6, to: 1.25 },
+      duration: Phaser.Math.Between(420, 680),
+      ease: 'Sine.easeOut',
+      onComplete: () => burbuja.destroy(),
+    });
+  }
+
+  // dos gotas que chorrean hacia abajo
+  for (let i = 0; i < 2; i += 1) {
+    const gota = escena.add
+      .ellipse(x + Phaser.Math.Between(-10, 10), y + 8, 4, 7, 0x8fd3ff, 0.95)
+      .setDepth(41);
+    escena.tweens.add({
+      targets: gota,
+      y: gota.y + Phaser.Math.Between(26, 40),
+      alpha: { from: 1, to: 0 },
+      duration: Phaser.Math.Between(300, 460),
+      ease: 'Quad.easeIn',
+      onComplete: () => gota.destroy(),
+    });
+  }
+}
+
 // Destello al recoger una moneda (sushi o bloque, segun el personaje).
 export function brilloMoneda(escena, x, y, textura = TEXTURAS.moneda) {
   const brillo = escena.add

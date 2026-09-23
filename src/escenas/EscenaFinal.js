@@ -13,8 +13,10 @@ import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
+import { empezarNivel } from '../sistemas/cuento.js';
 import { anotarPuntaje, mejoresPuntajes } from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
+import { AVISOS } from '../config/historia.js';
 
 export class EscenaFinal extends Phaser.Scene {
   constructor() {
@@ -50,7 +52,7 @@ export class EscenaFinal extends Phaser.Scene {
     });
 
     this.add
-      .text(ancho / 2, 40, 'Se acabaron las vidas', {
+      .text(ancho / 2, 40, AVISOS.finDePartida, {
         fontFamily: FUENTE.familia,
         fontSize: '30px',
         color: COLORES.textoAcento,
@@ -63,13 +65,16 @@ export class EscenaFinal extends Phaser.Scene {
       .text(
         ancho / 2,
         68,
-        `${datos.nombre} llegó hasta ${this.nombreNivel} con ${this.monedas} puntos`,
+        `${AVISOS.finDePartidaPie}
+${datos.nombre} llegó hasta ${this.nombreNivel} con ${this.monedas} puntos`,
         {
           fontFamily: FUENTE.familia,
           fontSize: '13px',
           color: COLORES.textoClaro,
           stroke: '#1b1410',
           strokeThickness: 4,
+          align: 'center',
+          lineSpacing: 4,
         },
       )
       .setOrigin(0.5);
@@ -79,7 +84,7 @@ export class EscenaFinal extends Phaser.Scene {
     const menu = new Menu(this, [
       {
         etiqueta: 'Jugar otra vez',
-        alElegir: () => this.scene.start('nivel', { personajeId: this.personajeId }),
+        alElegir: () => empezarNivel(this, { personajeId: this.personajeId }),
       },
       { etiqueta: 'Cambiar personaje', alElegir: () => this.scene.start('seleccion') },
     ], { y: 318, separacion: 26 });

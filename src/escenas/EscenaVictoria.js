@@ -15,6 +15,7 @@ import { PERSONAJES } from '../config/personajes.js';
 import { aEscalaDeJuego, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
 import { estrellitas } from '../sistemas/efectos.js';
 import { Menu } from '../sistemas/menu.js';
+import { empezarNivel } from '../sistemas/cuento.js';
 
 export class EscenaVictoria extends Phaser.Scene {
   constructor() {
@@ -107,13 +108,13 @@ export class EscenaVictoria extends Phaser.Scene {
     if (this.hayOtroNivel) {
       opciones.push({
         etiqueta: `Siguiente nivel  (${this.indiceNivel + 2} de ${TOTAL_NIVELES})`,
-        alElegir: () => this.scene.start('nivel', { ...partida, indiceNivel: this.indiceNivel + 1 }),
+        alElegir: () => empezarNivel(this, { ...partida, indiceNivel: this.indiceNivel + 1 }),
       });
     }
     opciones.push({
       etiqueta: this.hayOtroNivel ? 'Repetir este nivel' : 'Jugar otra vez',
       alElegir: () =>
-        this.scene.start('nivel', {
+        empezarNivel(this, {
           personajeId: this.personajeId,
           indiceNivel: this.hayOtroNivel ? this.indiceNivel : 0,
         }),

@@ -69,6 +69,10 @@ async function entrarAlNivel(page, personaje = 'martin') {
   }
 
   await page.keyboard.press('Enter');
+
+  // Entre la seleccion y el tablero va el cuento; Esc lo salta entero.
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Escape');
   await esperarEscena(page, 'nivel');
   await page.waitForTimeout(600); // fundido de entrada
 
@@ -103,7 +107,7 @@ const estadoJugador = (page) =>
 
 // ---------------------------------------------------------------------------
 
-test('las cuatro pantallas se ven bien y no hay errores en la consola', async ({ page }) => {
+test('las pantallas se ven bien y no hay errores en la consola', async ({ page }) => {
   const errores = vigilarErrores(page);
 
   await abrirJuego(page);
@@ -122,9 +126,14 @@ test('las cuatro pantallas se ven bien y no hay errores en la consola', async ({
   await page.screenshot({ path: `${CAPTURAS}/03-seleccion.png` });
 
   await page.keyboard.press('Enter');
+  await esperarEscena(page, 'relato');
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${CAPTURAS}/04-relato.png` });
+
+  await page.keyboard.press('Escape');
   await esperarEscena(page, 'nivel');
   await page.waitForTimeout(800);
-  await page.screenshot({ path: `${CAPTURAS}/04-nivel.png` });
+  await page.screenshot({ path: `${CAPTURAS}/05-nivel.png` });
 
   expect(errores).toEqual([]);
 });
@@ -744,6 +753,62 @@ test('el nombre del jugador se recorta a diez letras y se guarda', async ({ page
   const guardado = await page.evaluate(() => window.localStorage.getItem('aventura-jugador'));
   expect(escrito).toBe('Samaonelme');
   expect(guardado).toBe('Samaonelme');
+});
+
+test('la partida nueva empieza contando el cuento', async ({ page }) => {
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+
+  await esperarEscena(page, 'relato');
+  const primera = await page.evaluate(() => window.juego.scene.getScene('relato').texto.text);
+  expect(primera).toContain('bañera');
+
+  // las cuatro vinetas de la intro y luego la tarjeta de la ciudad
+  for (let i = 0; i < 4; i += 1) {
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(320);
+  }
+  const tarjeta = await page.evaluate(() => {
+    const e = window.juego.scene.getScene('relato');
+    return { titulo: e.titulo, texto: e.texto.text };
+  });
+  expect(tarjeta.titulo).toBe('Space Coast');
+  expect(tarjeta.texto).toContain('nacieron');
+});
+
+test('Esc se salta el cuento entero y deja jugando', async ({ page }) => {
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Escape');
+  await esperarEscena(page, 'nivel'); // de un solo Esc, sin pasar por la tarjeta
+});
+
+test('cada ciudad entra con su tarjeta', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const tarjeta = await page.evaluate(async () => {
+    const mod = await import('/src/sistemas/cuento.js');
+    const n = window.juego.scene.getScene('nivel');
+    mod.empezarNivel(n, { personajeId: 'martin', indiceNivel: 1 });
+    await new Promise((r) => setTimeout(r, 900));
+    const e = window.juego.scene.getScene('relato');
+    return { titulo: e.titulo, texto: e.texto.text };
+  });
+
+  expect(tarjeta.titulo).toBe('Medellín');
+  expect(tarjeta.texto).toContain('papás');
 });
 
 test('el marcador nunca baja de cero', async ({ page }) => {

@@ -16,8 +16,10 @@ import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
 import { aEscalaDeJuego, escalaDeJuego, pintarFondo } from '../sistemas/dibujo.js';
 import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
+import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
-import { brilloMoneda, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
+import { AVISOS } from '../config/historia.js';
+import { brilloMoneda, burbujas, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
 import { Paloma } from '../entidades/Paloma.js';
@@ -350,8 +352,10 @@ export class EscenaNivel extends Phaser.Scene {
     jugador.monedas = Math.max(PUNTOS.minimo, jugador.monedas + PUNTOS.porGolpe);
     const perdidas = antes - jugador.monedas;
 
+    // Mojarse es el golpe de este juego: el nino chorrea y suelta burbujas.
+    burbujas(this, jugador.x, jugador.y - 6);
     if (perdidas > 0) {
-      textoFlotante(this, jugador.x, jugador.y - 40, `-${perdidas}`, '#ff6b6b');
+      textoFlotante(this, jugador.x, jugador.y - 40, `${AVISOS.mojado}  -${perdidas}`, '#8fd3ff');
     }
     this.hud.animarCara(jugador);
     this.hud.animarCorazones(jugador);
@@ -374,7 +378,7 @@ export class EscenaNivel extends Phaser.Scene {
 
     if (this.vidas > 0) {
       jugador.corazones = VIDA.corazonesPorNivel;
-      textoFlotante(this, jugador.x, jugador.y - 60, '¡Una vida menos!', '#ff6b6b');
+      textoFlotante(this, jugador.x, jugador.y - 60, AVISOS.sinCorazones, '#ff6b6b');
       // Aqui si se vuelve al ultimo checkpoint, con los corazones repuestos.
       this.time.delayedCall(JUGADOR.congelarAlHerirMs, () => {
         if (jugador.active) jugador.reaparecer();
@@ -394,7 +398,6 @@ export class EscenaNivel extends Phaser.Scene {
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
         enemigosVencidos: jugador.enemigosVencidos,
-        vidas: this.vidas,
       });
     });
   }
@@ -510,7 +513,7 @@ export class EscenaNivel extends Phaser.Scene {
       bandera.setTexture(TEXTURAS.checkpointEncendido);
     }
     bandera.setAlpha(1);
-    textoFlotante(this, bandera.x, bandera.y - 30, '¡Punto de control!');
+    textoFlotante(this, bandera.x, bandera.y - 30, AVISOS.checkpoint);
     this.tweens.add({
       targets: bandera,
       scaleY: { from: bandera.scaleY * 1.25, to: bandera.scaleY },
@@ -537,7 +540,10 @@ export class EscenaNivel extends Phaser.Scene {
     jugador.body.setVelocity(0, 0);
     this.cameras.main.fadeOut(420, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start('victoria', {
+      // Tras la ultima ciudad va el final del cuento; en las demas, el marcador
+      // de siempre.
+      const esLaUltima = this.indiceNivel + 1 >= TOTAL_NIVELES;
+      const paraVictoria = {
         personajeId: this.personajeId,
         indiceNivel: this.indiceNivel,
         nombreNivel: this.datosNivel.nombre,
@@ -548,7 +554,10 @@ export class EscenaNivel extends Phaser.Scene {
         jefesDerrotados: jugador.jefesDerrotados,
         enemigosVencidos: jugador.enemigosVencidos,
         vidas: this.vidas,
-      });
+      };
+
+      if (esLaUltima) terminarPartida(this, paraVictoria);
+      else this.scene.start('victoria', paraVictoria);
     });
   }
 
@@ -620,7 +629,7 @@ export class EscenaNivel extends Phaser.Scene {
       duration: 320,
       ease: 'Back.easeOut',
     });
-    textoFlotante(this, meta.x, meta.y - 60, '¡La meta está abierta!', COLORES.textoAcento);
+    textoFlotante(this, meta.x, meta.y - 60, AVISOS.metaAbierta, COLORES.textoAcento);
   }
 
   // --- bloques lanzados -----------------------------------------------------

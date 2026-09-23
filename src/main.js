@@ -9,6 +9,7 @@ import { EscenaCarga } from './escenas/EscenaCarga.js';
 import { EscenaTitulo } from './escenas/EscenaTitulo.js';
 import { EscenaNombre } from './escenas/EscenaNombre.js';
 import { EscenaSeleccion } from './escenas/EscenaSeleccion.js';
+import { EscenaRelato } from './escenas/EscenaRelato.js';
 import { EscenaNivel } from './escenas/EscenaNivel.js';
 import { EscenaPausa } from './escenas/EscenaPausa.js';
 import { EscenaVictoria } from './escenas/EscenaVictoria.js';
@@ -52,6 +53,7 @@ const configuracion = {
     EscenaTitulo,
     EscenaNombre,
     EscenaSeleccion,
+    EscenaRelato,
     EscenaNivel,
     EscenaPausa,
     EscenaVictoria,

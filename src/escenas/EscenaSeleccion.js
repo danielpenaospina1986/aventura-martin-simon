@@ -9,6 +9,7 @@ import { COLORES, FUENTE } from '../config/estilo.js';
 import { PERSONAJES, ORDEN_PERSONAJES } from '../config/personajes.js';
 import { pintarFondoDeMenu } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
+import { empezarPartida } from '../sistemas/cuento.js';
 
 export class EscenaSeleccion extends Phaser.Scene {
   constructor() {
@@ -123,7 +124,7 @@ export class EscenaSeleccion extends Phaser.Scene {
       this,
       ORDEN_PERSONAJES.map((id) => ({
         etiqueta: PERSONAJES[id].nombre,
-        alElegir: () => this.scene.start('nivel', { personajeId: id }),
+        alElegir: () => empezarPartida(this, { personajeId: id }),
       })),
       { x: ancho / 2, y: 316, horizontal: true, separacion: 200, tamano: 18 },
     );
