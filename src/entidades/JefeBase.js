@@ -100,8 +100,23 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
   colocarBarraDeVida() {
     const separacion = 34;
     const arriba = this.y - this.config.alto / 2 - 20;
-    if (this.chapa) this.chapa.setPosition(this.x, arriba);
-    const inicio = this.x - ((this.vidasMaximas - 1) * separacion) / 2;
+
+    // La barra se queda dentro de la pantalla aunque el jefe este pegado al
+    // borde de su arena: al final del tablero la camara ya no puede avanzar
+    // mas, y la barra se salia por la derecha a medio dibujar.
+    const camara = this.escena.cameras.main;
+    const zoom = camara.zoom || 1;
+    const izquierda = camara.scrollX + (camara.width * (1 - 1 / zoom)) / 2;
+    const anchoVisible = camara.width / zoom;
+    const medioAncho = (this.vidasMaximas * separacion) / 2 + 12;
+    const centro = Phaser.Math.Clamp(
+      this.x,
+      izquierda + medioAncho,
+      izquierda + anchoVisible - medioAncho,
+    );
+
+    if (this.chapa) this.chapa.setPosition(centro, arriba);
+    const inicio = centro - ((this.vidasMaximas - 1) * separacion) / 2;
     this.puntos.forEach((punto, i) => {
       punto.setPosition(inicio + i * separacion, arriba);
       punto.setFillStyle(i < this.vidas ? COLORES.jefeVida : COLORES.jefeVidaVacia);

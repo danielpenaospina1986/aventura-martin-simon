@@ -17,6 +17,9 @@ import Phaser from 'phaser';
 import { TEXTURAS } from '../../config/estilo.js';
 import { JefeBase } from '../JefeBase.js';
 
+const ADENTRO = 44; // lo que se mete desde el borde de su arena
+const VAIVEN = 26; // lo que se mece en el sitio
+
 const TIEMPOS = {
   esperaMinMs: 1500,
   esperaMaxMs: 2400,
@@ -44,6 +47,16 @@ export class DonaZully extends JefeBase {
   // Las sombrillas son suyas: se plantan cuando el tablero ya esta montado (en
   // el constructor la escena aun no sabe donde hay suelo) y se van con ella.
   prepararArena() {
+    // Se mete un poco hacia dentro de su arena. Plantada en el mismo borde del
+    // tablero quedaba pegada al canto derecho de la pantalla (la camara ya no
+    // puede avanzar mas ahi) y, como no camina, parecia que no hubiera jefe.
+    const dentro = this.x - ADENTRO;
+    if (this.escena.haySoporteEn && this.escena.haySoporteEn(dentro, this.body.bottom + 6)) {
+      this.x = dentro;
+      this.body.reset(dentro, this.y);
+    }
+    this.plantada = this.x;
+
     if (this.escena.plantarSombrillas) {
       this.sombrillas = this.escena.plantarSombrillas(this);
     }
@@ -70,6 +83,11 @@ export class DonaZully extends JefeBase {
   actualizar(delta) {
     this.reloj += delta;
     this.colocarBarraDeVida();
+    // Un vaiven corto en el sitio: no persigue a nadie, pero se la ve viva
+    // desde lejos, que si no parece parte del decorado.
+    if (this.plantada !== undefined) {
+      this.x = this.plantada + Math.sin(this.reloj / 620) * VAIVEN;
+    }
     this.body.velocity.x = 0;
     this.mirarAlNino();
     this.gestionarJabones(delta);

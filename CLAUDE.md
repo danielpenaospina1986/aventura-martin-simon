@@ -273,9 +273,11 @@ La mama, con su gorro de bano, su cepillo y su manguera. **Aguanta cuatro
 rebotes.** No persigue a nadie: se planta, se vuelve hacia el nino y dispara
 chorros a presion.
 
-**A ella no se le pega.** En la arena hay **tres sombrillas** clavadas; si el
-nino se pone detras de una, el chorro da en la sombrilla, **rebota** y vuelve a
-empaparla. Mientras tanto le caen jabones del techo, para que quedarse quieto
+**A ella no se le pega.** En la arena hay **sombrillas** clavadas (dos o tres,
+segun el sitio que tenga esa arena); si el nino se pone detras de una, el chorro
+da en la sombrilla, **rebota** y vuelve a empaparla. Entre sombrilla y sombrilla
+queda hueco a proposito: si la taparan entera, el chorro no llegaria nunca y la
+pelea se ganaria sola. Mientras tanto le caen jabones del techo, para que quedarse quieto
 detras de una sombrilla no sea tan comodo.
 
 Por eso esta pelea **no pide habilidad ninguna**: esconderse vale igual para
@@ -741,6 +743,13 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — Dona Zully **no camina**, y plantada en el borde de su arena
+  se quedaba pegada al canto derecho de la pantalla: al llegar parecia que no
+  hubiera jefe. Ahora se mete un poco hacia dentro, se mece en el sitio y su
+  barra de vida **se queda dentro de la pantalla** aunque ella este en el borde.
+- **2026-09-23** — Las sombrillas se reparten por **el sitio que tenga cada
+  arena**, no a distancias fijas: la de Atlanta es corta (hay un hueco justo
+  antes) y tres sombrillas salian una encima de otra, tapandolo todo.
 - **2026-09-23** — Atlanta estrena a **Dona Zully**, con los dibujos de verdad.
   A ella no se le pega: hay que esconderse tras una sombrilla para que su propio
   chorro rebote y la empape.

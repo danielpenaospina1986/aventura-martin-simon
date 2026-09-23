@@ -633,18 +633,37 @@ export class EscenaNivel extends Phaser.Scene {
   // suyo es parar el chorro, no al nino.
   plantarSombrillas(jefe) {
     const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
-    const puestos = [-260, -150, -40];
+
+    // Se mira hasta donde llega el suelo hacia la izquierda del jefe y se
+    // reparten las sombrillas por ese tramo. A distancias fijas, en una arena
+    // corta la de mas alla caia al vacio y se quedaba sin plantar.
+    let borde = jefe.x;
+    while (borde > jefe.x - SOMBRILLA.arenaMaxima && this.haySoporteEn(borde - 16, suelo + 6)) {
+      borde -= 16;
+    }
+
+    // Cuantas caben, no cuantas nos gustaria: la arena de Atlanta es corta
+    // (tiene un hueco justo antes) y tres sombrillas ahi salian una encima de
+    // otra, tapandolo todo. Separadas menos de lo que miden, el chorro no
+    // encontraria por donde pasar y la pelea se ganaria sola.
+    const tramo = Math.max(SOMBRILLA.separacionMinima, jefe.x - borde - SOMBRILLA.margen);
+    const cuantas = Phaser.Math.Clamp(
+      Math.round(tramo / SOMBRILLA.separacionMinima),
+      SOMBRILLA.minimo,
+      SOMBRILLA.cuantas,
+    );
     const plantadas = [];
 
-    puestos.forEach((dx) => {
-      const x = jefe.x + dx;
-      if (!this.haySoporteEn(x, suelo + 6)) return;
+    for (let i = 0; i < cuantas; i += 1) {
+      const parte = cuantas === 1 ? 0.5 : i / (cuantas - 1);
+      const x = jefe.x - SOMBRILLA.margen - tramo * (1 - parte);
+      if (!this.haySoporteEn(x, suelo + 6)) continue;
       const sombrilla = this.sombrillas.create(x, suelo, TEXTURAS.sombrilla);
       sombrilla.setOrigin(0.5, 1).setDisplaySize(SOMBRILLA.ancho, SOMBRILLA.alto);
       sombrilla.refreshBody();
       sombrilla.setDepth(6);
       plantadas.push(sombrilla);
-    });
+    }
 
     return plantadas;
   }

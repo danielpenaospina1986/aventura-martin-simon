@@ -171,8 +171,16 @@ export const META = {
 
 // La arena de Dona Zully: sus sombrillas y su chorro.
 export const SOMBRILLA = {
-  ancho: 84,
-  alto: 130,
+  // Mas estrechas de lo que parecen en el dibujo: si taparan toda la arena, el
+  // chorro no llegaria nunca al nino y la pelea se ganaria sola. Tiene que
+  // haber huecos por donde pasa.
+  ancho: 64,
+  alto: 124,
+  cuantas: 3,            // las que se plantan si hay sitio
+  minimo: 2,             // menos de dos y no hay donde esconderse
+  separacionMinima: 104, // para que quede hueco por donde pase el chorro
+  margen: 64,            // lo mas cerca que se planta una del jefe
+  arenaMaxima: 520,      // hasta donde se busca suelo hacia su izquierda
 };
 
 export const CHORRO = {
