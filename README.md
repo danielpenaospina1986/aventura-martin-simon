@@ -1,4 +1,4 @@
-# Las aventuras de Martín y Simón
+# Las aventuras de Samaón y Martaín
 
 Juego de plataformas 2D hecho en casa para dos hermanos. Corre en el navegador,
 sin instalar nada.
@@ -14,8 +14,8 @@ nivel se puede terminar con cualquiera de los dos.
 
 ![Selección de personaje](imagenes/seleccion.png)
 
-- **Martín** — samurái. Su katana elimina a los enemigos que tenga delante.
-- **Simón** — constructor. Lanza bloques de 32×32 que derriban a los enemigos.
+- **Martaín** — samurái. Su katana elimina a los enemigos que tenga delante.
+- **Samaón** — constructor. Lanza bloques de 32×32 que derriban a los enemigos.
   Puede tener tres volando a la vez.
 
 Al final del nivel espera **el jefe**: aguanta tres golpes y, mientras siga en pie,

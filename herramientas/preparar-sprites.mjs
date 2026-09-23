@@ -17,7 +17,7 @@
 // ---------------------------------------------------------------------------
 
 import { chromium } from '@playwright/test';
-import { writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 
 const ALTO_PERSONAJE = 240; // alto del muneco dentro del lienzo, en pixeles
 const LIENZO = { ancho: 260, alto: 260 };
@@ -28,20 +28,29 @@ const PERSONAJES = [
     nombre: 'simon',
     origen: 'src/assets/simon-origen',
     destino: 'src/assets/simon',
-    poses: ['quieto', 'corre1', 'corre2', 'lanza'],
+    // poses sueltas, una por archivo
+    poses: ['quieto', 'lanza'],
+    // hojas con varias poses en rejilla. "recorteAbajo" quita la franja de la
+    // etiqueta que llevan escrita debajo de cada dibujo.
+    // Las poses se buscan solas dentro de la hoja: no hace falta que esten en
+    // una rejilla regular (en la de carrera, la fila de abajo va centrada).
+    // Los nombres se asignan en orden de lectura.
+    hojas: [
+      { archivo: 'hoja-carrera', nombres: ['corre1', 'corre2', 'corre3', 'corre4', 'corre5'] },
+      { archivo: 'hoja-extras', nombres: ['golpe', 'victoria'] },
+    ],
   },
 ];
 
+// El navegador solo se usa como lienzo de dibujo: las imagenes se le pasan ya
+// leidas, no por el servidor. Asi la herramienta no depende de que el servidor
+// este levantado, y sobre todo no se corta si Vite recarga la pagina a mitad.
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage();
+await pagina.goto('about:blank');
 
-try {
-  await pagina.goto(SERVIDOR, { timeout: 15000 });
-} catch {
-  console.error(`No responde ${SERVIDOR}. Arranca antes el servidor con: npm run dev`);
-  await navegador.close();
-  process.exit(1);
-}
+const comoDatos = (ruta) =>
+  `data:image/jpeg;base64,${readFileSync(ruta).toString('base64')}`;
 
 for (const personaje of PERSONAJES) {
   if (!existsSync(personaje.destino)) mkdirSync(personaje.destino, { recursive: true });
@@ -53,19 +62,156 @@ for (const personaje of PERSONAJES) {
       continue;
     }
 
-    const resultado = await pagina.evaluate(
-      async ({ origen, altoPersonaje, lienzoAncho, lienzoAlto }) => {
+    const resultado = await recortarPose(pagina, {
+      origen: comoDatos(origen),
+      zona: null,
+      altoPersonaje: ALTO_PERSONAJE,
+      lienzoAncho: LIENZO.ancho,
+      lienzoAlto: LIENZO.alto,
+    });
+
+    const contenido = Buffer.from(resultado.url.split(',')[1], 'base64');
+    writeFileSync(`${personaje.destino}/${pose}.png`, contenido);
+    console.log(
+      `  ${personaje.nombre}/${pose.padEnd(9)} ${(contenido.length / 1024).toFixed(0).padStart(3)} KB` +
+        `  · recorte ${resultado.recorte}`,
+    );
+  }
+
+  // --- hojas con varias poses ---
+  for (const hoja of personaje.hojas || []) {
+    const origen = `${personaje.origen}/${hoja.archivo}.jpg`;
+    if (!existsSync(origen)) {
+      console.error(`  falta ${origen}`);
+      continue;
+    }
+
+    const zonas = await buscarPoses(pagina, comoDatos(origen));
+    console.log(`  ${hoja.archivo}: encontradas ${zonas.length} poses`);
+
+    for (let i = 0; i < zonas.length && i < hoja.nombres.length; i += 1) {
+      const resultado = await recortarPose(pagina, {
+        origen: comoDatos(origen),
+        zona: zonas[i],
+        altoPersonaje: ALTO_PERSONAJE,
+        lienzoAncho: LIENZO.ancho,
+        lienzoAlto: LIENZO.alto,
+      });
+      if (!resultado.url) continue;
+
+      const contenido = Buffer.from(resultado.url.split(',')[1], 'base64');
+      writeFileSync(`${personaje.destino}/${hoja.nombres[i]}.png`, contenido);
+      console.log(
+        `  ${personaje.nombre}/${hoja.nombres[i].padEnd(9)} ${(contenido.length / 1024).toFixed(0).padStart(3)} KB` +
+          `  · recorte ${resultado.recorte}`,
+      );
+    }
+  }
+}
+
+await navegador.close();
+
+// ---------------------------------------------------------------------------
+
+// Busca los dibujos sueltos dentro de una hoja. Quita el fondo, mira que filas
+// y que columnas tienen algo, y de ahi saca los rectangulos. Descarta lo que sea
+// demasiado bajo para ser un personaje: son las etiquetas escritas debajo.
+async function buscarPoses(pagina, origen) {
+  return pagina.evaluate(async (origen) => {
+    const imagen = new Image();
+    imagen.src = origen;
+    await imagen.decode();
+
+    const ancho = imagen.naturalWidth;
+    const alto = imagen.naturalHeight;
+    const lienzo = document.createElement('canvas');
+    lienzo.width = ancho;
+    lienzo.height = alto;
+    const ctx = lienzo.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(imagen, 0, 0);
+
+    const datos = ctx.getImageData(0, 0, ancho, alto);
+    const p = datos.data;
+    const esFondo = (i) => {
+      const r = p[i];
+      const g = p[i + 1];
+      const b = p[i + 2];
+      return r > 92 && Math.abs(r - g) < 24 && Math.abs(g - b) < 24 && Math.abs(r - b) < 24;
+    };
+
+    const hay = new Uint8Array(ancho * alto);
+    for (let i = 0; i < ancho * alto; i += 1) hay[i] = esFondo(i * 4) ? 0 : 1;
+
+    const bandas = [];
+    let desde = null;
+    for (let y = 0; y <= alto; y += 1) {
+      let ocupada = false;
+      if (y < alto) {
+        for (let x = 0; x < ancho; x += 1) {
+          if (hay[y * ancho + x]) { ocupada = true; break; }
+        }
+      }
+      if (ocupada && desde === null) desde = y;
+      if (!ocupada && desde !== null) {
+        if (y - desde > alto * 0.18) bandas.push({ y: desde, alto: y - desde });
+        desde = null;
+      }
+    }
+
+    const zonas = [];
+    for (const banda of bandas) {
+      let inicio = null;
+      // Se pide un minimo de pixeles para dar una columna por ocupada: con un
+      // solo pixel suelto, dos dibujos vecinos se quedaban pegados en uno.
+      const minimoPixeles = Math.max(3, Math.round(banda.alto * 0.035));
+      for (let x = 0; x <= ancho; x += 1) {
+        let cuenta = 0;
+        if (x < ancho) {
+          for (let y = banda.y; y < banda.y + banda.alto; y += 1) {
+            if (hay[y * ancho + x]) cuenta += 1;
+          }
+        }
+        const ocupada = cuenta >= minimoPixeles;
+        if (ocupada && inicio === null) inicio = x;
+        if (!ocupada && inicio !== null) {
+          const anchoIsla = x - inicio;
+          if (anchoIsla > ancho * 0.06) {
+            zonas.push({ x: inicio, y: banda.y, ancho: anchoIsla, alto: banda.alto });
+          }
+          inicio = null;
+        }
+      }
+    }
+    return zonas;
+  }, origen);
+}
+
+async function recortarPose(pagina, opciones) {
+  return pagina.evaluate(
+      async ({ origen, zona, altoPersonaje, lienzoAncho, lienzoAlto }) => {
         const imagen = new Image();
-        imagen.src = `/${origen}`;
+        imagen.src = origen;
         await imagen.decode();
 
-        const ancho = imagen.naturalWidth;
-        const alto = imagen.naturalHeight;
+        // Si viene de una hoja, se recorta primero la celda que toca; si no,
+        // se trabaja con la imagen entera.
+        let origenX = 0;
+        let origenY = 0;
+        let ancho = imagen.naturalWidth;
+        let alto = imagen.naturalHeight;
+
+        if (zona) {
+          origenX = zona.x;
+          origenY = zona.y;
+          ancho = zona.ancho;
+          alto = zona.alto;
+        }
+
         const lienzo = document.createElement('canvas');
         lienzo.width = ancho;
         lienzo.height = alto;
         const ctx = lienzo.getContext('2d', { willReadFrequently: true });
-        ctx.drawImage(imagen, 0, 0);
+        ctx.drawImage(imagen, origenX, origenY, ancho, alto, 0, 0, ancho, alto);
 
         // --- quitar el damero del fondo, entrando desde los bordes ---
         const datos = ctx.getImageData(0, 0, ancho, alto);
@@ -122,6 +268,9 @@ for (const personaje of PERSONAJES) {
         const anchoUtil = maxX - minX + 1;
         const altoUtil = maxY - minY + 1;
 
+        // una celda vacia (las hojas no siempre estan completas)
+        if (anchoUtil < 20 || altoUtil < 20) return { url: null, recorte: 'vacia' };
+
         // --- misma altura para todas las poses, apoyadas abajo ---
         const salida = document.createElement('canvas');
         salida.width = lienzoAncho;
@@ -151,21 +300,6 @@ for (const personaje of PERSONAJES) {
           proporcion: (anchoUtil / altoUtil).toFixed(2),
         };
       },
-      {
-        origen,
-        altoPersonaje: ALTO_PERSONAJE,
-        lienzoAncho: LIENZO.ancho,
-        lienzoAlto: LIENZO.alto,
-      },
-    );
-
-    const contenido = Buffer.from(resultado.url.split(',')[1], 'base64');
-    writeFileSync(`${personaje.destino}/${pose}.png`, contenido);
-    console.log(
-      `  ${personaje.nombre}/${pose.padEnd(8)} ${(contenido.length / 1024).toFixed(0).padStart(3)} KB` +
-        `  · recorte ${resultado.recorte} (proporcion ${resultado.proporcion})`,
-    );
-  }
+    opciones,
+  );
 }
-
-await navegador.close();

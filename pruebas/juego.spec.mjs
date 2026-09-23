@@ -46,9 +46,10 @@ async function entrarAlNivel(page, personaje = 'martin') {
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'seleccion');
 
-  if (personaje === 'simon') {
+  // En la seleccion, Samaon (simon) va primero y Martain (martin) segundo.
+  if (personaje === 'martin') {
     // Hay que esperar a que el menu este escuchando: si la flecha llega antes,
-    // se entra con Martin y la prueba mide otra cosa.
+    // se entra con el otro personaje y la prueba mide otra cosa.
     await page.waitForFunction(() => {
       const e = window.juego.scene.getScene('seleccion');
       return e && e.menu;

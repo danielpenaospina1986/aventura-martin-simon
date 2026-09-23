@@ -3,9 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { COLORES, FONDO, FUENTE } from '../config/estilo.js';
-import { PERSONAJES } from '../config/personajes.js';
-import { pintarFondo } from '../sistemas/dibujo.js';
+import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 
 export class EscenaTitulo extends Phaser.Scene {
   constructor() {
@@ -14,88 +12,57 @@ export class EscenaTitulo extends Phaser.Scene {
 
   create() {
     const { width: ancho, height: alto } = this.scale;
-    pintarFondo(this, ancho, alto, { veloExtra: FONDO.veloMenus });
 
-    // suelo decorativo
-    this.add.rectangle(0, alto - 60, ancho, 60, COLORES.tierra).setOrigin(0, 0);
-    this.add.rectangle(0, alto - 60, ancho, 10, COLORES.hierba).setOrigin(0, 0);
-
-    // los dos personajes saludando a los lados del titulo
-    const martin = this.add
-      .image(ancho / 2 - 340, alto - 58, PERSONAJES.martin.textura)
-      .setOrigin(0.5, 1)
-      .setScale(2.4);
-    const simon = this.add
-      .image(ancho / 2 + 340, alto - 58, PERSONAJES.simon.textura)
-      .setOrigin(0.5, 1)
-      .setScale(2.4)
-      .setFlipX(true);
-
-    [martin, simon].forEach((personaje, i) => {
-      this.tweens.add({
-        targets: personaje,
-        y: personaje.y - 16,
-        duration: 780,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-        delay: i * 260,
-      });
-    });
-
+    // La portada ya trae el titulo dibujado, asi que aqui no se escribe: se
+    // pone la ilustracion a pantalla completa y encima solo lo justo.
+    const fuente = this.textures.get(TEXTURAS.portada).getSourceImage();
+    const escala = Math.max(ancho / fuente.width, alto / fuente.height);
     this.add
-      .text(ancho / 2, 104, 'Las aventuras de', {
-        fontFamily: FUENTE.familia,
-        fontSize: `${FUENTE.subtitulo}px`,
-        color: COLORES.textoClaro,
-        stroke: '#16202c',
-        strokeThickness: 6,
-      })
-      .setOrigin(0.5);
+      .image(ancho / 2, alto / 2, TEXTURAS.portada)
+      .setScale(escala)
+      .setDepth(-100);
 
-    this.add
-      .text(ancho / 2, 166, 'Martín y Simón', {
-        fontFamily: FUENTE.familia,
-        fontSize: `${FUENTE.titulo}px`,
-        color: COLORES.textoAcento,
-        stroke: '#16202c',
-        strokeThickness: 9,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
+    // un velo abajo, para que se lean los textos sobre el dibujo
+    const velo = this.add.graphics().setDepth(-50);
+    velo.fillGradientStyle(
+      COLORES.decoFondo,
+      COLORES.decoFondo,
+      COLORES.decoFondo,
+      COLORES.decoFondo,
+      0,
+      0,
+      0.82,
+      0.82,
+    );
+    velo.fillRect(0, alto - 180, ancho, 180);
 
-    // panel de controles, siempre a la vista
-    const panel = this.add
-      .rectangle(ancho / 2, 290, 520, 118, COLORES.panel, 0.55)
-      .setStrokeStyle(2, COLORES.panelBorde, 0.9);
     this.add
       .text(
-        panel.x,
-        panel.y,
-        '← →  o  A D   moverse\n↑  W  o  Espacio   saltar\nX  o  F   habilidad        Esc   pausa',
+        ancho / 2,
+        alto - 122,
+        '← →  o  A D   moverse        ↑  W  o  Espacio   saltar        X  o  F   habilidad',
         {
           fontFamily: FUENTE.familia,
-          fontSize: '19px',
+          fontSize: '17px',
           color: COLORES.textoSuave,
           align: 'center',
-          lineSpacing: 7,
         },
       )
       .setOrigin(0.5);
 
     const empezar = this.add
-      .text(ancho / 2, 404, 'Pulsa Enter o haz clic para empezar', {
+      .text(ancho / 2, alto - 66, 'Pulsa Enter o haz clic para empezar', {
         fontFamily: FUENTE.familia,
         fontSize: `${FUENTE.opcion}px`,
-        color: COLORES.textoClaro,
-        stroke: '#16202c',
-        strokeThickness: 6,
+        color: COLORES.textoAcento,
+        stroke: '#1b1410',
+        strokeThickness: 7,
       })
       .setOrigin(0.5);
 
     this.tweens.add({
       targets: empezar,
-      alpha: { from: 1, to: 0.6 },
+      alpha: { from: 1, to: 0.55 },
       duration: 700,
       yoyo: true,
       repeat: -1,

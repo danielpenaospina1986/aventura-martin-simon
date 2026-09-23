@@ -62,10 +62,13 @@ export class EscenaSeleccion extends Phaser.Scene {
         .setDisplaySize(148, 148);
 
       // el munequito con el que se juega, pequeno, para que se asocien
+      // Ojo con setScale aqui: las texturas de los personajes son lienzos
+      // grandes (260 px) y escalarlas "un poco" los hacia gigantes. Se fija el
+      // tamano en pixeles, que es lo que miden de verdad en el juego.
       const munequito = this.add
-        .image(x + 92, y - 22, datos.textura)
+        .image(x + 96, y - 20, datos.textura)
         .setOrigin(0.5, 1)
-        .setScale(1.1);
+        .setDisplaySize(datos.ancho * 0.9, datos.alto * 0.9);
 
       this.tweens.add({
         targets: [figura, disco],

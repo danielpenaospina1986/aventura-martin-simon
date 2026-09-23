@@ -94,6 +94,7 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     if (this.estaCongelado) {
       cuerpo.setVelocity(0, 0);
       cuerpo.setAllowGravity(false);
+      if (this.datos.poses && this.datos.poses.golpe) this.setTexture(this.datos.poses.golpe);
       return;
     }
     cuerpo.setAllowGravity(true);
@@ -159,6 +160,12 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
   actualizarPose(delta) {
     const poses = this.datos.poses;
     if (!poses) return;
+
+    // recibir un golpe manda sobre todo lo demas
+    if (poses.golpe && this.esInvulnerable) {
+      this.setTexture(poses.golpe);
+      return;
+    }
 
     if (this.reloj < this.atacandoHasta) {
       this.setTexture(poses.atacar);

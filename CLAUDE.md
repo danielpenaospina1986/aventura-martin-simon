@@ -8,7 +8,9 @@ cada vez que tomamos una decision nueva.
 ## 1. Que es
 
 Videojuego de plataformas 2D para PC, que corre en el navegador, hecho para Martin y
-Simon (los hijos de Daniel). Titulo provisional: **"Las aventuras de Martin y Simon"**.
+Simon (los hijos de Daniel). Titulo: **"Las aventuras de Samaon y Martain"**. Samaon y Martain son los
+sobrenombres que Daniel usa para ellos en los cuentos que les inventa; en el
+codigo los identificadores siguen siendo `simon` y `martin`.
 
 - Todo lo que aparece **en pantalla** va en espanol, con tildes correctas.
 - En el **codigo** y en los **nombres de archivo**, espanol **sin tildes ni enies**
@@ -86,6 +88,7 @@ aventura-martin-simon/
     preparar-caras.mjs  limpia y recorta las caritas de los ninos
     preparar-fondos.mjs tapa marcas y trata los fondos de cada ciudad
     preparar-sprites.mjs recorta y alinea las poses de un personaje
+    colorear-portada.mjs colorea la ilustracion de portada
     completar-fuente.mjs anade acentos y signos a la tipografia
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
@@ -120,20 +123,21 @@ es la habilidad.
 > Cada personaje tiene ademas su **carita** (`datos.cara`), que sale en la pantalla
 > de seleccion y arriba, junto al contador de monedas, mientras se juega.
 
-### Martin — el samurai
+### Martain (Martin) — el samurai
 - Fisico: delgado. Rectangulo provisional de **22 x 44 px**, color rojo.
 - Pelo: castano muy claro (franja arriba del rectangulo).
 - Arte final: samurai con katana.
 - **Habilidad:** golpe de katana hacia adelante. Aparece un arco blanco breve
   delante de el que elimina a los enemigos que toque.
 
-### Simon — el constructor
+### Samaon (Simon) — el constructor
 - **Ya tiene dibujo propio** (no es un rectangulo). Sudadera azul con parches,
   vaqueros y zapatos hechos de piezas de construccion.
 - Sprite de **68 x 68 px** (lienzo cuadrado con todas las poses a la misma
   altura), caja de colision de **28 x 54**.
-- Poses dibujadas: quieto, dos de carrera y una de lanzar. **Falta la de salto**:
-  mientras tanto usa la primera de carrera, que con las piernas abiertas cuela.
+- **Nueve poses dibujadas**: quieto, ciclo de carrera de cinco (contacto, paso
+  bajo, empuje, empuje, vuelo), lanzar, recibir golpe y victoria. La de vuelo,
+  con los dos pies en el aire, se usa tambien para cuando esta saltando.
 - Los dibujos de partida se preparan con `herramientas/preparar-sprites.mjs`.
 - **Habilidad:** lanzar bloques de **32 x 32** hacia adelante. El bloque sale casi
   recto y va cayendo; alcanza unos **167 px** (5 casillas) antes de tocar el suelo.
@@ -402,6 +406,20 @@ baja.
   de la textura y luego le aplica la escala del sprite**, asi que hay que dividir
   por la escala o la caja sale diminuta (28x54 se quedaba en 7x14).
 - **2026-09-22** — Vencer a un bicho pequeno da **2 monedas**. Antes no daba nada.
+- **2026-09-22** — Los personajes pasan a llamarse **Samaon y Martain**, y el juego
+  con ellos. En el codigo siguen siendo `simon` y `martin`.
+- **2026-09-22** — Las hojas de poses se recortan **buscando los dibujos solos**,
+  no por rejilla: en la hoja de carrera la fila de abajo va centrada y una rejilla
+  fija los partia por la mitad. Se pide un minimo de pixeles por columna para
+  separar dibujos que casi se tocan.
+- **2026-09-22** — Las herramientas de imagen ya no dependen del servidor: reciben
+  la imagen leida. Vite recargaba la pagina a media faena y las cortaba.
+- **2026-09-22** — La portada se colorea mapeando la luz de cada punto a una rampa
+  de color (tinta, rojo, teja, naranja, mostaza, crema), como se hacia en los
+  carteles de los anos 30, en vez de inventar un color por objeto.
+- **2026-09-22** — Cuidado con `setScale` en los personajes: sus texturas son
+  lienzos de 260 px, asi que "escalar un poco" los hacia gigantes en los menus.
+  Se fija el tamano en pixeles con setDisplaySize.
 - **2026-09-22** — La casilla de suelo **no lleva marco completo**, solo una linea
   arriba: como el terreno se dibuja repitiendo esa casilla, un marco entero
   convertia el suelo en una cuadricula.

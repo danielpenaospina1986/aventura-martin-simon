@@ -9,7 +9,7 @@ import { TEXTURAS } from './estilo.js';
 export const PERSONAJES = {
   martin: {
     id: 'martin',
-    nombre: 'Martín',
+    nombre: 'Martaín',
     textura: TEXTURAS.martin,
     cara: TEXTURAS.caraMartin,
     moneda: TEXTURAS.monedaMartin,
@@ -27,18 +27,29 @@ export const PERSONAJES = {
   },
   simon: {
     id: 'simon',
-    nombre: 'Simón',
+    nombre: 'Samaón',
     textura: TEXTURAS.simonQuieto,
     cara: TEXTURAS.caraSimon,
     // Poses dibujadas. El sprite es el lienzo cuadrado en el que vienen todas
     // encajadas a la misma altura, por eso ancho y alto son iguales.
     poses: {
       quieto: TEXTURAS.simonQuieto,
-      correr: [TEXTURAS.simonCorre1, TEXTURAS.simonCorre2],
-      aire: TEXTURAS.simonCorre1,
+      // ciclo completo: contacto, paso bajo, empuje, empuje, vuelo
+      correr: [
+        TEXTURAS.simonCorre1,
+        TEXTURAS.simonCorre2,
+        TEXTURAS.simonCorre3,
+        TEXTURAS.simonCorre4,
+        TEXTURAS.simonCorre5,
+      ],
+      // la ultima del ciclo es la de vuelo: con los dos pies en el aire, vale
+      // tal cual para cuando esta saltando
+      aire: TEXTURAS.simonCorre5,
       atacar: TEXTURAS.simonLanza,
+      golpe: TEXTURAS.simonGolpe,
+      victoria: TEXTURAS.simonVictoria,
     },
-    msPorPaso: 130, // lo que dura cada pose del ciclo de carrera
+    msPorPaso: 95, // lo que dura cada pose del ciclo de carrera
     margenPie: 2,   // aire que queda bajo los pies dentro del lienzo
     moneda: TEXTURAS.monedaSimon,
     nombreMoneda: 'bloques',
@@ -55,4 +66,5 @@ export const PERSONAJES = {
   },
 };
 
-export const ORDEN_PERSONAJES = ['martin', 'simon'];
+// El orden del titulo: Samaon primero.
+export const ORDEN_PERSONAJES = ['simon', 'martin'];

@@ -65,7 +65,11 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(0.5);
 
     // el personaje dando saltos de alegria, con su carita
-    const figura = this.add.image(150, 300, datos.cara).setDisplaySize(150, 150);
+    // si el personaje tiene pose de celebracion, se usa esa; si no, su carita
+    const celebra = datos.poses && datos.poses.victoria;
+    const figura = this.add
+      .image(150, 300, celebra || datos.cara)
+      .setDisplaySize(celebra ? 190 : 150, celebra ? 190 : 150);
     this.tweens.add({
       targets: figura,
       y: figura.y - 18,
