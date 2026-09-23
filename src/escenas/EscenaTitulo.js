@@ -11,6 +11,7 @@ import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { panelDeco } from '../sistemas/dibujo.js';
+import { mejoresPuntajes } from '../sistemas/puntajes.js';
 
 // Donde cae el cartel del titulo dentro de la ilustracion, en tanto por uno.
 // Se mide sobre el dibujo y no en pixeles de pantalla para que siga cuadrando
@@ -50,16 +51,19 @@ export class EscenaTitulo extends Phaser.Scene {
     const bajoElCartel = enPantallaY(CARTEL.y2);
 
     const anchoCaja = derecha - izquierda;
-    const altoCaja = 124;
     const centroX = (izquierda + derecha) / 2;
-    const centroY = bajoElCartel + 14 + altoCaja / 2;
 
-    // La caja va translucida a proposito: se tiene que seguir viendo la ciudad
-    // de detras, que es la gracia de la portada.
+    // --- la caja de empezar ---
+    //
+    // Solo lleva el "pulsa Enter". Los controles se aprenden jugando: el primer
+    // tablero los va diciendo con sus carteles, segun hacen falta, que es mucho
+    // mejor que una lista que nadie lee.
+    const altoCaja = 46;
+    const centroY = bajoElCartel + 12 + altoCaja / 2;
     panelDeco(this, centroX, centroY, anchoCaja, altoCaja, { alpha: 0.62 });
 
     const empezar = this.add
-      .text(centroX, centroY - altoCaja / 2 + 28, 'Pulsa Enter para empezar', {
+      .text(centroX, centroY, 'Pulsa Enter para empezar', {
         fontFamily: FUENTE.familia,
         fontSize: '15px',
         color: COLORES.textoAcento,
@@ -78,37 +82,56 @@ export class EscenaTitulo extends Phaser.Scene {
       ease: 'Sine.easeInOut',
     });
 
-    // Nada de flechas dibujadas: la tipografia no trae esos signos y salian
-    // rotos. Se dicen con palabras.
-    const controles = [
-      ['Moverse', 'flechas  o  A D'],
-      ['Saltar', 'arriba  W  Espacio'],
-      ['Habilidad', 'X  o  F'],
-    ];
-    const margen = 20;
-    const primeraFila = centroY - altoCaja / 2 + 56;
-    controles.forEach(([que, teclas], i) => {
-      const y = primeraFila + i * 19;
-      this.add
-        .text(izquierda + margen, y, que, {
-          fontFamily: FUENTE.familia,
-          fontSize: '11px',
-          color: COLORES.textoAcento,
-        })
-        .setOrigin(0, 0.5);
-      this.add
-        .text(derecha - margen, y, teclas, {
-          fontFamily: FUENTE.familia,
-          fontSize: '11px',
-          color: COLORES.textoSuave,
-        })
-        .setOrigin(1, 0.5);
-    });
+    // --- y debajo, a quien hay que ganarle ---
+    this.pintarMejores(centroX, anchoCaja, centroY + altoCaja / 2 + 12, alto);
 
     const comenzar = () => this.scene.start('nombre');
     this.input.keyboard.once('keydown-ENTER', comenzar);
     this.input.keyboard.once('keydown-SPACE', comenzar);
     this.input.once('pointerdown', comenzar);
+  }
+
+  // El tablero de los mejores, colgado debajo de la caja de empezar. Si no cabe
+  // entero se enseñan los que quepan: es un aperitivo, la tabla completa sale
+  // al acabar la partida.
+  pintarMejores(centroX, anchoCaja, arriba, altoPantalla) {
+    const todos = mejoresPuntajes();
+    if (!todos.length) return;
+
+    const sitio = altoPantalla - arriba - 14;
+    const caben = Math.max(1, Math.min(todos.length, Math.floor((sitio - 34) / 16)));
+    const filas = todos.slice(0, caben);
+    const altoCaja = 42 + filas.length * 16;
+    const centroY = arriba + altoCaja / 2;
+
+    panelDeco(this, centroX, centroY, anchoCaja, altoCaja, { alpha: 0.62 });
+
+    this.add
+      .text(centroX, arriba + 15, 'Los mejores', {
+        fontFamily: FUENTE.familia,
+        fontSize: '13px',
+        color: COLORES.textoAcento,
+      })
+      .setOrigin(0.5);
+
+    const margen = 18;
+    filas.forEach((fila, i) => {
+      const y = arriba + 34 + i * 16;
+      this.add
+        .text(centroX - anchoCaja / 2 + margen, y, `${i + 1}.  ${fila.nombre}`, {
+          fontFamily: FUENTE.familia,
+          fontSize: '12px',
+          color: COLORES.textoClaro,
+        })
+        .setOrigin(0, 0.5);
+      this.add
+        .text(centroX + anchoCaja / 2 - margen, y, String(fila.puntos), {
+          fontFamily: FUENTE.familia,
+          fontSize: '12px',
+          color: COLORES.textoAcento,
+        })
+        .setOrigin(1, 0.5);
+    });
   }
 }
 

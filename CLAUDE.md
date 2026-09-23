@@ -399,9 +399,10 @@ profundidad.
 
 | Plano | Que lleva | Velocidad | Donde vive |
 |---|---|---|---|
-| **Fondo** | la ilustracion de la ciudad, desenfocada | **0,16** | `dibujo.js`, `pintarFondo` |
+| **Fondo** | la ilustracion de la ciudad | **0,16** | `dibujo.js`, `pintarFondo` |
+| **Detras** | decorado grande que pasa por detras del nino y del suelo | **0,72** | `sistemas/planos.js` |
 | **Medio** | el mundo: suelo, cornisas, bichos, premios | **1** | `constructor-nivel.js` |
-| **Frente** | ramas, faroles y matorrales pegados a la camara | **1,45** | `sistemas/planos.js` |
+| **Frente** | lo que cruza pegado a la camara | **1,45** | `sistemas/planos.js` |
 
 Se gradua en `PLANOS`, dentro de `src/config/estilo.js`. Cada plano se mueve a
 mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
@@ -424,11 +425,15 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   en flor, buses de la hinchada, una palmera alta y una olla de frijoles. Las
   tres que faltan siguen con los adornos provisionales (ramas, farol, matorral),
   que es lo que se usa cuando una ciudad no trae los suyos.
-- Los adornos de suelo se **apoyan en la linea de suelo**, la misma por donde
-  camina el nino, y no en el borde de abajo de la pantalla: asi se leen como
-  cosas que estan ahi mismo. Las medidas se piensan **contra el nino**, que mide
-  86 px: una palmera es el doble de alta que el, un bus le saca la cabeza, una
-  olla le llega por la cintura.
+- Los adornos de suelo **nacen del borde de abajo de la pantalla**, no de la
+  linea por donde camina el nino: estan mas cerca que el suelo, asi que su base
+  queda fuera de cuadro, que es lo que los pone delante de todo. Por eso sus
+  alturas son mas cortas de lo que pareceria: lo que se ve de un arbol de 150 px
+  es solo lo que asoma por encima del suelo, y con la altura "real" taparia al
+  nino entero y no se podria jugar.
+- Un adorno puede llevar **`detras: true`** y entonces pasa por DETRAS del nino
+  y del suelo, mas despacio, como decorado de la ciudad. Es lo que hacen las
+  chivas de Medellin, que van bien grandes.
 
 ## 10. Arte y licencias
 
@@ -657,6 +662,10 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — La pantalla de entrada enseña el **tablero de los mejores**
+  debajo de la caja de empezar, y se le quitan los controles: se aprenden
+  jugando, que el primer tablero los va diciendo con sus carteles segun hacen
+  falta.
 - **2026-09-23** — Space Coast y Medellin estrenan su **primer plano propio**.
   Para recortarlos hizo falta un modo nuevo en la herramienta: comparar el
   **color exacto** en vez del tono, porque las hojas de las palmeras son del

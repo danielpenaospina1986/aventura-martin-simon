@@ -211,6 +211,12 @@ export const PLANOS = {
     ampliacionMaxima: 2, // cuanto se puede agrandar para cubrir el recorrido
     bajada: 0.18,        // se baja un poco, que abajo lo tapa el terreno
   },
+  // DETRAS DEL MUNDO: decorado grande que pasa por detras del nino y del
+  // suelo. Mas lejos que el mundo, mas cerca que la ilustracion de fondo.
+  detras: {
+    velocidad: 0.72,
+    profundidad: -20,
+  },
   // PRIMER PLANO: ramas, postes y matas que cruzan por delante de todo.
   frente: {
     velocidad: 1.45,
