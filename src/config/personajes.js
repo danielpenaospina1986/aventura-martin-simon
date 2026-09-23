@@ -28,16 +28,26 @@ export const PERSONAJES = {
   simon: {
     id: 'simon',
     nombre: 'Simón',
-    textura: TEXTURAS.simon,
+    textura: TEXTURAS.simonQuieto,
     cara: TEXTURAS.caraSimon,
+    // Poses dibujadas. El sprite es el lienzo cuadrado en el que vienen todas
+    // encajadas a la misma altura, por eso ancho y alto son iguales.
+    poses: {
+      quieto: TEXTURAS.simonQuieto,
+      correr: [TEXTURAS.simonCorre1, TEXTURAS.simonCorre2],
+      aire: TEXTURAS.simonCorre1,
+      atacar: TEXTURAS.simonLanza,
+    },
+    msPorPaso: 130, // lo que dura cada pose del ciclo de carrera
+    margenPie: 2,   // aire que queda bajo los pies dentro del lienzo
     moneda: TEXTURAS.monedaSimon,
     nombreMoneda: 'bloques',
-    ancho: 30,
-    alto: 52,
-    color: 0xef7d1e,        // naranja
-    colorPelo: 0x1b1b22,    // negro
+    ancho: 68,
+    alto: 68,
+    color: 0xef7d1e,        // naranja (solo para el dibujo de respaldo)
+    colorPelo: 0x1b1b22,
     altoPelo: 10,
-    caja: { ancho: 22, alto: 48 },
+    caja: { ancho: 28, alto: 54 },
     habilidad: 'lanzar',
     nombreHabilidad: 'Lanzar bloques',
     descripcion: 'Grande y fuerte.\nLanza bloques que\nderriban enemigos.',

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// NIVEL 2 - "Los tejados"
+// NIVEL 2 - "Medellín"
 //
 // El mapa es texto puro: cada caracter es una casilla de 32x32 px.
 // Se puede editar con el bloc de notas. Leyenda:
@@ -22,7 +22,8 @@
 // ---------------------------------------------------------------------------
 
 export const NIVEL_2 = {
-  nombre: 'Los tejados',
+  nombre: 'Medellín',
+  fondo: 'medellin',
   mapa: [
 // col:  0         10        20        30        40        50        60        70        80        90        100 
   '........................................................................................................', //  0
@@ -46,9 +47,9 @@ export const NIVEL_2 = {
 
   // Carteles de ayuda que aparecen flotando en el mundo (columna, fila, texto).
   pistas: [
-    { col: 6, fila: 11, texto: 'Se sube por los tejados' },
+    { col: 6, fila: 11, texto: 'Arriba, por la ladera' },
     { col: 34, fila: 8, texto: 'Arriba hay más premios' },
-    { col: 85, fila: 10, texto: '¡Otro jefe!' },
+    { col: 85, fila: 10, texto: '¡El jefe de Medellín!' },
   ],
 };
 

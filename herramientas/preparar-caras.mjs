@@ -40,9 +40,8 @@ const CARAS = [
     nombre: 'simon',
     origen: 'src/assets/caras-origen/simon-origen.jpg',
     destino: 'src/assets/cara-simon.png',
-    // El texto del hombro. Queda fuera del recorte, pero se tapa igualmente
-    // para que el dibujo quede limpio de verdad.
-    parches: [{ destino: [664, 772, 140, 120], fuente: [500, 772, 140, 120] }],
+    // El dibujo nuevo de Simon no trae ninguna marca que tapar.
+    parches: [],
   },
 ];
 

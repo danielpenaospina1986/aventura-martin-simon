@@ -29,11 +29,24 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     escena.add.existing(this);
     escena.physics.add.existing(this);
 
+    // Los dibujos vienen en lienzos grandes; el personaje mide lo que diga
+    // datos.ancho x datos.alto. Se escala antes de tocar la caja de colision.
+    this.setDisplaySize(datos.ancho, datos.alto);
+
     // La caja de colision es algo mas pequena que el dibujo: perdona los roces.
-    this.body.setSize(datos.caja.ancho, datos.caja.alto, false);
+    //
+    // Ojo: Arcade mide la caja en pixeles de la TEXTURA y luego le aplica la
+    // escala del sprite. Como los dibujos vienen en lienzos grandes y se
+    // reducen, hay que dividir por la escala o la caja sale diminuta.
+    const escalaX = this.scaleX || 1;
+    const escalaY = this.scaleY || 1;
+
+    this.body.setSize(datos.caja.ancho / escalaX, datos.caja.alto / escalaY, false);
+    // margenPie es el aire que queda bajo los pies dentro del lienzo del
+    // sprite: sin restarlo, el personaje flotaria sobre el suelo.
     this.body.setOffset(
-      (datos.ancho - datos.caja.ancho) / 2,
-      datos.alto - datos.caja.alto,
+      (datos.ancho - datos.caja.ancho) / 2 / escalaX,
+      (datos.alto - datos.caja.alto - (datos.margenPie || 0)) / escalaY,
     );
     this.body.setMaxVelocity(600, FISICA.velocidadCaidaMaxima);
 
@@ -51,9 +64,15 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.reaparicion = { x, y };
     // marcador y su desglose, para poder contarlo al final
     this.monedas = 0;
+
+    // animacion por poses (solo si el personaje las tiene dibujadas)
+    this.relojPaso = 0;
+    this.pasoActual = 0;
+    this.atacandoHasta = 0;
     this.recogidas = 0;
     this.golpes = 0;
     this.jefesDerrotados = 0;
+    this.enemigosVencidos = 0;
   }
 
   get esInvulnerable() {
@@ -85,6 +104,7 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.gestionarSalto(delta);
     this.gestionarHabilidad();
     this.aplicarGravedadVariable();
+    this.actualizarPose(delta);
   }
 
   moverHorizontal(dt) {
@@ -134,6 +154,37 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.puedeRecortar = true;
   }
 
+  // Elige que dibujo mostrar. Si el personaje no tiene poses (todavia), se
+  // queda con su textura unica y no pasa nada.
+  actualizarPose(delta) {
+    const poses = this.datos.poses;
+    if (!poses) return;
+
+    if (this.reloj < this.atacandoHasta) {
+      this.setTexture(poses.atacar);
+      return;
+    }
+
+    if (!this.enSuelo) {
+      this.setTexture(poses.aire);
+      return;
+    }
+
+    if (Math.abs(this.body.velocity.x) > 20) {
+      this.relojPaso += delta;
+      if (this.relojPaso >= (this.datos.msPorPaso || 140)) {
+        this.relojPaso = 0;
+        this.pasoActual = (this.pasoActual + 1) % poses.correr.length;
+      }
+      this.setTexture(poses.correr[this.pasoActual]);
+      return;
+    }
+
+    this.relojPaso = 0;
+    this.pasoActual = 0;
+    this.setTexture(poses.quieto);
+  }
+
   saltar() {
     this.body.velocity.y = -JUGADOR.impulsoSalto;
     this.buffer = 0;
@@ -160,7 +211,10 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     const habilidad = HABILIDADES[this.datos.habilidad];
     if (!habilidad) return;
     const recarga = habilidad(this, this.escena);
-    if (recarga) this.recargaHabilidad = recarga;
+    if (recarga) {
+      this.recargaHabilidad = recarga;
+      this.atacandoHasta = this.reloj + 260;
+    }
   }
 
   // --- reglas amables -------------------------------------------------------

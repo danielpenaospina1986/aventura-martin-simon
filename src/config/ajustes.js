@@ -65,6 +65,7 @@ export const LANZAMIENTO = {
 export const PUNTOS = {
   porMoneda: 1,
   porGolpe: -3,   // te toca un enemigo o te caes a un hueco
+  porEnemigo: 2,  // vencer a un bicho pequeno
   porJefe: 10,
   minimo: 0,      // el marcador nunca baja de aqui
 };

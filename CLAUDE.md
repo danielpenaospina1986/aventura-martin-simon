@@ -84,6 +84,8 @@ aventura-martin-simon/
     generar-niveles.mjs escribe los mapas de src/niveles/
     tratar-fondo.mjs    suaviza la ilustracion de fondo
     preparar-caras.mjs  limpia y recorta las caritas de los ninos
+    preparar-fondos.mjs tapa marcas y trata los fondos de cada ciudad
+    preparar-sprites.mjs recorta y alinea las poses de un personaje
     completar-fuente.mjs anade acentos y signos a la tipografia
   pruebas/
     juego.spec.mjs      pruebas automaticas con Playwright
@@ -126,10 +128,13 @@ es la habilidad.
   delante de el que elimina a los enemigos que toque.
 
 ### Simon — el constructor
-- Fisico: grande y robusto. Rectangulo provisional de **30 x 52 px**, color naranja.
-- Pelo: negro largo (franja arriba del rectangulo).
-- Arte final: casco de obra con el pelo largo saliendo por debajo, overol y cinturon
-  de herramientas.
+- **Ya tiene dibujo propio** (no es un rectangulo). Sudadera azul con parches,
+  vaqueros y zapatos hechos de piezas de construccion.
+- Sprite de **68 x 68 px** (lienzo cuadrado con todas las poses a la misma
+  altura), caja de colision de **28 x 54**.
+- Poses dibujadas: quieto, dos de carrera y una de lanzar. **Falta la de salto**:
+  mientras tanto usa la primera de carrera, que con las piernas abiertas cuela.
+- Los dibujos de partida se preparan con `herramientas/preparar-sprites.mjs`.
 - **Habilidad:** lanzar bloques de **32 x 32** hacia adelante. El bloque sale casi
   recto y va cayendo; alcanza unos **167 px** (5 casillas) antes de tocar el suelo.
   Derriba a los enemigos que toque y se deshace al chocar con algo.
@@ -165,6 +170,7 @@ Valores en `src/config/ajustes.js`:
 | Cosa | Puntos |
 |---|---|
 | Recoger un premio | **+1** |
+| Vencer a un bicho pequeno | **+2** |
 | Que te toque un enemigo o caerte a un hueco | **-3** |
 | Derrotar a un jefe | **+10** |
 
@@ -231,13 +237,18 @@ es una casilla de 32 x 32.
 
 ### Los cinco tableros
 
-| # | Nombre | Tamano | Premios | Enemigos |
+Cada tablero es una **ciudad**, con su propio fondo ilustrado:
+
+| # | Ciudad | Tamano | Premios | Enemigos |
 |---|---|---|---|---|
-| 1 | El barrio | 96 x 17 | 28 | 4 |
-| 2 | Los tejados | 104 x 17 | 31 | 5 |
-| 3 | El mercado | 108 x 17 | 42 | 8 |
-| 4 | La quebrada | 112 x 17 | 42 | 5 |
-| 5 | La cima | 116 x 17 | 48 | 7 |
+| 1 | Space Coast | 96 x 17 | 28 | 4 |
+| 2 | Medellin | 104 x 17 | 31 | 5 |
+| 3 | Atlanta | 108 x 17 | 42 | 8 |
+| 4 | Miami | 112 x 17 | 42 | 5 |
+| 5 | Cartagena | 116 x 17 | 48 | 7 |
+
+El fondo de cada una vive en `src/assets/fondos/` y el nivel lo nombra en su
+campo `fondo`. La historia de cada ciudad esta por escribir.
 
 Todos tienen **dos checkpoints** y **un jefe** antes de la meta. Se juegan en
 orden y el marcador se arrastra de uno a otro: la partida son los cinco.
@@ -380,6 +391,17 @@ baja.
   de dibujo animado de los anos 30: contorno de tinta, formas redondeadas y
   paleta apagada. Los personajes tienen cabeza, cuerpo y zapatones; los enemigos
   y el jefe son bichos redondos con ojos grandes.
+- **2026-09-22** — Cada nivel es una ciudad con su fondo: Space Coast, Medellin,
+  Atlanta, Miami y Cartagena.
+- **2026-09-22** — Los fondos de Atlanta y Miami traian **marcas registradas** bien
+  visibles (un simbolo deportivo muy protegido, el logotipo de una marca de
+  refrescos y nombres de hoteles). Se tapan con `preparar-fondos.mjs`, que en su
+  lugar dibuja motivos art deco. Los originales no se suben al repositorio.
+- **2026-09-22** — Simon estrena dibujo de verdad. Las poses vienen en lienzos
+  grandes y se reducen en el juego; **Arcade mide la caja de colision en pixeles
+  de la textura y luego le aplica la escala del sprite**, asi que hay que dividir
+  por la escala o la caja sale diminuta (28x54 se quedaba en 7x14).
+- **2026-09-22** — Vencer a un bicho pequeno da **2 monedas**. Antes no daba nada.
 - **2026-09-22** — La casilla de suelo **no lleva marco completo**, solo una linea
   arriba: como el terreno se dibuja repitiendo esa casilla, un marco entero
   convertia el suelo en una cuadricula.

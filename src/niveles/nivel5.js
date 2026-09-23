@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// NIVEL 5 - "La cima"
+// NIVEL 5 - "Cartagena"
 //
 // El mapa es texto puro: cada caracter es una casilla de 32x32 px.
 // Se puede editar con el bloc de notas. Leyenda:
@@ -22,7 +22,8 @@
 // ---------------------------------------------------------------------------
 
 export const NIVEL_5 = {
-  nombre: 'La cima',
+  nombre: 'Cartagena',
+  fondo: 'cartagena',
   mapa: [
 // col:  0         10        20        30        40        50        60        70        80        90        100       110   
   '....................................................................................................................', //  0
@@ -46,9 +47,9 @@ export const NIVEL_5 = {
 
   // Carteles de ayuda que aparecen flotando en el mundo (columna, fila, texto).
   pistas: [
-    { col: 6, fila: 11, texto: 'Todo hacia arriba' },
+    { col: 6, fila: 11, texto: 'Hacia las murallas' },
     { col: 74, fila: 4, texto: 'El premio gordo' },
-    { col: 106, fila: 10, texto: '¡El jefe final!' },
+    { col: 106, fila: 10, texto: '¡El jefe final de Cartagena!' },
   ],
 };
 

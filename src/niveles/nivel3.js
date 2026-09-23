@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// NIVEL 3 - "El mercado"
+// NIVEL 3 - "Atlanta"
 //
 // El mapa es texto puro: cada caracter es una casilla de 32x32 px.
 // Se puede editar con el bloc de notas. Leyenda:
@@ -22,7 +22,8 @@
 // ---------------------------------------------------------------------------
 
 export const NIVEL_3 = {
-  nombre: 'El mercado',
+  nombre: 'Atlanta',
+  fondo: 'atlanta',
   mapa: [
 // col:  0         10        20        30        40        50        60        70        80        90        100     
   '............................................................................................................', //  0
@@ -46,9 +47,9 @@ export const NIVEL_3 = {
 
   // Carteles de ayuda que aparecen flotando en el mundo (columna, fila, texto).
   pistas: [
-    { col: 8, fila: 8, texto: 'Salta por los toldos' },
+    { col: 8, fila: 8, texto: 'Salta por los tejados' },
     { col: 56, fila: 11, texto: 'Aquí hay muchos bichos' },
-    { col: 93, fila: 10, texto: '¡El jefe del mercado!' },
+    { col: 93, fila: 10, texto: '¡El jefe de Atlanta!' },
   ],
 };
 

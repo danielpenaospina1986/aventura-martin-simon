@@ -38,12 +38,15 @@ export class EscenaNivel extends Phaser.Scene {
       recogidas: d.recogidas || 0,
       golpes: d.golpes || 0,
       jefesDerrotados: d.jefesDerrotados || 0,
+      enemigosVencidos: d.enemigosVencidos || 0,
     };
   }
 
   create() {
     const { width: ancho, height: alto } = this.scale;
-    this.fondo = pintarFondo(this, ancho, alto);
+    this.fondo = pintarFondo(this, ancho, alto, {
+      textura: TEXTURAS.fondoDe(this.datosNivel.fondo || ''),
+    });
 
     this.datosPersonaje = PERSONAJES[this.personajeId] || PERSONAJES.martin;
     this.nivel = construirNivel(this, this.datosNivel, {
@@ -102,6 +105,7 @@ export class EscenaNivel extends Phaser.Scene {
     jugador.recogidas = this.acumulado.recogidas;
     jugador.golpes = this.acumulado.golpes;
     jugador.jefesDerrotados = this.acumulado.jefesDerrotados;
+    jugador.enemigosVencidos = this.acumulado.enemigosVencidos;
 
     this.jugadores = [jugador];
   }
@@ -237,6 +241,13 @@ export class EscenaNivel extends Phaser.Scene {
   eliminarEnemigo(enemigo) {
     if (!enemigo.active) return;
     estrellitas(this, enemigo.x, enemigo.y);
+
+    // los bichos pequenos tambien dan premio
+    const jugador = this.jugadores[0];
+    jugador.monedas += PUNTOS.porEnemigo;
+    jugador.enemigosVencidos += 1;
+    textoFlotante(this, enemigo.x, enemigo.y - 22, `+${PUNTOS.porEnemigo}`, COLORES.textoAcento);
+
     enemigo.destroy();
   }
 
@@ -280,6 +291,7 @@ export class EscenaNivel extends Phaser.Scene {
         recogidas: jugador.recogidas,
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
+        enemigosVencidos: jugador.enemigosVencidos,
       });
     });
   }

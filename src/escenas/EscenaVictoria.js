@@ -29,6 +29,7 @@ export class EscenaVictoria extends Phaser.Scene {
     this.recogidas = d.recogidas || 0;
     this.golpes = d.golpes || 0;
     this.jefesDerrotados = d.jefesDerrotados || 0;
+    this.enemigosVencidos = d.enemigosVencidos || 0;
     this.indiceNivel = d.indiceNivel || 0;
     this.nombreNivel = d.nombreNivel || '';
     this.hayOtroNivel = this.indiceNivel + 1 < TOTAL_NIVELES;
@@ -88,6 +89,7 @@ export class EscenaVictoria extends Phaser.Scene {
       recogidas: this.recogidas,
       golpes: this.golpes,
       jefesDerrotados: this.jefesDerrotados,
+      enemigosVencidos: this.enemigosVencidos,
     };
 
     const opciones = [];
@@ -120,7 +122,7 @@ export class EscenaVictoria extends Phaser.Scene {
   pintarMarcador(cx, cy) {
     const datos = PERSONAJES[this.personajeId];
     const anchoPanel = 470;
-    panelDeco(this, cx, cy, anchoPanel, 272);
+    panelDeco(this, cx, cy, anchoPanel, 300);
 
     const izquierda = cx - anchoPanel / 2 + 34;
     const derecha = cx + anchoPanel / 2 - 34;
@@ -143,7 +145,7 @@ export class EscenaVictoria extends Phaser.Scene {
     };
 
     this.add
-      .text(cx, cy - 92, 'Marcador', {
+      .text(cx, cy - 106, 'Marcador', {
         fontFamily: FUENTE.familia,
         fontSize: '26px',
         color: COLORES.textoAcento,
@@ -153,25 +155,31 @@ export class EscenaVictoria extends Phaser.Scene {
     const perdido = this.golpes * Math.abs(PUNTOS.porGolpe);
     const bonus = this.jefesDerrotados * PUNTOS.porJefe;
 
-    linea(cy - 48, `${datos.nombreMoneda} recogidos`, `+${this.recogidas}`, COLORES.textoClaro);
+    linea(cy - 62, `${datos.nombreMoneda} recogidos`, `+${this.recogidas}`, COLORES.textoClaro);
     linea(
-      cy - 16,
+      cy - 32,
       this.golpes === 1 ? '1 golpe o caída' : `${this.golpes} golpes o caídas`,
       perdido ? `-${perdido}` : '0',
       this.golpes ? '#ff8f8f' : COLORES.textoSuave,
     );
-    linea(cy + 16, this.jefesDerrotados ? 'Jefe derrotado' : 'Sin jefe', `+${bonus}`, COLORES.textoClaro);
+    linea(
+      cy + 14,
+      this.enemigosVencidos === 1 ? '1 bicho vencido' : `${this.enemigosVencidos} bichos vencidos`,
+      `+${this.enemigosVencidos * PUNTOS.porEnemigo}`,
+      COLORES.textoClaro,
+    );
+    linea(cy + 44, this.jefesDerrotados ? 'Jefes derrotados' : 'Sin jefe', `+${bonus}`, COLORES.textoClaro);
 
     // raya de separacion
     const raya = this.add.graphics();
     raya.lineStyle(2, COLORES.decoMarcoOscuro, 0.9);
     raya.beginPath();
-    raya.moveTo(izquierda, cy + 42);
-    raya.lineTo(derecha, cy + 42);
+    raya.moveTo(izquierda, cy + 68);
+    raya.lineTo(derecha, cy + 68);
     raya.strokePath();
 
     this.add
-      .text(izquierda, cy + 74, 'Total', {
+      .text(izquierda, cy + 98, 'Total', {
         fontFamily: FUENTE.familia,
         fontSize: '30px',
         color: COLORES.textoAcento,
@@ -179,11 +187,11 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .image(derecha - 82, cy + 74, datos.moneda)
+      .image(derecha - 82, cy + 98, datos.moneda)
       .setScale(1.5);
 
     this.add
-      .text(derecha, cy + 74, String(this.monedas), {
+      .text(derecha, cy + 98, String(this.monedas), {
         fontFamily: FUENTE.familia,
         fontSize: '38px',
         color: COLORES.textoAcento,
@@ -191,7 +199,7 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(1, 0.5);
 
     this.add
-      .text(cx, cy + 112, this.mensaje(), {
+      .text(cx, cy + 130, this.mensaje(), {
         fontFamily: FUENTE.familia,
         fontSize: '15px',
         color: COLORES.textoSuave,

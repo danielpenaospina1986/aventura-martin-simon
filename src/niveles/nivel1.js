@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// NIVEL 1 - "El barrio"
+// NIVEL 1 - "Space Coast"
 //
 // El mapa es texto puro: cada caracter es una casilla de 32x32 px.
 // Se puede editar con el bloc de notas. Leyenda:
@@ -22,7 +22,8 @@
 // ---------------------------------------------------------------------------
 
 export const NIVEL_1 = {
-  nombre: 'El barrio',
+  nombre: 'Space Coast',
+  fondo: 'space-coast',
   mapa: [
 // col:  0         10        20        30        40        50        60        70        80        90    
   '................................................................................................', //  0

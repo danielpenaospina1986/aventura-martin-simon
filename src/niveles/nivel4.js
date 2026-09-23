@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// NIVEL 4 - "La quebrada"
+// NIVEL 4 - "Miami"
 //
 // El mapa es texto puro: cada caracter es una casilla de 32x32 px.
 // Se puede editar con el bloc de notas. Leyenda:
@@ -22,7 +22,8 @@
 // ---------------------------------------------------------------------------
 
 export const NIVEL_4 = {
-  nombre: 'La quebrada',
+  nombre: 'Miami',
+  fondo: 'miami',
   mapa: [
 // col:  0         10        20        30        40        50        60        70        80        90        100       11
   '................................................................................................................', //  0
@@ -46,9 +47,9 @@ export const NIVEL_4 = {
 
   // Carteles de ayuda que aparecen flotando en el mundo (columna, fila, texto).
   pistas: [
-    { col: 5, fila: 11, texto: 'Aquí hay muchos huecos' },
+    { col: 5, fila: 11, texto: 'Cuidado con los huecos' },
     { col: 50, fila: 11, texto: 'Con calma y salto largo' },
-    { col: 96, fila: 10, texto: '¡El jefe de la quebrada!' },
+    { col: 96, fila: 10, texto: '¡El jefe de Miami!' },
   ],
 };
 

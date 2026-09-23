@@ -406,20 +406,21 @@ export function panelDeco(escena, x, y, ancho, alto, opciones = {}) {
 // Fondo de todas las pantallas. Si la ilustracion esta cargada se usa esa; si
 // no (por ejemplo si fallase la carga), se dibuja el cielo de siempre.
 export function pintarFondo(escena, ancho, alto, opciones = {}) {
-  const { veloExtra = 0, conNubes = true } = opciones;
-  if (escena.textures.exists(TEXTURAS.fondo)) {
-    return pintarFondoIlustrado(escena, ancho, alto, veloExtra);
+  const { veloExtra = 0, conNubes = true, textura } = opciones;
+  const elegida = textura && escena.textures.exists(textura) ? textura : TEXTURAS.fondo;
+  if (escena.textures.exists(elegida)) {
+    return pintarFondoIlustrado(escena, ancho, alto, veloExtra, elegida);
   }
   pintarFondoDibujado(escena, ancho, alto, conNubes);
   return { ajustarParallax() {} };
 }
 
-function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0) {
-  const fuente = escena.textures.get(TEXTURAS.fondo).getSourceImage();
+function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXTURAS.fondo) {
+  const fuente = escena.textures.get(textura).getSourceImage();
   const escala = Math.max(ancho / fuente.width, alto / fuente.height) * FONDO.sobreancho;
 
   const imagen = escena.add
-    .image(ancho / 2, alto / 2, TEXTURAS.fondo)
+    .image(ancho / 2, alto / 2, textura)
     .setScale(escala)
     .setScrollFactor(0)
     .setDepth(-100);

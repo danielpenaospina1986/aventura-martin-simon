@@ -79,6 +79,7 @@ const estadoJugador = (page) =>
       recogidas: j.recogidas,
       golpes: j.golpes,
       vidasJefe: n.jefe && n.jefe.active ? n.jefe.vidas : 0,
+      enemigosVencidos: j.enemigosVencidos,
       totalMonedas: n.nivel.totalMonedas,
     };
   });
@@ -248,7 +249,30 @@ test('saltar encima de un enemigo lo elimina', async ({ page }) => {
 
   const despues = await estadoJugador(page);
   expect(despues.enemigos).toBe(3);
-  expect(despues.monedas).toBe(0);
+  expect(despues.monedas).toBe(2); // vencer a un bicho da dos monedas
+});
+
+test('vencer a un bicho pequeño da dos monedas, lo mates como lo mates', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.monedas = 0;
+    const antes = n.enemigos.getChildren().filter((e) => e.active).length;
+    n.eliminarEnemigo(n.enemigos.getChildren()[0]);
+    n.eliminarEnemigo(n.enemigos.getChildren()[1]);
+    return {
+      antes,
+      despues: n.enemigos.getChildren().filter((e) => e.active).length,
+      monedas: j.monedas,
+      vencidos: j.enemigosVencidos,
+    };
+  });
+
+  expect(resultado.despues).toBe(resultado.antes - 2);
+  expect(resultado.monedas).toBe(4); // dos bichos, dos monedas cada uno
+  expect(resultado.vencidos).toBe(2);
 });
 
 test('Simón lanza bloques y derriban a los enemigos', async ({ page }) => {

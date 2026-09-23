@@ -114,7 +114,8 @@ const NIVELES = [];
   NIVELES.push({
     archivo: 'nivel1.js',
     constante: 'NIVEL_1',
-    nombre: 'El barrio',
+    nombre: 'Space Coast',
+    fondo: 'space-coast',
     mapa: m,
     pistas: [
       { col: 5, fila: 11, texto: '← →  para moverte' },
@@ -177,12 +178,13 @@ const NIVELES = [];
   NIVELES.push({
     archivo: 'nivel2.js',
     constante: 'NIVEL_2',
-    nombre: 'Los tejados',
+    nombre: 'Medellín',
+    fondo: 'medellin',
     mapa: m,
     pistas: [
-      { col: 6, fila: 11, texto: 'Se sube por los tejados' },
+      { col: 6, fila: 11, texto: 'Arriba, por la ladera' },
       { col: 34, fila: 8, texto: 'Arriba hay más premios' },
-      { col: 85, fila: 10, texto: '¡Otro jefe!' },
+      { col: 85, fila: 10, texto: '¡El jefe de Medellín!' },
     ],
   });
 }
@@ -248,12 +250,13 @@ const NIVELES = [];
   NIVELES.push({
     archivo: 'nivel3.js',
     constante: 'NIVEL_3',
-    nombre: 'El mercado',
+    nombre: 'Atlanta',
+    fondo: 'atlanta',
     mapa: m,
     pistas: [
-      { col: 8, fila: 8, texto: 'Salta por los toldos' },
+      { col: 8, fila: 8, texto: 'Salta por los tejados' },
       { col: 56, fila: 11, texto: 'Aquí hay muchos bichos' },
-      { col: 93, fila: 10, texto: '¡El jefe del mercado!' },
+      { col: 93, fila: 10, texto: '¡El jefe de Atlanta!' },
     ],
   });
 }
@@ -310,12 +313,13 @@ const NIVELES = [];
   NIVELES.push({
     archivo: 'nivel4.js',
     constante: 'NIVEL_4',
-    nombre: 'La quebrada',
+    nombre: 'Miami',
+    fondo: 'miami',
     mapa: m,
     pistas: [
-      { col: 5, fila: 11, texto: 'Aquí hay muchos huecos' },
+      { col: 5, fila: 11, texto: 'Cuidado con los huecos' },
       { col: 50, fila: 11, texto: 'Con calma y salto largo' },
-      { col: 96, fila: 10, texto: '¡El jefe de la quebrada!' },
+      { col: 96, fila: 10, texto: '¡El jefe de Miami!' },
     ],
   });
 }
@@ -376,12 +380,13 @@ const NIVELES = [];
   NIVELES.push({
     archivo: 'nivel5.js',
     constante: 'NIVEL_5',
-    nombre: 'La cima',
+    nombre: 'Cartagena',
+    fondo: 'cartagena',
     mapa: m,
     pistas: [
-      { col: 6, fila: 11, texto: 'Todo hacia arriba' },
+      { col: 6, fila: 11, texto: 'Hacia las murallas' },
       { col: 74, fila: 4, texto: 'El premio gordo' },
-      { col: 106, fila: 10, texto: '¡El jefe final!' },
+      { col: 106, fila: 10, texto: '¡El jefe final de Cartagena!' },
     ],
   });
 }
@@ -433,6 +438,7 @@ ${LEYENDA}
 
 export const ${nivel.constante} = {
   nombre: '${nivel.nombre}',
+  fondo: '${nivel.fondo}',
   mapa: [
 ${regla(filas[0].length)}
 ${cuerpo}

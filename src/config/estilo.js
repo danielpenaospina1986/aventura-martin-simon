@@ -114,10 +114,16 @@ export const TEXTURAS = {
   arcoKatana: 'tex-arco-katana',
   nube: 'tex-nube',
   fondo: 'tex-fondo',
+  // un fondo por ciudad; la clave se arma con el nombre del nivel
+  fondoDe: (ciudad) => `tex-fondo-${ciudad}`,
   caraMartin: 'tex-cara-martin',
   caraSimon: 'tex-cara-simon',
   martin: 'tex-martin',
   simon: 'tex-simon',
+  simonQuieto: 'tex-simon-quieto',
+  simonCorre1: 'tex-simon-corre1',
+  simonCorre2: 'tex-simon-corre2',
+  simonLanza: 'tex-simon-lanza',
 };
 
 // Fondo ilustrado (src/assets/fondo-barrio.jpg).
