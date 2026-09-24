@@ -191,6 +191,7 @@ export const TEXTURAS = {
   frenteFrijoles: 'tex-frente-frijoles',
   frentePalmeraAlta: 'tex-frente-palmera-alta',
   frenteGuayacan: 'tex-frente-guayacan',
+  frenteGato: 'tex-frente-gato',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',

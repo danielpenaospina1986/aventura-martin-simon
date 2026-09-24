@@ -546,9 +546,15 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
 - **El plano de delante es de cada ciudad.** Su lista va en `frente`, dentro de
   `src/config/ciudades.js`. Space Coast tiene palmeras, un vecino de otro
   planeta dandose un bano y un astronauta flotando arriba; Medellin, guayacanes
-  en flor, buses de la hinchada, una palmera alta y una olla de frijoles. Las
-  tres que faltan siguen con los adornos provisionales (ramas, farol, matorral),
-  que es lo que se usa cuando una ciudad no trae los suyos.
+  en flor, buses de la hinchada, una palmera alta, una olla de frijoles y el
+  gato de la hinchada, que va llorando porque Martain le mocho la cola. Las tres
+  que faltan siguen con los adornos provisionales (ramas, farol, matorral), que
+  es lo que se usa cuando una ciudad no trae los suyos.
+- **En la arena del jefe no se planta nada por delante.** Al final del tablero
+  la camara ya no avanza, asi que un adorno que caiga ahi se queda clavado en
+  mitad del cuadro y tapa al jefe justo cuando hay que verle venir el golpe. Lo
+  corta `topeDeArena`, en `montarPrimerPlano`. Los de `detras: true` si siguen:
+  decoran sin estorbar.
 - Los adornos de suelo **nacen del borde de abajo de la pantalla**, no de la
   linea por donde camina el nino: estan mas cerca que el suelo, asi que su base
   queda fuera de cuadro, que es lo que los pone delante de todo. Por eso sus
@@ -574,6 +580,12 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
 - Todo el arte es **100% original** o de paquetes con **licencia libre** (Kenney, CC0).
 - **Prohibido** usar personajes, sprites, disenos, tipografias o musica de marcas o
   franquicias conocidas.
+  - **Con una excepcion, que Daniel decidio:** el decorado de las ciudades va
+    tal cual, con sus rotulos, sus escudos y sus mascotas — los fondos de
+    Atlanta y Miami, y el gato de la hinchada de Medellin, que lleva la
+    camiseta con su patrocinador. El juego es un regalo para Martin y Simon,
+    no tiene fin comercial y el enlace no esta en ningun sitio. Si algun dia
+    esto saliera de casa, es lo primero que habria que quitar.
 - **Fondos:** las cinco ciudades van **tal cual**, sin tocarles color ni
   enfoque. Lo que las manda al fondo es que se mueven despacio y que todo lo
   de delante lleva contorno de tinta. Antes se les bajaba la saturacion
@@ -982,3 +994,19 @@ baja.
   sucesos, no segundos, que es la regla que ya valia para el movimiento. Y las
   cuentas de bichos y premios dejan de ser numeros fijos: se miden contra lo que
   tenga el tablero, para que retocar un nivel no rompa media suite.
+- **2026-09-24** — Medellin estrena **el gato de la hinchada**, llorando porque
+  Martain le mocho la cola. Va con su bocadillo: el gato y el bocadillo son un
+  solo dibujo (las orejas se le montan encima, no hay recuadro que los separe)
+  y ademas el chiste es el bocadillo, asi que se le da mas alto que a los demas
+  adornos para que las dos lineas se lean al pasar.
+- **2026-09-24** — El gato va en **su propia entrada** de
+  `preparar-sprites.mjs`, no como una hoja mas de `frente`: la altura del
+  lienzo se reparte entre TODOS los grupos de un personaje, asi que meterlo ahi
+  habria encogido a las palmeras y a los buses. Y la herramienta acepta ahora
+  **nombres** (`node herramientas/preparar-sprites.mjs gato`) para rehacer solo
+  uno: rehacerlos todos por un dibujo nuevo es lento y vuelve a tocar arte que
+  ya estaba bien.
+- **2026-09-24** — **En la arena del jefe no se planta ningun adorno de
+  delante.** Al final del tablero la camara ya no avanza, asi que el adorno se
+  queda clavado en mitad del cuadro: el gato salio justo encima del jefe de
+  Medellin y lo tapaba entero. Vale para las cinco ciudades.

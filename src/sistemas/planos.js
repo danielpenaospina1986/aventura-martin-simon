@@ -100,6 +100,15 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
   const recorrido = Math.max(0, anchoMundo - ancho);
   const hasta = ancho + recorrido * velocidad;
 
+  // La ultima pantalla del tablero es la ARENA DEL JEFE, y ahi no se planta
+  // nada por delante: un adorno grande cruzando la pelea tapa justo al jefe
+  // cuando hay que verle venir el golpe. Al final del tablero la camara ya no
+  // avanza, asi que se queda clavado en medio del cuadro y no se va nunca.
+  //
+  // En pantalla, un adorno se ve en (base - izquierda * velocidad). Al final la
+  // camara se queda en "recorrido", asi que basta con no pasar de ahi.
+  const topeDeArena = recorrido * velocidad;
+
   const piezas = [];
 
   lista.forEach((adorno) => {
@@ -111,17 +120,23 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
       ? adorno.alto / fuente.height
       : adorno.ancho / fuente.width;
     const altoEnPantalla = fuente.height * escala;
+    const anchoEnPantalla = fuente.width * escala;
 
     for (let x = adorno.desfase; x < hasta; x += adorno.cada) {
       // un poco de vaiven, para que no parezca una valla
       const meneo = Math.sin(x * 0.017) * adorno.cada * 0.16;
       const arriba = adorno.desde === 'arriba';
 
+      // El vaiven es de cientos de pixeles, asi que el corte se mira sobre la
+      // posicion de verdad, no sobre la de la serie.
+      const donde = x + meneo;
+      if (!adorno.detras && donde > topeDeArena - anchoEnPantalla * 0.6) continue;
+
       // Los de abajo nacen del BORDE DE ABAJO de la pantalla, no de la linea
       // por donde camina el nino: estan mas cerca que el suelo, asi que su base
       // queda fuera de cuadro, que es lo que los pone delante de todo.
       const pieza = escena.add
-        .image(x + meneo, arriba ? -6 : alto + 6, adorno.textura)
+        .image(donde, arriba ? -6 : alto + 6, adorno.textura)
         .setOrigin(0.5, arriba ? 0 : 1)
         .setScale(escala)
         .setAlpha(adorno.alpha ?? PLANOS.frente.alpha)

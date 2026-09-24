@@ -31,6 +31,7 @@ import frenteBus2 from '../assets/frente/bus2.png';
 import frenteFrijoles from '../assets/frente/frijoles.png';
 import frentePalmeraAlta from '../assets/frente/palmera-alta.png';
 import frenteGuayacan from '../assets/frente/guayacan.png';
+import frenteGato from '../assets/frente/gato.png';
 import portadaMenu from '../assets/portada-menu.jpg';
 import fondoSpaceCoast from '../assets/fondos/space-coast.jpg';
 import fondoMedellin from '../assets/fondos/medellin.jpg';
@@ -110,6 +111,7 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.frenteFrijoles, frenteFrijoles);
     this.load.image(TEXTURAS.frentePalmeraAlta, frentePalmeraAlta);
     this.load.image(TEXTURAS.frenteGuayacan, frenteGuayacan);
+    this.load.image(TEXTURAS.frenteGato, frenteGato);
     this.load.image(TEXTURAS.portadaMenu, portadaMenu);
     Object.entries(FONDOS_CIUDAD).forEach(([ciudad, url]) => {
       this.load.image(TEXTURAS.fondoDe(ciudad), url);

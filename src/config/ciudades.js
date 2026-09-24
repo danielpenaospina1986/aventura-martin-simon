@@ -59,6 +59,10 @@ export const CIUDADES = {
       { textura: TEXTURAS.frentePalmeraAlta, desde: 'abajo', alto: 210, cada: 1060, desfase: 1180 },
       { textura: TEXTURAS.frenteBus2, desde: 'abajo', alto: 300, cada: 1320, desfase: 1600, detras: true },
       { textura: TEXTURAS.frenteFrijoles, desde: 'abajo', alto: 96, cada: 1140, desfase: 480 },
+      // El gato de la hinchada, llorando porque Martain le mocho la cola. Va
+      // con su bocadillo, que es el chiste: por eso es mas alto que el resto,
+      // para que las dos lineas se puedan leer al pasar.
+      { textura: TEXTURAS.frenteGato, desde: 'abajo', alto: 190, cada: 1460, desfase: 900 },
     ],
     pavimento: { patron: 'baldosa', claro: 0xcfc4b0, medio: 0xb5a893, oscuro: 0x8d8070 },
     subsuelo: { patron: 'adoquin', claro: 0xa85f45, medio: 0x8e4d37, oscuro: 0x6b3828 },

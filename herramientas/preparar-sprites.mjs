@@ -142,6 +142,28 @@ const PERSONAJES = [
     ],
   },
   {
+    // El gato de la hinchada de Medellin, llorando porque Martain le mocho la
+    // cola. Va en su propia entrada y no como una hoja mas de "frente" porque
+    // la altura del lienzo se reparte entre TODOS los grupos de un personaje:
+    // metiendolo ahi, su bocadillo habria encogido a las palmeras y los buses.
+    nombre: 'gato',
+    colorExacto: true,
+    tolerancia: 60,
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'gato',
+        porPieza: true,
+        nombres: ['gato'],
+        // El dibujo entero, bocadillo incluido: las orejas se le montan encima,
+        // asi que no hay recuadro que los separe. Y el chiste es el bocadillo.
+        zonas: [{ x: 245, y: 16, ancho: 702, alto: 1019 }],
+      },
+    ],
+  },
+  {
     // Dona Zully, la mama, con su gorro de bano y su cepillo. Las mangueras van
     // sueltas en la misma hoja: son el chorro que dispara.
     nombre: 'zully',
@@ -198,6 +220,23 @@ const PERSONAJES = [
 // El navegador solo se usa como lienzo de dibujo: las imagenes se le pasan ya
 // leidas, no por el servidor. Asi la herramienta no depende de que el servidor
 // este levantado, y sobre todo no se corta si Vite recarga la pagina a mitad.
+// Se le pueden pasar nombres para rehacer solo esos:
+//
+//   node herramientas/preparar-sprites.mjs gato
+//
+// Sin nombres los rehace todos. Rehacerlos todos por un dibujo nuevo es lento y,
+// sobre todo, vuelve a tocar arte que ya estaba bien.
+const soloEstos = process.argv.slice(2);
+const aTrabajar = soloEstos.length
+  ? PERSONAJES.filter((p) => soloEstos.includes(p.nombre))
+  : PERSONAJES;
+
+if (!aTrabajar.length) {
+  console.error(`  no hay ningun personaje que se llame: ${soloEstos.join(', ')}`);
+  console.error(`  hay estos: ${PERSONAJES.map((p) => p.nombre).join(', ')}`);
+  process.exit(1);
+}
+
 const navegador = await chromium.launch();
 const pagina = await navegador.newPage();
 await pagina.goto('about:blank');
@@ -325,7 +364,7 @@ const comoDatos = (ruta) => {
   return `data:image/${tipo};base64,${readFileSync(ruta).toString('base64')}`;
 };
 
-for (const personaje of PERSONAJES) {
+for (const personaje of aTrabajar) {
   if (!existsSync(personaje.destino)) mkdirSync(personaje.destino, { recursive: true });
 
   // --- 1. reunir todas las poses del personaje, sueltas y de hojas ---
