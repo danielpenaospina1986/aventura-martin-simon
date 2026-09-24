@@ -546,7 +546,8 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
 - **El plano de delante es de cada ciudad.** Su lista va en `frente`, dentro de
   `src/config/ciudades.js`. Space Coast tiene palmeras, un vecino de otro
   planeta dandose un bano y un astronauta flotando arriba; Medellin, guayacanes
-  en flor, buses de la hinchada, una palmera alta, una olla de frijoles y el
+  en flor, la chiva de la hinchada camino del estadio, una palmera alta, una
+  olla de frijoles y el
   gato de la hinchada, que va llorando porque Martain le mocho la cola. Las tres
   que faltan siguen con los adornos provisionales (ramas, farol, matorral), que
   es lo que se usa cuando una ciudad no trae los suyos.
@@ -1010,3 +1011,8 @@ baja.
   delante.** Al final del tablero la camara ya no avanza, asi que el adorno se
   queda clavado en mitad del cuadro: el gato salio justo encima del jefe de
   Medellin y lo tapaba entero. Vale para las cinco ciudades.
+- **2026-09-24** — Los dos buses de Medellin se cambian por **una sola chiva**,
+  la que dibujo Daniel camino del estadio. Va dos veces en la lista, a distinto
+  tamano y a distinto paso, para que se lea como dos chivas a distinta
+  distancia y no como la misma calcada. El gato baja al **65%** (de 190 a 124):
+  a 190 se comia a las baneras cuando se cruzaban.

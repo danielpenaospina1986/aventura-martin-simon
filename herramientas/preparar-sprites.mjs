@@ -142,6 +142,25 @@ const PERSONAJES = [
     ],
   },
   {
+    // La chiva de la hinchada, camino del estadio. Es un dibujo apaisado y muy
+    // ancho: en el lienzo cuadrado se queda en una franja de abajo, que es
+    // justo lo que hace falta, porque se apoya por su base.
+    nombre: 'chiva',
+    colorExacto: true,
+    tolerancia: 60,
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'chiva',
+        porPieza: true,
+        nombres: ['chiva'],
+        zonas: [{ x: 92, y: 18, ancho: 1200, alto: 744 }],
+      },
+    ],
+  },
+  {
     // El gato de la hinchada de Medellin, llorando porque Martain le mocho la
     // cola. Va en su propia entrada y no como una hoja mas de "frente" porque
     // la altura del lienzo se reparte entre TODOS los grupos de un personaje:
