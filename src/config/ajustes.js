@@ -180,7 +180,12 @@ export const SOMBRILLA = {
   minimo: 2,             // menos de dos y no hay donde esconderse
   separacionMinima: 104, // para que quede hueco por donde pase el chorro
   margen: 64,            // lo mas cerca que se planta una del jefe
-  arenaMaxima: 520,      // hasta donde se busca suelo hacia su izquierda
+  // Hasta donde se reparten, contando desde el jefe. Va a juego con
+  // JEFE.alcanceArena: las sombrillas ocupan justo el trozo de arena en el que
+  // ella se pone a disparar, que es donde hace falta tener donde esconderse.
+  // Con la arena de una pantalla entera, 520 las sacaba del cuadro por la
+  // izquierda y el escondite quedaba fuera de la pelea.
+  arenaMaxima: 380,
 };
 
 export const CHORRO = {

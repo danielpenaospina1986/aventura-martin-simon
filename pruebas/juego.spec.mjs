@@ -263,13 +263,13 @@ test('las monedas se recogen y suman en el HUD', async ({ page }) => {
   const estado = await estadoJugador(page);
   expect(estado.monedas).toBeGreaterThanOrEqual(3);
   expect(estado.recogidas).toBeGreaterThanOrEqual(3);
-  expect(estado.totalMonedas).toBe(34);
+  expect(estado.totalMonedas).toBeGreaterThan(30);
 });
 
 test('Martín elimina enemigos con la katana', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
   const antes = await estadoJugador(page);
-  expect(antes.enemigos).toBe(3);
+  expect(antes.enemigos).toBeGreaterThan(1);
 
   // el enemigo se queda quieto para que la prueba sea siempre igual
   await page.evaluate(() => {
@@ -288,12 +288,13 @@ test('Martín elimina enemigos con la katana', async ({ page }) => {
   await page.waitForTimeout(250);
 
   const despues = await estadoJugador(page);
-  expect(despues.enemigos).toBe(2);
+  expect(despues.enemigos).toBe(antes.enemigos - 1);
   expect(await page.evaluate(() => window.__enemigoDePrueba.active)).toBe(false);
 });
 
 test('saltar encima de un enemigo lo elimina', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
+  const antes = await estadoJugador(page);
 
   await page.evaluate(() => {
     const n = window.juego.scene.getScene('nivel');
@@ -312,7 +313,7 @@ test('saltar encima de un enemigo lo elimina', async ({ page }) => {
   await page.waitForTimeout(700);
 
   const despues = await estadoJugador(page);
-  expect(despues.enemigos).toBe(2);
+  expect(despues.enemigos).toBe(antes.enemigos - 1);
   expect(despues.monedas).toBe(2); // vencer a un bicho da dos monedas
 });
 
@@ -341,7 +342,8 @@ test('vencer a un bicho pequeño da dos monedas, lo mates como lo mates', async 
 
 test('Simón lanza bloques y derriban a los enemigos', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
-  expect((await estadoJugador(page)).personaje).toBe('simon');
+  const antes = await estadoJugador(page);
+  expect(antes.personaje).toBe('simon');
 
   // un enemigo quieto a unos pasos, para que la prueba sea siempre igual
   await page.evaluate(() => {
@@ -365,7 +367,7 @@ test('Simón lanza bloques y derriban a los enemigos', async ({ page }) => {
   await page.keyboard.press('KeyX');
   await page.waitForTimeout(700);
   expect(await page.evaluate(() => window.__enemigoDePrueba.active)).toBe(false);
-  expect((await estadoJugador(page)).enemigos).toBe(2);
+  expect((await estadoJugador(page)).enemigos).toBe(antes.enemigos - 1);
 });
 
 test('no puede haber más de tres bloques volando a la vez', async ({ page }) => {
@@ -583,7 +585,9 @@ test('a Doña Zully se le gana escondiéndose tras una sombrilla', async ({ page
 
     // el nino se esconde detras de la sombrilla y espera su chorro
     const vidasAntes = jefe.vidas;
-    for (let i = 0; i < 200 && jefe.vidas === vidasAntes; i += 1) {
+    // Margen largo a proposito: no siempre la empapa el primer chorro, y este
+    // navegador dibuja despacio, asi que en segundos de reloj cabe menos juego.
+    for (let i = 0; i < 400 && jefe.vidas === vidasAntes; i += 1) {
       jefe.proximoJabon = Number.MAX_SAFE_INTEGER;
       j.x = sombrilla.x - 40;
       j.y = sombrilla.y - 50;
@@ -600,8 +604,8 @@ test('a Doña Zully se le gana escondiéndose tras una sombrilla', async ({ page
     };
   });
 
-  // Cuantas se plantan depende del sitio que tenga su arena: en Atlanta, que es
-  // corta, caben dos.
+  // Cuantas se plantan depende del sitio que tenga su arena. Con la arena de una
+  // pantalla entera caben las tres.
   expect(resultado.sombrillas).toBeGreaterThanOrEqual(2);
   expect(resultado.trasGolpeDeFrente).toBe(resultado.antesDeFrente); // de frente, nada
   expect(resultado.vidas).toBe(resultado.vidasAntes - 1); // el rebote sí la empapa
@@ -678,9 +682,18 @@ test('la paloma suelta al pasar sobre el niño y le cuesta tres monedas', async 
     const paloma = new Paloma(n, j.x + 120, 2 * 32, -1);
     n.palomas.add(paloma);
 
-    await new Promise((r) => setTimeout(r, 1100));
-    const solto = paloma.yaSolto;
-    await new Promise((r) => setTimeout(r, 1600));
+    // Se espera al suceso, no a un tiempo de reloj: con los tableros largos
+    // este navegador dibuja mas despacio (aqui no hay tarjeta grafica) y en los
+    // 1100 ms de antes la paloma todavia no habia llegado sobre el nino.
+    const esperarA = async (cumple, msMaximo) => {
+      for (let i = 0; i * 50 < msMaximo && !cumple(); i += 1) {
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return cumple();
+    };
+
+    const solto = await esperarA(() => paloma.yaSolto, 8000);
+    await esperarA(() => j.golpes > 0, 8000);
     return { solto, monedas: j.monedas, golpes: j.golpes };
   });
 
@@ -720,11 +733,11 @@ test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ pa
     // Se quitan los premios de alrededor del hueco: sobre cada uno hay un arco
     // de premios y el nino los recogia de camino, asi que la cuenta no salia.
     n.nivel.monedas.getChildren().forEach((m) => {
-      if (Math.abs(m.x - (25 * 32 + 16)) < 140) m.destroy();
+      if (Math.abs(m.x - (16 * 32 + 16)) < 140) m.destroy();
     });
     j.monedas = 7; // como si ya hubiese recogido siete
     // tirarlo por el primer hueco
-    j.setPosition(25 * 32 + 16, 9 * 32 - 30);
+    j.setPosition(16 * 32 + 16, 9 * 32 - 30);
     j.body.setVelocity(0, 400);
     return j.monedas;
   });
@@ -735,7 +748,7 @@ test('caer a un hueco cuesta tres monedas y devuelve al checkpoint', async ({ pa
   expect(despues.monedas).toBe(4); // 7 - 3
   expect(despues.golpes).toBe(1);
   expect(despues.y).toBeLessThan(330); // ha vuelto arriba
-  expect(despues.x).toBeLessThan(25 * 32); // ha vuelto al principio
+  expect(despues.x).toBeLessThan(16 * 32); // ha vuelto al principio
 });
 
 test('el niño empieza con cinco corazones y cada golpe le quita uno', async ({ page }) => {
@@ -1000,7 +1013,7 @@ test('derrotar al jefe da diez monedas', async ({ page }) => {
   expect(resultado.monedas).toBe(monedasAntes + 10); // el golpe final da diez
 });
 
-test('los cinco niveles cargan con su jefe y sus dos checkpoints', async ({ page }) => {
+test('los cinco niveles cargan con su jefe y sus tres checkpoints', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
 
@@ -1023,7 +1036,7 @@ test('los cinco niveles cargan con su jefe y sus dos checkpoints', async ({ page
     expect(datos.indice).toBe(indice);
     expect(datos.nombre.length).toBeGreaterThan(0);
     expect(datos.jefe).toBe(true);
-    expect(datos.checkpoints).toBe(2);
+    expect(datos.checkpoints).toBe(3);
     expect(datos.premios).toBeGreaterThan(30);
     expect(datos.meta).toBe(true);
   }

@@ -656,7 +656,16 @@ export class EscenaNivel extends Phaser.Scene {
 
     for (let i = 0; i < cuantas; i += 1) {
       const parte = cuantas === 1 ? 0.5 : i / (cuantas - 1);
-      const x = jefe.x - SOMBRILLA.margen - tramo * (1 - parte);
+      let x = jefe.x - SOMBRILLA.margen - tramo * (1 - parte);
+      // Y no se planta debajo de una plataforma: la copa la atravesaria. Si le
+      // toca ahi, se corre a un lado hasta quedar al aire libre.
+      const techo = MUNDO.nivelMedio * MUNDO.casilla + 6;
+      const bajoTecho = (px) =>
+        this.haySoporteEn(px - SOMBRILLA.ancho / 2, techo) ||
+        this.haySoporteEn(px + SOMBRILLA.ancho / 2, techo);
+      for (let salto = 0; salto < 5 && bajoTecho(x); salto += 1) {
+        x -= SOMBRILLA.ancho / 2;
+      }
       if (!this.haySoporteEn(x, suelo + 6)) continue;
       const sombrilla = this.sombrillas.create(x, suelo, TEXTURAS.sombrilla);
       sombrilla.setOrigin(0.5, 1).setDisplaySize(SOMBRILLA.ancho, SOMBRILLA.alto);
@@ -695,7 +704,7 @@ export class EscenaNivel extends Phaser.Scene {
     if (!nino || !nino.active) return;
     const x = Phaser.Math.Clamp(
       nino.x + Phaser.Math.Between(-70, 70),
-      jefe.x - 300,
+      jefe.x - JEFE.alcanceArena,
       jefe.x + 120,
     );
     const jabon = this.peligros.create(x, 20, TEXTURAS.jabon);
@@ -733,8 +742,8 @@ export class EscenaNivel extends Phaser.Scene {
 
     const x = Phaser.Math.Clamp(
       jugador.x + Phaser.Math.Between(-120, 120),
-      this.jefe.x - 220,
-      this.jefe.x + 220,
+      this.jefe.x - JEFE.alcanceArena,
+      this.jefe.x + JEFE.alcanceArena,
     );
     this.soltarRegalo(x, 40, 'corazon');
   }

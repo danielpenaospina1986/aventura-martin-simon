@@ -236,6 +236,11 @@ Al final de cada tablero espera un **guardian del bano**: mide **172 x 172**, el
 doble que un nino, y mientras viva **la meta esta cerrada** y se dibuja apagada.
 Hay un **checkpoint justo antes de su arena**, asi que pelear no castiga.
 
+Su arena es **la pantalla entera**, las 20 ultimas columnas del tablero, con el
+suelo seguido y sin huecos (ver la seccion 9). Todo lo que el jefe necesite
+mirar del terreno va en su `prepararArena()`, que la escena llama cuando el
+tablero ya esta montado.
+
 Lo comun esta en `entidades/JefeBase.js` (vidas con su barra de puntitos,
 parpadeo tras cada golpe, el aviso antes de atacar) y **como se le gana** lo
 pone cada uno, en `entidades/jefes/`. Quien guarda que ciudad se decide en
@@ -278,12 +283,16 @@ La mama, con su gorro de bano, su cepillo y su manguera. **Aguanta cuatro
 rebotes.** No persigue a nadie: se planta, se vuelve hacia el nino y dispara
 chorros a presion.
 
-**A ella no se le pega.** En la arena hay **sombrillas** clavadas (dos o tres,
-segun el sitio que tenga esa arena); si el nino se pone detras de una, el chorro
-da en la sombrilla, **rebota** y vuelve a empaparla. Entre sombrilla y sombrilla
-queda hueco a proposito: si la taparan entera, el chorro no llegaria nunca y la
-pelea se ganaria sola. Mientras tanto le caen jabones del techo, para que quedarse quieto
-detras de una sombrilla no sea tan comodo.
+**A ella no se le pega.** En la arena hay **tres sombrillas** clavadas; si el
+nino se pone detras de una, el chorro da en la sombrilla, **rebota** y vuelve a
+empaparla. Entre sombrilla y sombrilla queda hueco a proposito: si la taparan
+entera, el chorro no llegaria nunca y la pelea se ganaria sola. Mientras tanto le
+caen jabones del techo, para que quedarse quieto detras de una sombrilla no sea
+tan comodo.
+
+Se reparten por el trozo de arena que ella vigila (`SOMBRILLA.arenaMaxima`, a
+juego con `JEFE.alcanceArena`), y ninguna se planta **debajo de la plataforma**:
+la copa la atravesaria.
 
 Por eso esta pelea **no pide habilidad ninguna**: esconderse vale igual para
 Samaon y para Martain.
@@ -422,28 +431,57 @@ para despegar se queda en 10 px, unas milesimas, y se falla casi siempre.
 
 Cada tablero es una **ciudad**, con su propio fondo ilustrado:
 
-| # | Ciudad | Tamano | Premios | Bichos |
-|---|---|---|---|---|
-| 1 | Space Coast | 84 x 12 | 34 | 3 |
-| 2 | Medellin | 92 x 12 | 44 | 5 |
-| 3 | Atlanta | 92 x 12 | 50 | 7 |
-| 4 | Miami | 100 x 12 | 56 | 5 |
-| 5 | Cartagena | 100 x 12 | 59 | 6 |
+| # | Ciudad | Tamano | Pantallas | Premios | Bichos |
+|---|---|---|---|---|---|
+| 1 | Space Coast | 122 x 12 | 6,1 | 61 | 4 |
+| 2 | Medellin | 138 x 12 | 6,9 | 70 | 7 |
+| 3 | Atlanta | 154 x 12 | 7,7 | 80 | 9 |
+| 4 | Miami | 170 x 12 | 8,5 | 89 | 10 |
+| 5 | Cartagena | 186 x 12 | 9,3 | 100 | 11 |
 
 El fondo de cada una vive en `src/assets/fondos/` y el nivel lo nombra en su
-campo `fondo`. La historia de cada ciudad esta por escribir.
+campo `fondo`.
 
-Todos tienen **dos checkpoints** y **un jefe** antes de la meta. Se juegan en
+Todos tienen **tres checkpoints** y **un jefe** antes de la meta. Se juegan en
 orden y el marcador se arrastra de uno a otro: la partida son los cinco.
 
-Los mapas se escriben en `herramientas/generar-niveles.mjs` y se generan con
-`npm run niveles`. La historia y el arte de cada tablero estan por decidir.
+### Los motivos
 
-**Nivel 1:** unas 3 pantallas de largo (96 x 17 casillas). Arranque tranquilo para
-aprender, escalera de plataformas, tres huecos, **28 monedas**, **4 enemigos**,
-**dos checkpoints** (uno a la mitad y otro antes del jefe), una repisa alta con 6
-monedas a la que se sube por una plataforma, un grupo de enemigos donde luce la
-katana de Martin, y al final la **arena del jefe** con la meta detras.
+Los mapas se escriben en `herramientas/generar-niveles.mjs` y se generan con
+`npm run niveles`. Un tablero no se dibuja columna a columna, sino como una
+**lista de tramos y huecos**: cada tramo es un trozo de suelo seguido y lleva
+encima un **motivo**, de los siete que hay en `MOTIVOS`.
+
+| Motivo | Que trae |
+|---|---|
+| `inicio` | el arranque, sin un solo bicho: es para aprender a andar y saltar |
+| `escalera` | del suelo al segundo piso y de ahi al tercero |
+| `patio` | dos bichos abajo y premios a media altura |
+| `repisa` | la repisa del premio gordo, cinco premios seguidos arriba |
+| `balcones` | se sube, se cruza por arriba y se baja al otro lado |
+| `bichos` | tres bichos seguidos, para lucir la katana o los bloques |
+| `llano` | un respiro entre dos apreturas |
+
+Los tramos miden 14 casillas (16 el de arranque) y entre uno y otro va un
+**hueco de dos**, con su arco de premios. Alargar un tablero es anadirle
+motivos, y por eso los cinco pudieron pasar de 4-5 pantallas a 6-9 sin tener que
+recolocar nada a mano.
+
+### La arena del jefe
+
+Las **20 ultimas columnas** de cada tablero son la arena, y 20 x 32 = 640 px es
+**la pantalla entera**. Como no queda tablero por detras, al llegar la camara ya
+no puede seguir avanzando: la pelea se ve de un vistazo y completa, como el
+escenario de un teatro, y ni el jefe ni el nino se salen nunca de cuadro.
+
+- Suelo **seguido, sin un solo hueco**: nadie se cae peleando.
+- Delante va un **porche** de cuatro casillas con el ultimo checkpoint, asi que
+  se entra descansado y reaparecer no cuesta el camino de vuelta.
+- Dentro: una **plataforma** para dejarse caer sobre el jefe (mide el doble que
+  un nino y desde el suelo el salto no llega a su coronilla), el **jefe** a dos
+  tercios de la pantalla y la **meta** al fondo.
+- Lo que cada jefe planta en su arena (las sombrillas de Dona Zully, por
+  ejemplo) lo reparte el mismo, en `prepararArena()`.
 
 ## 8bis. Que se vea nitido
 
@@ -921,3 +959,26 @@ baja.
 - **2026-09-22** — `vite.config.js` usa `base: './'` (rutas relativas). Es lo que
   permite que el juego funcione en una subcarpeta como
   `usuario.github.io/aventura-martin-simon/`.
+- **2026-09-23** — Los cinco tableros **se alargan**, de 4-5 pantallas a entre
+  6 y 9. Para poder hacerlo sin recolocar nada a mano, el generador deja de
+  pintar columna a columna y pasa a componer cada tablero como una **lista de
+  tramos y huecos**, con un **motivo** por tramo. Alargar un tablero es anadirle
+  motivos. De paso pasan a tener **tres checkpoints**, que con esa longitud dos
+  quedaban muy lejos uno de otro.
+- **2026-09-23** — La **arena del jefe es la pantalla entera**: las 20 ultimas
+  columnas del tablero (20 x 32 = 640 px), con el suelo seguido y sin un solo
+  hueco, detras del ultimo checkpoint. Como no queda tablero por detras, la
+  camara ya no puede avanzar y la pelea se ve completa y quieta, como el
+  escenario de un teatro. Antes la arena era un tramo corto y la camara seguia
+  moviendose durante la pelea.
+- **2026-09-23** — El primer tramo de cada tablero **no lleva bichos**: es para
+  aprender a andar y a saltar. Con uno cerca de la salida, la prueba del salto
+  fallaba porque al nino le llovia agua jabonosa mientras saltaba, y eso, mas
+  que una prueba rota, era un arranque injusto.
+- **2026-09-23** — Con los tableros largos, el navegador de las pruebas (que
+  dibuja por software, sin tarjeta grafica) va mas despacio, y las pruebas que
+  esperaban **un tiempo de reloj** se quedaron cortas: la paloma no habia
+  llegado todavia y a Dona Zully no le habia dado tiempo a mojarse. Se esperan
+  sucesos, no segundos, que es la regla que ya valia para el movimiento. Y las
+  cuentas de bichos y premios dejan de ser numeros fijos: se miden contra lo que
+  tenga el tablero, para que retocar un nivel no rompa media suite.
