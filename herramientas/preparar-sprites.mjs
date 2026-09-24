@@ -124,9 +124,12 @@ const PERSONAJES = [
         // orden que saca el detector no coincide con el de lectura, porque las
         // banderas de los buses y las copas de las palmeras desplazan los
         // recuadros.
+        // El guayacan ya no sale de aqui: Daniel lo mando dibujado aparte y
+        // tiene su propia entrada, mas abajo. Los dos buses tampoco: los
+        // reemplazo la chiva.
         nombres: [
           'palmera', 'alien', 'astronauta', 'bus1',
-          'bus2', 'frijoles', 'palmera-alta', 'guayacan',
+          'bus2', 'frijoles', 'palmera-alta',
         ],
         zonas: [
           { x: 80, y: 45, ancho: 240, alto: 300 },     // palmera de playa
@@ -136,8 +139,49 @@ const PERSONAJES = [
           { x: 50, y: 400, ancho: 375, alto: 320 },    // bus con confeti
           { x: 445, y: 425, ancho: 320, alto: 295 },   // olla de frijoles
           { x: 780, y: 370, ancho: 175, alto: 355 },   // palmera alta
-          { x: 980, y: 385, ancho: 395, alto: 345 },   // guayacan en flor
         ],
+      },
+    ],
+  },
+  {
+    // El guayacan en flor, dibujado aparte. Reemplaza al que salia de la hoja.
+    nombre: 'guayacan',
+    colorExacto: true,
+    limpiarBolsas: true,
+    tolerancia: 60,
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'guayacan',
+        porPieza: true,
+        nombres: ['guayacan'],
+        zonas: [{ x: 268, y: 10, ancho: 872, alto: 752 }],
+      },
+    ],
+  },
+  {
+    // La casa tipica colombiana, con su balcon y su bandera.
+    //
+    // Su lamina viene con un marco de pelicula NEGRO alrededor, asi que la zona
+    // tiene que entrar bien por dentro: el detector toma el color del fondo de
+    // la esquina del recorte, y con el marco fuera tomaba el negro por fondo y
+    // dejaba la lamina entera de una pieza. Tambien se deja fuera el viñeteado
+    // del borde, que es el mismo turquesa pero mas oscuro y no se iba.
+    nombre: 'casa',
+    colorExacto: true,
+    limpiarBolsas: true,
+    tolerancia: 60,
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'casa',
+        porPieza: true,
+        nombres: ['casa'],
+        zonas: [{ x: 84, y: 28, ancho: 1256, alto: 700 }],
       },
     ],
   },
@@ -147,6 +191,7 @@ const PERSONAJES = [
     // justo lo que hace falta, porque se apoya por su base.
     nombre: 'chiva',
     colorExacto: true,
+    limpiarBolsas: true,
     tolerancia: 60,
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/frente',
@@ -167,6 +212,7 @@ const PERSONAJES = [
     // metiendolo ahi, su bocadillo habria encogido a las palmeras y los buses.
     nombre: 'gato',
     colorExacto: true,
+    limpiarBolsas: true,
     tolerancia: 60,
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/frente',
@@ -457,6 +503,7 @@ for (const personaje of aTrabajar) {
       lienzoAncho: LIENZO.ancho,
       lienzoAlto: LIENZO.alto,
       colorExacto: personaje.colorExacto || false,
+      limpiarBolsas: personaje.limpiarBolsas || false,
     });
     medidas.push(m);
   }
@@ -505,6 +552,7 @@ for (const personaje of aTrabajar) {
       contorno: personaje.contorno === undefined ? CONTORNO : personaje.contorno,
       tinta: TINTA,
       colorExacto: personaje.colorExacto || false,
+      limpiarBolsas: personaje.limpiarBolsas || false,
       soloElCuerpo: trabajo.soloElCuerpo || false,
     });
     if (!resultado.url) continue;
@@ -725,6 +773,7 @@ async function recortarPose(pagina, opciones) {
         contorno,
         tinta,
         colorExacto,
+        limpiarBolsas,
         soloElCuerpo,
       }) => {
         const imagen = new Image();
@@ -772,6 +821,24 @@ async function recortarPose(pagina, opciones) {
           p[i + 3] = 0;
           pila.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
         }
+
+        // El relleno entra DESDE LOS BORDES, asi que las bolsas de fondo que
+        // quedan encerradas dentro del dibujo (entre las hojas de una palmera,
+        // detras de la baranda de un balcon, bajo el alero de un porche) se
+        // salvan y quedan de turquesa en mitad del recorte.
+        //
+        // Quitarlas es barrer la lamina entera por color, y eso NO se puede
+        // hacer siempre: en la hoja de adornos las hojas de las palmeras son
+        // del mismo verde que el fondo y se las comeria. Por eso va por sabana:
+        // solo lo piden los dibujos que vienen sobre un turquesa que no aparece
+        // en ninguna parte del dibujo.
+        if (limpiarBolsas) {
+          for (let idx = 0; idx < ancho * alto; idx += 1) {
+            const i = idx * 4;
+            if (p[i + 3] !== 0 && esFondo(i)) p[i + 3] = 0;
+          }
+        }
+
         // Con la tolerancia apretada quedan restos del damero pegados al
         // contorno (la compresion del JPG tine un poco esos bordes). Se limpian
         // con unas pasadas suaves: un pixel grisaceo con vecinos transparentes

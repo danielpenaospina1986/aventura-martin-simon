@@ -598,10 +598,10 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
 - **El plano de delante es de cada ciudad.** Su lista va en `frente`, dentro de
   `src/config/ciudades.js`. Space Coast tiene palmeras, un vecino de otro
   planeta dandose un bano y un astronauta flotando arriba; Medellin, guayacanes
-  en flor, la chiva de la hinchada camino del estadio, una palmera alta, una
-  olla de frijoles y el
-  gato de la hinchada, que va llorando porque Martain le mocho la cola. Las tres
-  que faltan siguen con los adornos provisionales (ramas, farol, matorral), que
+  en flor, una palmera alta, una olla de frijoles y el gato de la hinchada, que
+  va llorando porque Martain le mocho la cola; y DETRAS, de decorado, la chiva
+  camino del estadio, mas guayacanes y una casa de pueblo con su bandera. Las
+  tres que faltan siguen con los adornos provisionales (ramas, farol, matorral), que
   es lo que se usa cuando una ciudad no trae los suyos.
 - **En la arena del jefe no se planta nada por delante.** Al final del tablero
   la camara ya no avanza, asi que un adorno que caiga ahi se queda clavado en
@@ -615,8 +615,11 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   es solo lo que asoma por encima del suelo, y con la altura "real" taparia al
   nino entero y no se podria jugar.
 - Un adorno puede llevar **`detras: true`** y entonces pasa por DETRAS del nino
-  y del suelo, mas despacio, como decorado de la ciudad. Es lo que hacen las
-  chivas de Medellin, que van bien grandes.
+  y del suelo, mas despacio, como decorado de la ciudad. Es lo que hacen en
+  Medellin la chiva, los guayacanes grandes y la casa de pueblo.
+- Los de **delante** van un poco translucidos, que cruzan por encima del nino;
+  los de **detras, no**: no tapan a nadie, y bajarles la opacidad solo los
+  dejaba desvaidos contra la ilustracion de la ciudad.
 
 ## 10. Arte y licencias
 
@@ -1091,3 +1094,16 @@ baja.
   que se dibujan por codigo miden **172 px**, media pantalla. Al Salvavidas hubo
   que separarle bien el sitio de la torre del sitio del suelo: con 26 px de
   diferencia, "esta arriba y no le llego" y "ha bajado, dale" se veian igual.
+- **2026-09-24** — Medellin estrena **guayacan y casa de pueblo** dibujados por
+  Daniel. El guayacan reemplaza al que salia de la hoja de adornos y sale
+  ademas **detras**, de decorado, junto con la chiva y la casa. La chiva baja al
+  75% y el gato sube al 110%. El plano de **detras pasa a ir opaco**: no tapa a
+  nadie, asi que la opacidad solo lo dejaba desvaido.
+- **2026-09-24** — El recorte quita el fondo **entrando desde los bordes**, asi
+  que las bolsas de fondo que quedan encerradas dentro del dibujo (entre las
+  hojas de una palmera, detras de la baranda de un balcon, bajo el alero de un
+  porche) se salvaban y quedaban de turquesa en mitad del recorte. Se limpian
+  barriendo la lamina entera por color, pero eso **no se puede hacer siempre**:
+  en la hoja de adornos las hojas de las palmeras son del mismo verde que el
+  fondo y se las comeria. Por eso va por sabana (`limpiarBolsas`), y solo lo
+  piden los dibujos que vienen sobre un turquesa que no aparece en el dibujo.

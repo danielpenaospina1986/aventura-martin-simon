@@ -53,19 +53,26 @@ export const CIUDADES = {
     // la ciudad de la hinchada verde, los frijoles y los guayacanes en flor
     frente: [
       { textura: TEXTURAS.frenteGuayacan, desde: 'abajo', alto: 148, cada: 940, desfase: 300 },
-      // La chiva va DETRAS del nino y del suelo, y bien grande: es el decorado
-      // de la ciudad, no un adorno que le pase por delante. Va dos veces, a
-      // distinto tamano y a distinto paso, para que se lea como dos chivas a
-      // distinta distancia y no como la misma calcada.
-      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 380, cada: 1240, desfase: 760, detras: true },
       { textura: TEXTURAS.frentePalmeraAlta, desde: 'abajo', alto: 210, cada: 1060, desfase: 1180 },
-      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 300, cada: 1320, desfase: 1600, detras: true },
       { textura: TEXTURAS.frenteFrijoles, desde: 'abajo', alto: 96, cada: 1140, desfase: 480 },
       // El gato de la hinchada, llorando porque Martain le mocho la cola. Va
       // con su bocadillo, que es el chiste, asi que sigue siendo el mas alto de
-      // los adornos de suelo; aun asi se le bajo al 65% para que no tape a las
-      // baneras cuando se cruzan.
-      { textura: TEXTURAS.frenteGato, desde: 'abajo', alto: 124, cada: 1460, desfase: 900 },
+      // los adornos de suelo.
+      { textura: TEXTURAS.frenteGato, desde: 'abajo', alto: 136, cada: 1460, desfase: 900 },
+
+      // --- el decorado de la ciudad, DETRAS del nino y del suelo ------------
+      //
+      // Estos no cruzan por delante de nadie: son Medellin de fondo. La chiva
+      // va dos veces, a distinto tamano, para que se lea como dos chivas a
+      // distinta distancia y no como la misma calcada; el guayacan sale aqui
+      // ademas de delante, y la casa se reparte entre medias. Cada uno con su
+      // paso y su desfase, para que no salgan a la vez ni en el mismo orden.
+      //
+      // Y sin opacidad: no tapan nada, asi que no hay nada que despejar.
+      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 285, cada: 1240, desfase: 760, detras: true },
+      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 225, cada: 1320, desfase: 1600, detras: true },
+      { textura: TEXTURAS.frenteGuayacan, desde: 'abajo', alto: 246, cada: 1180, desfase: 340, detras: true },
+      { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 356, cada: 1460, desfase: 1120, detras: true },
     ],
     pavimento: { patron: 'baldosa', claro: 0xcfc4b0, medio: 0xb5a893, oscuro: 0x8d8070 },
     subsuelo: { patron: 'adoquin', claro: 0xa85f45, medio: 0x8e4d37, oscuro: 0x6b3828 },

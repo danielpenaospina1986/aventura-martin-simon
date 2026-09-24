@@ -238,6 +238,7 @@ export const TEXTURAS = {
   frenteFrijoles: 'tex-frente-frijoles',
   frentePalmeraAlta: 'tex-frente-palmera-alta',
   frenteGuayacan: 'tex-frente-guayacan',
+  frenteCasa: 'tex-frente-casa',
   frenteGato: 'tex-frente-gato',
 
   frenteRama: 'tex-frente-rama',
@@ -290,6 +291,9 @@ export const PLANOS = {
   // DETRAS DEL MUNDO: decorado grande que pasa por detras del nino y del
   // suelo. Mas lejos que el mundo, mas cerca que la ilustracion de fondo.
   detras: {
+    // Sin transparencia: va por DETRAS del nino y del suelo, asi que no hay
+    // nada que despejar. Bajarle la opacidad solo lo dejaba desvaido.
+    alpha: 1,
     velocidad: 0.72,
     profundidad: -20,
   },

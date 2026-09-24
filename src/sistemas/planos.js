@@ -139,7 +139,10 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
         .image(donde, arriba ? -6 : alto + 6, adorno.textura)
         .setOrigin(0.5, arriba ? 0 : 1)
         .setScale(escala)
-        .setAlpha(adorno.alpha ?? PLANOS.frente.alpha)
+        // Los de delante van un poco translucidos, que cruzan por encima del
+        // nino; los de DETRAS no: no tapan nada, y bajarles la opacidad solo
+        // los dejaba desvaidos contra la ilustracion de la ciudad.
+        .setAlpha(adorno.alpha ?? (adorno.detras ? PLANOS.detras.alpha : PLANOS.frente.alpha))
         .setDepth(adorno.detras ? PLANOS.detras.profundidad : PLANOS.frente.profundidad);
       // Un adorno puede ir DETRAS del mundo en vez de delante: pasa por detras
       // del nino y del suelo, y se mueve mas despacio que la camara porque
