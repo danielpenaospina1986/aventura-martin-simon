@@ -149,8 +149,12 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
       // esta mas lejos.
       if (planos) planos.anadir(pieza, adorno.detras ? PLANOS.detras.velocidad : velocidad);
 
-      // se hunden un pelin, para que no se vea la linea donde apoyan
-      if (!arriba) pieza.setY(alto + Math.min(14, altoEnPantalla * 0.1));
+      // Los de delante se hunden un pelin, para que no se vea la linea donde
+      // apoyan; los de DETRAS apoyan en la linea del suelo, subida un 10%: son
+      // decorado de mas lejos, y naciendo del borde de abajo el suelo se les
+      // comia el tercio de abajo.
+      if (adorno.detras) pieza.setY(MUNDO.nivelSuelo * MUNDO.casilla * PLANOS.detras.apoyo);
+      else if (!arriba) pieza.setY(alto + Math.min(14, altoEnPantalla * 0.1));
 
       piezas.push(pieza);
     }

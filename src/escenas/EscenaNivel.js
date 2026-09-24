@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, TORRE, VIDA } from '../config/ajustes.js';
+import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, TORO, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -23,6 +23,7 @@ import { brilloMoneda, burbujas, estrellitas, polvo, textoFlotante } from '../si
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
 import { Paloma } from '../entidades/Paloma.js';
+import { Toro } from '../entidades/Toro.js';
 
 const C = MUNDO.casilla;
 
@@ -111,9 +112,12 @@ export class EscenaNivel extends Phaser.Scene {
     // lo que sueltan los bichos: agua con jabon y lo de las palomas
     this.peligros = this.physics.add.group();
     this.palomas = this.physics.add.group({ allowGravity: false });
+    // los toros, que entran corriendo por un lado del cuadro
+    this.toros = this.physics.add.group();
     // corazones y vidas que sueltan los bichos, esperando en el suelo
     this.regalos = this.physics.add.group({ allowGravity: true });
     this.proximaPaloma = this.esperaDePaloma();
+    this.proximoToro = this.esperaDeToro();
 
     this.physics.world.setBounds(0, 0, this.nivel.ancho, this.nivel.alto + 400);
     // Alto de pantalla, no del mundo: el terreno llega mas abajo del borde a
@@ -220,6 +224,16 @@ export class EscenaNivel extends Phaser.Scene {
     });
     this.physics.add.collider(this.palomas, solidos);
     this.physics.add.collider(this.regalos, solidos);
+
+    // El toro corre por el suelo y por las plataformas, y se le pisa igual que
+    // a una banera. De frente, embiste.
+    this.physics.add.collider(this.toros, solidos);
+    this.physics.add.collider(this.toros, plataformas);
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.toros, (a, b) => {
+        this.tocarToro(jugador, this.toros.contains(a) ? a : b);
+      });
+    });
 
     // El chorro de Dona Zully: moja al nino, rebota en las sombrillas y, de
     // vuelta, la empapa a ella.
@@ -332,6 +346,11 @@ export class EscenaNivel extends Phaser.Scene {
       this.eliminarEnemigo(elOtro(a, b, proyectil));
       this.romperProyectil(proyectil);
     });
+    this.physics.add.overlap(this.proyectiles, this.toros, (a, b) => {
+      const proyectil = cualEsElProyectil(a, b);
+      this.eliminarEnemigo(elOtro(a, b, proyectil));
+      this.romperProyectil(proyectil);
+    });
     if (this.jefe) {
       this.physics.add.overlap(this.proyectiles, this.jefe, (a, b) => {
         const proyectil = cualEsElProyectil(a, b);
@@ -373,6 +392,7 @@ export class EscenaNivel extends Phaser.Scene {
       if (paloma.active) paloma.actualizar(delta);
     });
     this.gestionarPalomas(delta);
+    this.gestionarToros(delta);
 
     this.peligros.getChildren().forEach((peligro) => {
       if (!peligro.active) return;
@@ -450,6 +470,13 @@ export class EscenaNivel extends Phaser.Scene {
       bicho.estado = 'anda';
       bicho.proximoAtaque = bicho.reloj + respiro;
     });
+
+    // Y se van los toros que vengan lanzados: reaparecer justo delante de una
+    // embestida no es dificultad, es un callejon sin salida.
+    this.toros.getChildren().forEach((toro) => {
+      if (toro.active) toro.destroy();
+    });
+    this.proximoToro = Math.max(this.proximoToro, 3000);
   }
 
   herirJugador(jugador, opciones = {}) {
@@ -1180,16 +1207,84 @@ export class EscenaNivel extends Phaser.Scene {
     return Phaser.Math.Between(minimo, maximo);
   }
 
+  // --- los toros -------------------------------------------------------------
+
+  esperaDeToro() {
+    const recorte = Math.max(0, 1 - this.indiceNivel * TORO.recortePorNivel);
+    const minimo = Math.max(TORO.esperaMinima, TORO.esperaMinMs * recorte);
+    const maximo = Math.max(minimo + 2000, TORO.esperaMaxMs * recorte);
+    return Phaser.Math.Between(minimo, maximo);
+  }
+
+  gestionarToros(delta) {
+    this.toros.getChildren().forEach((toro) => {
+      if (!toro.active) return;
+      toro.actualizar(delta);
+      // fuera del mundo o caido a un hueco: se va
+      if (toro.y > this.nivel.alto + 80 || toro.x < -200 || toro.x > this.nivel.ancho + 200) {
+        toro.destroy();
+      }
+    });
+
+    this.proximoToro -= delta;
+    if (this.proximoToro > 0) return;
+    this.proximoToro = this.esperaDeToro();
+
+    // En la arena del jefe no entra ninguno: bastante tiene el nino con el jefe.
+    if (this.jefe && this.jefe.active && this.jefe.hayAlguienEnLaArena()) return;
+
+    const camara = this.cameras.main;
+    const zoom = camara.zoom || 1;
+    const izquierda = camara.scrollX + (camara.width * (1 - 1 / zoom)) / 2;
+    const porLaDerecha = Math.random() < 0.5;
+    const x = porLaDerecha ? izquierda + MUNDO.ancho + 80 : izquierda - 80;
+    if (x < 40 || x > this.nivel.ancho - 40) return;
+
+    // Solo entra si donde aparece hay suelo: si no, nace cayendose al vacio.
+    const suelo = MUNDO.nivelSuelo * C;
+    if (!this.haySoporteEn(x, suelo + 6)) return;
+
+    const toro = new Toro(this, x, suelo - TORO.alto / 2, porLaDerecha ? -1 : 1);
+    this.toros.add(toro);
+  }
+
+  tocarToro(jugador, toro) {
+    if (!toro || !toro.active || jugador.estaCongelado) return;
+
+    // mismo criterio generoso que con las baneras: si viene cayendo y sus pies
+    // estan en la mitad de arriba del bicho, lo aplasta
+    const cayendo = jugador.body.velocity.y > 30;
+    const porEncima = jugador.body.bottom <= toro.body.top + toro.body.height * 0.5;
+
+    if (cayendo && porEncima) {
+      this.eliminarEnemigo(toro);
+      jugador.rebotar();
+    } else {
+      this.herirJugador(jugador);
+    }
+  }
+
   gestionarPalomas(delta) {
     this.proximaPaloma -= delta;
     if (this.proximaPaloma > 0) return;
     this.proximaPaloma = this.esperaDePaloma();
 
-    // entra por el lado contrario al que mira la camara, para que se la vea venir
+    // Entra por fuera del cuadro, para que se la vea venir. Ojo con la camara:
+    // con zoom, scrollX no es la esquina izquierda de lo visible, asi que hay
+    // que sacarla como en Planos; usandolo tal cual, a densidad 2 la paloma
+    // aparecia de golpe ya dentro de la pantalla.
     const camara = this.cameras.main;
+    const zoom = camara.zoom || 1;
+    const izquierda = camara.scrollX + (camara.width * (1 - 1 / zoom)) / 2;
     const desdeLaDerecha = Math.random() < 0.72;
-    const x = desdeLaDerecha ? camara.scrollX + MUNDO.ancho + 70 : camara.scrollX - 70;
-    const fila = Phaser.Math.FloatBetween(PALOMA.alturaMinFila, PALOMA.alturaMaxFila);
+    const x = desdeLaDerecha ? izquierda + MUNDO.ancho + 70 : izquierda - 70;
+
+    // Casi siempre cruza por la franja de arriba; de vez en cuando baja a la
+    // altura del segundo piso y ahi ya estorba de verdad.
+    const porLoBajo = Math.random() < PALOMA.probabilidadMedia;
+    const fila = porLoBajo
+      ? Phaser.Math.FloatBetween(PALOMA.alturaMediaMinFila, PALOMA.alturaMediaMaxFila)
+      : Phaser.Math.FloatBetween(PALOMA.alturaMinFila, PALOMA.alturaMaxFila);
     const y = fila * MUNDO.casilla;
 
     const paloma = new Paloma(this, x, y, desdeLaDerecha ? -1 : 1);

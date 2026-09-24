@@ -230,6 +230,30 @@ mas despacio y da tumbos; al segundo se cae, rueda por el aire, se estampa
 contra el suelo, titila y desaparece, dejando su premio donde cayo. Tocarla de
 lado no hace nada: va por el aire y castigar un roce seria injusto.
 
+De cada tres, mas o menos una baja a volar **a la altura del segundo piso**
+(`PALOMA.probabilidadMedia`), rozando las plataformas. Ahi ya no se la ve pasar
+por arriba: estorba, hay que saltarla o pisarla desde la plataforma.
+
+### El toro
+
+El **bicho intermedio**: ni se pasea por una plataforma como una banera ni
+guarda una arena como un jefe. **Entra corriendo por un lado del cuadro**, al
+azar por la derecha o por la izquierda, cruza el tablero y, cuando tiene al nino
+delante, **baja la cabeza y embiste**.
+
+- Se le ve venir: antes de acelerar se planta un momento, agacha la cabeza, se
+  le pone el ojo rojo y echa vaho por el hocico.
+- **Se salta los huecos del suelo el solo.** Si no, en cuanto pillara el primero
+  se caeria al vacio y no llegaria a cruzarse con nadie.
+- Se le gana como a cualquier bicho: **pisandolo, con la katana o con un
+  bloque**, y da lo mismo que ellos. De frente no hay quien lo pare.
+- No entra en la **arena del jefe**: bastante tiene el nino con el jefe.
+- Al volver al checkpoint **se van los toros que vengan lanzados**: reaparecer
+  delante de una embestida no es dificultad, es un callejon sin salida.
+
+Vive en `entidades/Toro.js` y en su propio grupo (`escena.toros`), no en el de
+los bichos: asi lo que cuenta enemigos en pantalla sigue contando baneras.
+
 ### Los jefes
 
 Al final de cada tablero espera un **guardian del bano**: mide **172 x 172**, el
@@ -418,6 +442,10 @@ titulo -> quien juega -> seleccion de personaje -> nivel -> victoria
 En **quien juega** se teclea el nombre (hasta 10 letras), que hace de
 identificador de la sesion: es lo que se apunta en el tablero de mejores
 puntajes. Se guarda en el navegador para no escribirlo cada vez.
+
+Se apunta una partida **al acabarse las vidas Y al pasarse los cinco tableros**.
+Antes solo lo primero, asi que quien se lo terminaba entero —el que mas puntos
+hacia— no salia nunca en el tablero.
 
 El **tablero de mejores puntajes** guarda solo los **diez** mejores: en cuanto
 entra uno nuevo, el que queda en el puesto once se borra, para no ir llenando el
@@ -620,6 +648,13 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
 - Los de **delante** van un poco translucidos, que cruzan por encima del nino;
   los de **detras, no**: no tapan a nadie, y bajarles la opacidad solo los
   dejaba desvaidos contra la ilustracion de la ciudad.
+- Los de delante **nacen del borde de abajo de la pantalla**; los de **detras**
+  apoyan en la **linea del suelo, subida un 10%** (`PLANOS.detras.apoyo`). Estan
+  mas LEJOS que el suelo, no mas cerca: naciendo de abajo, el terreno se les
+  comia el tercio inferior y solo asomaban las copas.
+- Y llevan el **contorno a la mitad** (`contornoRelativo` en
+  `preparar-sprites.mjs`). Con la linea de los de delante se veian recortados a
+  tijera contra la ilustracion de la ciudad.
 
 ## 10. Arte y licencias
 
@@ -1107,3 +1142,26 @@ baja.
   en la hoja de adornos las hojas de las palmeras son del mismo verde que el
   fondo y se las comeria. Por eso va por sabana (`limpiarBolsas`), y solo lo
   piden los dibujos que vienen sobre un turquesa que no aparece en el dibujo.
+- **2026-09-24** — El plano de **detras** deja de nacer del borde de abajo y
+  pasa a apoyar en la linea del suelo subida un 10%. Estan mas LEJOS que el
+  suelo, no mas cerca: naciendo de abajo, el terreno se comia el tercio inferior
+  de la casa y de la chiva y solo asomaban los tejados. Y llevan el contorno a
+  la mitad, que con el de delante se veian recortados a tijera.
+- **2026-09-24** — El lienzo de los recortes deja de ser 260 x 260 para todos:
+  cada dibujo puede pedir el suyo (`lienzo`). La chiva se veia dentada y como
+  lavada porque se muestra a 280 px de ancho y, a densidad 3, eso son 840
+  pixeles de verdad sacados de una textura de 254. Los adornos grandes pasan a
+  lienzos de 480-660 px, y **a webp**: en PNG pesaban 700 KB cada uno y asi se
+  quedan en 140.
+- **2026-09-24** — Pasarse los cinco tableros **tambien apunta el puntaje**.
+  Solo se anotaba al quedarse sin vidas, asi que quien se lo terminaba entero
+  —el que mas puntos hacia— no salia nunca en el tablero de mejores.
+- **2026-09-24** — Entra el **toro**, el bicho intermedio: cruza el tablero
+  corriendo y embiste al nino. Va en su propio grupo y no en el de los bichos,
+  para que lo que cuenta enemigos en pantalla siga contando baneras; las pruebas
+  lo apagan con `proximoToro`, que si no cruzaria corriendo en mitad de una
+  medida. Y las palomas bajan de vez en cuando a la altura del segundo piso.
+- **2026-09-24** — Las palomas entraban por el borde usando `camara.scrollX`
+  tal cual, y con zoom eso no es la esquina izquierda de lo visible: a densidad
+  2 aparecian de golpe ya dentro de la pantalla, en vez de venir de fuera. Se
+  saca como en `Planos`. Mismo cuidado con los toros.

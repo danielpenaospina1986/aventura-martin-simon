@@ -82,6 +82,9 @@ async function entrarAlNivel(page, personaje = 'martin') {
     const n = window.juego.scene.getScene('nivel');
     n.probabilidadCorazon = 0;
     n.probabilidadVidaExtra = 0;
+    // Y no entran toros por su cuenta: cruzan corriendo y, en una prueba que
+    // mide monedas o golpes, meterian ruido sin avisar.
+    n.proximoToro = Number.MAX_SAFE_INTEGER;
   });
 }
 
@@ -1385,4 +1388,106 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   ]);
   // ninguno es el provisional, y todos aguantan mas de un golpe
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
+});
+
+test('el toro entra corriendo, embiste y se le puede pisar', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const { Toro } = await import('/src/entidades/Toro.js');
+    const j = n.jugadores[0];
+    j.setPosition(9 * 32, 9 * 32 - 60);
+    j.body.setVelocity(0, 0);
+
+    const toro = new Toro(n, j.x + 240, 9 * 32 - 44, -1);
+    n.toros.add(toro);
+
+    // primero trota; al tener al nino delante baja la cabeza y arranca
+    const estados = new Set();
+    for (let i = 0; i < 30; i += 1) {
+      estados.add(toro.estado);
+      await new Promise((r) => setTimeout(r, 55));
+      if (toro.estado === 'embiste') break;
+    }
+    estados.add(toro.estado);
+
+    // y se le pisa como a cualquier bicho
+    const antes = j.enemigosVencidos;
+    for (let i = 0; i < 26 && toro.active; i += 1) {
+      j.setPosition(toro.x, toro.body.top - 44);
+      j.body.setVelocity(0, 260);
+      await new Promise((r) => setTimeout(r, 50));
+    }
+
+    return {
+      estados: [...estados],
+      vencidosAntes: antes,
+      vencidosDespues: j.enemigosVencidos,
+      sigueVivo: toro.active,
+    };
+  });
+
+  expect(resultado.estados).toContain('trota');
+  expect(resultado.estados).toContain('embiste');
+  expect(resultado.sigueVivo).toBe(false);
+  expect(resultado.vencidosDespues).toBe(resultado.vencidosAntes + 1);
+  expect(errores).toEqual([]);
+});
+
+test('la paloma también vuela a la altura del segundo piso', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const alturas = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const { PALOMA, MUNDO } = await import('/src/config/ajustes.js');
+    const filas = [];
+    // se le pide muchas veces: la altura es al azar, asi que se mira el reparto
+    for (let i = 0; i < 200; i += 1) {
+      n.proximaPaloma = 0;
+      n.gestionarPalomas(1);
+      const ultima = n.palomas.getChildren()[n.palomas.getChildren().length - 1];
+      if (ultima) {
+        filas.push(ultima.y / MUNDO.casilla);
+        ultima.destroy();
+      }
+    }
+    return {
+      cuantas: filas.length,
+      porArriba: filas.filter((f) => f <= PALOMA.alturaMaxFila).length,
+      porElMedio: filas.filter((f) => f >= PALOMA.alturaMediaMinFila).length,
+      masBaja: Math.max(...filas),
+    };
+  });
+
+  expect(alturas.cuantas).toBeGreaterThan(100);
+  expect(alturas.porArriba).toBeGreaterThan(20); // sigue cruzando por arriba
+  expect(alturas.porElMedio).toBeGreaterThan(20); // y ahora tambien por el medio
+});
+
+test('pasarse el juego entero también apunta el puntaje', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const { borrarPuntajes, mejoresPuntajes } = await import('/src/sistemas/puntajes.js');
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    borrarPuntajes();
+
+    window.juego.scene.stop('nivel');
+    window.juego.scene.start('victoria', {
+      personajeId: 'martin',
+      monedas: 77,
+      indiceNivel: TOTAL_NIVELES - 1,
+      recogidas: 80,
+      golpes: 1,
+      jefesDerrotados: 5,
+      enemigosVencidos: 4,
+    });
+    await new Promise((r) => setTimeout(r, 900));
+    return { tabla: mejoresPuntajes() };
+  });
+
+  expect(resultado.tabla.length).toBe(1);
+  expect(resultado.tabla[0].puntos).toBe(77);
 });

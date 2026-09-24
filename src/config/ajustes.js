@@ -198,6 +198,28 @@ export const CHORRO = {
   duracionMs: 3200,
 };
 
+// EL TORO. El bicho intermedio: ni se pasea como una banera ni guarda una
+// arena como un jefe. Entra corriendo por un lado del cuadro, cruza el tablero
+// y, cuando tiene al nino delante, baja la cabeza y EMBISTE.
+//
+// Se le gana como a los demas: pisandolo, con la katana o con un bloque. Lo que
+// no se puede es pararlo de frente.
+export const TORO = {
+  ancho: 116,
+  alto: 88,
+  caja: { ancho: 80, alto: 58 },
+  velocidad: 115,
+  velocidadEmbestida: 245,
+  distanciaEmbestida: 240, // a que distancia baja la cabeza
+  avisoMs: 420,            // lo que tarda en arrancar desde que la baja
+  impulsoSalto: 440,       // para saltarse los huecos del suelo
+  // cada cuanto aparece uno. Como las palomas, mas a menudo segun avanza.
+  esperaMinMs: 9000,
+  esperaMaxMs: 16000,
+  recortePorNivel: 0.12,
+  esperaMinima: 4500,
+};
+
 // El matero del balcon, en la arena del Carrotanque. Cuelga a la altura justa:
 // por encima de la cabeza del nino de pie, pero al alcance de un salto, para que
 // valgan las tres formas de darle (la katana, un bloque o un cabezazo).
@@ -323,6 +345,12 @@ export const PALOMA = {
   velocidad: 130,
   alturaMinFila: 0.4,   // por que parte de la franja alta vuela
   alturaMaxFila: 2.2,
+  // Y de vez en cuando baja a volar a la altura del SEGUNDO piso, rozando las
+  // plataformas. Ahi si estorba: hay que saltarla o pisarla desde la
+  // plataforma, en vez de verla pasar por arriba.
+  alturaMediaMinFila: 4.3,
+  alturaMediaMaxFila: 5.3,
+  probabilidadMedia: 0.38,
   msPorAleteo: 90,
   // cada cuanto aparece una. Igual que las baneras, mas a menudo segun avanza.
   esperaMinMs: 7000,

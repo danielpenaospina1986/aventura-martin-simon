@@ -69,10 +69,10 @@ export const CIUDADES = {
       // paso y su desfase, para que no salgan a la vez ni en el mismo orden.
       //
       // Y sin opacidad: no tapan nada, asi que no hay nada que despejar.
-      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 285, cada: 1240, desfase: 760, detras: true },
-      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 225, cada: 1320, desfase: 1600, detras: true },
-      { textura: TEXTURAS.frenteGuayacan, desde: 'abajo', alto: 246, cada: 1180, desfase: 340, detras: true },
-      { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 356, cada: 1460, desfase: 1120, detras: true },
+      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 185, cada: 1240, desfase: 760, detras: true },
+      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600, detras: true },
+      { textura: TEXTURAS.frenteGuayacanFondo, desde: 'abajo', alto: 246, cada: 1180, desfase: 340, detras: true },
+      { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 216, cada: 1460, desfase: 1120, detras: true },
     ],
     pavimento: { patron: 'baldosa', claro: 0xcfc4b0, medio: 0xb5a893, oscuro: 0x8d8070 },
     subsuelo: { patron: 'adoquin', claro: 0xa85f45, medio: 0x8e4d37, oscuro: 0x6b3828 },

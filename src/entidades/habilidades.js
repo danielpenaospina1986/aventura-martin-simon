@@ -57,6 +57,19 @@ function katana(jugador, escena) {
   // lleva el golpe igual: es justo asi como se le gana.
   if (escena.golpearColgantes) escena.golpearColgantes(zona, jugador.x);
 
+  // El toro tambien se lleva la katana: no hay bicho que se libre de ella.
+  if (escena.toros) {
+    escena.toros
+      .getChildren()
+      .slice()
+      .forEach((toro) => {
+        if (!toro.active) return;
+        if (Phaser.Geom.Intersects.RectangleToRectangle(zona, toro.getBounds())) {
+          escena.eliminarEnemigo(toro);
+        }
+      });
+  }
+
   // el jefe tambien se lleva lo suyo
   if (escena.jefe && escena.jefe.active) {
     if (Phaser.Geom.Intersects.RectangleToRectangle(zona, escena.jefe.getBounds())) {

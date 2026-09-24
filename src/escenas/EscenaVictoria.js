@@ -16,6 +16,8 @@ import { aEscalaDeJuego, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo
 import { estrellitas } from '../sistemas/efectos.js';
 import { Menu } from '../sistemas/menu.js';
 import { empezarNivel } from '../sistemas/cuento.js';
+import { anotarPuntaje } from '../sistemas/puntajes.js';
+import { nombreDeSesion } from '../sistemas/sesion.js';
 
 export class EscenaVictoria extends Phaser.Scene {
   constructor() {
@@ -94,6 +96,25 @@ export class EscenaVictoria extends Phaser.Scene {
 
     this.pintarMarcador(ancho / 2 + 62, 198);
 
+    // Pasarse los cinco tableros TAMBIEN cuenta para el tablero de mejores.
+    // Antes solo se apuntaba la partida de quien se quedaba sin vidas, asi que
+    // quien se lo terminaba entero —el que mas puntos hacia— no salia nunca.
+    if (!this.hayOtroNivel) {
+      anotarPuntaje(nombreDeSesion(), this.monedas, {
+        personaje: datos.nombre,
+        nivel: TOTAL_NIVELES,
+      });
+      this.add
+        .text(ancho / 2, 276, 'Tu puntaje quedó en el tablero de mejores', {
+          fontFamily: FUENTE.familia,
+          fontSize: '13px',
+          color: COLORES.textoAcento,
+          stroke: '#1b1410',
+          strokeThickness: 4,
+        })
+        .setOrigin(0.5);
+    }
+
     // Lo que se arrastra al siguiente nivel: la partida es de los cinco.
     const partida = {
       personajeId: this.personajeId,
@@ -123,7 +144,7 @@ export class EscenaVictoria extends Phaser.Scene {
 
     new Menu(this, opciones, {
       x: ancho / 2,
-      y: this.hayOtroNivel ? 296 : 306,
+      y: this.hayOtroNivel ? 296 : 302,
       separacion: 27,
       tamano: 16,
     });

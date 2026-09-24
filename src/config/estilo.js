@@ -111,6 +111,13 @@ export const COLORES = {
   torreMadera: 0xd9b57e,
   torreTecho: 0x7fc4c0,
 
+  // El toro, el bicho intermedio
+  toroCuerpo: 0x5b4034,
+  toroLomo: 0x3d2a22,
+  toroCuerno: 0xf2e3c8,
+  toroHocico: 0xc99a86,
+  toroFuria: 0xe0603f,
+
   // Cartagena: el Capitan Tapon
   capitanCasaca: 0x7a4a7f,
   capitanCasacaClara: 0x9c6aa1,
@@ -223,6 +230,8 @@ export const TEXTURAS = {
   jefeCapitanEspalda: 'tex-jefe-capitan-espalda',
   jefeCapitanSinTapon: 'tex-jefe-capitan-sin-tapon',
   balaEspuma: 'tex-bala-espuma',
+  toro: 'tex-toro',
+  toroEmbiste: 'tex-toro-embiste',
   checkpointApagado: 'tex-checkpoint-apagado',
   checkpointEncendido: 'tex-checkpoint-encendido',
   meta: 'tex-meta',
@@ -238,6 +247,7 @@ export const TEXTURAS = {
   frenteFrijoles: 'tex-frente-frijoles',
   frentePalmeraAlta: 'tex-frente-palmera-alta',
   frenteGuayacan: 'tex-frente-guayacan',
+  frenteGuayacanFondo: 'tex-frente-guayacan-fondo',
   frenteCasa: 'tex-frente-casa',
   frenteGato: 'tex-frente-gato',
 
@@ -296,6 +306,11 @@ export const PLANOS = {
     alpha: 1,
     velocidad: 0.72,
     profundidad: -20,
+    // Donde apoyan: en la linea por donde camina el nino, subida un 10%. Los de
+    // delante nacen del borde de abajo de la pantalla porque estan MAS CERCA
+    // que el suelo, pero estos estan mas LEJOS: naciendo de abajo, el suelo se
+    // les comia el tercio inferior y solo asomaban las copas.
+    apoyo: 0.9,
   },
   // PRIMER PLANO: ramas, postes y matas que cruzan por delante de todo.
   frente: {

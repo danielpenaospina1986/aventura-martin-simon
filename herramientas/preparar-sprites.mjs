@@ -148,6 +148,8 @@ const PERSONAJES = [
     nombre: 'guayacan',
     colorExacto: true,
     limpiarBolsas: true,
+    lienzo: { ancho: 660, alto: 660 },
+    salida: 'webp',
     tolerancia: 60,
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/frente',
@@ -157,6 +159,29 @@ const PERSONAJES = [
         archivo: 'guayacan',
         porPieza: true,
         nombres: ['guayacan'],
+        zonas: [{ x: 268, y: 10, ancho: 872, alto: 752 }],
+      },
+    ],
+  },
+  {
+    // El mismo guayacan, pero para el plano de DETRAS: mismo dibujo con el
+    // contorno a la mitad. Los adornos del fondo con la linea de delante se
+    // veian recortados a tijera contra la ilustracion de la ciudad.
+    nombre: 'guayacan-fondo',
+    colorExacto: true,
+    limpiarBolsas: true,
+    lienzo: { ancho: 660, alto: 660 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 60,
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'guayacan',
+        porPieza: true,
+        nombres: ['guayacan-fondo'],
         zonas: [{ x: 268, y: 10, ancho: 872, alto: 752 }],
       },
     ],
@@ -172,6 +197,9 @@ const PERSONAJES = [
     nombre: 'casa',
     colorExacto: true,
     limpiarBolsas: true,
+    lienzo: { ancho: 860, alto: 500 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
     tolerancia: 60,
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/frente',
@@ -192,6 +220,9 @@ const PERSONAJES = [
     nombre: 'chiva',
     colorExacto: true,
     limpiarBolsas: true,
+    lienzo: { ancho: 760, alto: 480 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
     tolerancia: 60,
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/frente',
@@ -213,6 +244,8 @@ const PERSONAJES = [
     nombre: 'gato',
     colorExacto: true,
     limpiarBolsas: true,
+    lienzo: { ancho: 420, alto: 560 },
+    salida: 'webp',
     tolerancia: 60,
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/frente',
@@ -430,6 +463,28 @@ const comoDatos = (ruta) => {
 };
 
 for (const personaje of aTrabajar) {
+  // El lienzo es de 260 x 260 para casi todo. Los adornos grandes del fondo
+  // piden uno mayor: se ven a mas de 250 px de ancho y, a densidad 3, eso son
+  // 750 pixeles de verdad sacados de una textura de 254. De ahi que la chiva
+  // se viera dentada y como lavada. El muneco guarda la misma proporcion del
+  // lienzo (240 de 260), para que las medidas de ciudades.js sigan
+  // significando lo mismo.
+  const lienzo = personaje.lienzo ? personaje.lienzo : LIENZO;
+  const altoMuneco = Math.round((lienzo.alto * ALTO_PERSONAJE) / LIENZO.alto);
+
+  // Un lienzo grande pesa 700 KB en PNG. En webp, con transparencia y sin que
+  // se note la diferencia, baja a la quinta parte.
+  const salida = personaje.salida === 'webp' ? 'webp' : 'png';
+
+  // CONTORNO va en pixeles del lienzo de 260, asi que en un lienzo mayor la
+  // misma cifra se lee mas fina: hay que escalarla con el. Encima,
+  // "contornoRelativo" adelgaza el trazo a proposito, que es lo que piden los
+  // adornos del fondo: con la linea de delante se veian recortados a tijera.
+  const relativo = personaje.contornoRelativo === undefined ? 1 : personaje.contornoRelativo;
+  const contornoDeEste = personaje.contorno === undefined
+    ? (CONTORNO * lienzo.alto * relativo) / LIENZO.alto
+    : personaje.contorno;
+
   if (!existsSync(personaje.destino)) mkdirSync(personaje.destino, { recursive: true });
 
   // --- 1. reunir todas las poses del personaje, sueltas y de hojas ---
@@ -499,9 +554,9 @@ for (const personaje of aTrabajar) {
       origen: trabajo.origen,
       zona: trabajo.zona,
       tolerancia: personaje.tolerancia,
-      altoPersonaje: ALTO_PERSONAJE,
-      lienzoAncho: LIENZO.ancho,
-      lienzoAlto: LIENZO.alto,
+      altoPersonaje: altoMuneco,
+      lienzoAncho: lienzo.ancho,
+      lienzoAlto: lienzo.alto,
       colorExacto: personaje.colorExacto || false,
       limpiarBolsas: personaje.limpiarBolsas || false,
     });
@@ -526,11 +581,11 @@ for (const personaje of aTrabajar) {
   // y sus rayas de movimiento) tiene que caber en el lienzo. Si a algun grupo
   // no le cabe, se rebaja la altura de TODOS: mas vale el muneco un poco mas
   // pequeno que unas poses mayores que otras.
-  let altoObjetivo = ALTO_PERSONAJE;
+  let altoObjetivo = altoMuneco;
   for (const g of grupos.values()) {
     const tope = Math.min(
-      (LIENZO.alto * 0.99) / g.altoTotal,
-      (LIENZO.ancho * 0.98) / g.anchoTotal,
+      (lienzo.alto * 0.99) / g.altoTotal,
+      (lienzo.ancho * 0.98) / g.anchoTotal,
     );
     altoObjetivo = Math.min(altoObjetivo, g.altoCuerpo * tope);
   }
@@ -545,20 +600,21 @@ for (const personaje of aTrabajar) {
       origen: trabajo.origen,
       zona: trabajo.zona,
       tolerancia: personaje.tolerancia,
-      altoPersonaje: ALTO_PERSONAJE,
-      lienzoAncho: LIENZO.ancho,
-      lienzoAlto: LIENZO.alto,
+      altoPersonaje: altoMuneco,
+      lienzoAncho: lienzo.ancho,
+      lienzoAlto: lienzo.alto,
       factor: factores.get(trabajo.grupo),
-      contorno: personaje.contorno === undefined ? CONTORNO : personaje.contorno,
+      contorno: contornoDeEste,
       tinta: TINTA,
       colorExacto: personaje.colorExacto || false,
       limpiarBolsas: personaje.limpiarBolsas || false,
       soloElCuerpo: trabajo.soloElCuerpo || false,
+      formato: salida,
     });
     if (!resultado.url) continue;
 
     const contenido = Buffer.from(resultado.url.split(',')[1], 'base64');
-    writeFileSync(`${personaje.destino}/${trabajo.nombre}.png`, contenido);
+    writeFileSync(`${personaje.destino}/${trabajo.nombre}.${salida}`, contenido);
     console.log(
       `  ${personaje.nombre}/${trabajo.nombre.padEnd(9)} ${(contenido.length / 1024).toFixed(0).padStart(3)} KB` +
         `  · ${resultado.recorte} · ${resultado.modo}`,
@@ -775,6 +831,7 @@ async function recortarPose(pagina, opciones) {
         colorExacto,
         limpiarBolsas,
         soloElCuerpo,
+        formato,
       }) => {
         const imagen = new Image();
         imagen.src = origen;
@@ -988,7 +1045,7 @@ async function recortarPose(pagina, opciones) {
         const conTinta = window.ponerContorno(salida, contorno, tinta);
 
         return {
-          url: conTinta.toDataURL('image/png'),
+          url: conTinta.toDataURL(formato === 'webp' ? 'image/webp' : 'image/png', 0.92),
           modo: window.__modoFondo,
           recorte: `${anchoUtil}x${altoUtil}`,
           ancho: anchoUtil,
