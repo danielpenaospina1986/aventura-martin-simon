@@ -128,6 +128,16 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
     this.setFlipX(nuevaDireccion < 0);
   }
 
+  // Si el nino ya esta en su arena. Un jefe NO actua mientras no haya nadie:
+  // ademas de raro (pelea solo), a Dona Zully le costo la vida, porque sus
+  // chorros rebotaban en sus propias sombrillas y la empapaban a ella. Se
+  // derrotaba sola en doce segundos, antes de que el nino llegara.
+  hayAlguienEnLaArena(alcance = JEFE.alcanceArena) {
+    const nino = this.escena.jugadores && this.escena.jugadores[0];
+    if (!nino || !nino.active) return false;
+    return Math.abs(nino.x - this.x) <= alcance;
+  }
+
   // Da la vuelta al llegar a una pared o al borde de su arena.
   patrullar(velocidad = this.config.velocidad) {
     const cuerpo = this.body;

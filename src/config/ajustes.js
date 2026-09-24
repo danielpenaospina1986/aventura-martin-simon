@@ -194,6 +194,9 @@ export const CHORRO = {
 };
 
 export const JEFE = {
+  // Hasta donde considera que el nino ya esta en su arena. Mientras no llegue,
+  // el jefe espera sin atacar.
+  alcanceArena: 380,
   // Durante la pelea caen corazones de vez en cuando: pelear con un jefe no
   // puede costar la partida.
   corazonMinMs: 5200,

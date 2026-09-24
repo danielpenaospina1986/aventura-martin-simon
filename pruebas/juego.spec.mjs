@@ -89,6 +89,19 @@ async function entrarAlNivel(page, personaje = 'martin') {
 // cual sea su truco. El Astronauta Burbuja, por ejemplo, solo se deja dar
 // cuando se queda atascado tras su pisoton.
 async function esperarJefeExpuesto(page, msMaximo = 12000) {
+  // Primero se le pone el nino delante: los jefes no atacan mientras no haya
+  // nadie en su arena, asi que en la otra punta del tablero no se expondrian
+  // nunca y la espera se iria en blanco.
+  await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    if (!n.jefe || !n.jefe.active) return;
+    const j = n.jugadores[0];
+    if (Math.abs(j.x - n.jefe.x) > 220) {
+      j.setPosition(n.jefe.x - 200, n.jefe.y);
+      j.body.setVelocity(0, 0);
+    }
+  });
+
   await page.waitForFunction(
     () => {
       const n = window.juego.scene.getScene('nivel');
@@ -508,6 +521,39 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   expect(despues.vidas).toBe(antes - 1);
 });
 
+test('ningún jefe se derrota solo mientras el niño no llega', async ({ page }) => {
+  // Este es el fallo que conto Daniel: llegaba al final de Atlanta y no habia
+  // jefe. Dona Zully disparaba desde que empezaba el tablero, su chorro rebotaba
+  // en sus propias sombrillas y se empapaba a si misma: se derrotaba sola en
+  // doce segundos, antes de que nadie llegara.
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    n.scene.restart({ indiceNivel: 2, personajeId: 'simon', acumulado: {} });
+    await new Promise((r) => setTimeout(r, 1700));
+
+    const esc = window.juego.scene.getScene('nivel');
+    const vidasAlEmpezar = esc.jefe ? esc.jefe.vidas : 0;
+    const lejos = Math.round(Math.abs(esc.jugadores[0].x - esc.jefe.x));
+
+    // se le deja a solas un buen rato, como mientras se recorre el tablero
+    await new Promise((r) => setTimeout(r, 14000));
+
+    const despues = window.juego.scene.getScene('nivel');
+    return {
+      lejos,
+      vidasAlEmpezar,
+      sigueVivo: !!(despues.jefe && despues.jefe.active),
+      vidas: despues.jefe ? despues.jefe.vidas : 0,
+    };
+  });
+
+  expect(resultado.lejos).toBeGreaterThan(400); // el nino esta lejos de verdad
+  expect(resultado.sigueVivo).toBe(true);
+  expect(resultado.vidas).toBe(resultado.vidasAlEmpezar); // ni un rasguno
+});
+
 test('a Doña Zully se le gana escondiéndose tras una sombrilla', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
@@ -919,35 +965,39 @@ test('el marcador nunca baja de cero', async ({ page }) => {
 test('derrotar al jefe da diez monedas', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
-  await page.evaluate(() => {
-    window.juego.scene.getScene('nivel').jugadores[0].monedas = 5;
-  });
+  // Se mide el SALTO de monedas al derrotarlo, no un total: de camino a la
+  // arena el nino recibe golpes, y cada golpe le cuesta tres.
+  let monedasAntes = null;
 
-  // Cada jefe se deja dar en su momento, asi que hay que esperar su ventana
-  // antes de cada golpe.
   for (let i = 0; i < 8; i += 1) {
     const sigueVivo = await page.evaluate(() => {
       const n = window.juego.scene.getScene('nivel');
       return !!(n.jefe && n.jefe.active);
     });
     if (!sigueVivo) break;
+
     await esperarJefeExpuesto(page);
-    await page.evaluate(() => {
+    monedasAntes = await page.evaluate(() => {
       const n = window.juego.scene.getScene('nivel');
-      if (!n.jefe || !n.jefe.active) return;
+      const j = n.jugadores[0];
+      if (!n.jefe || !n.jefe.active) return null;
       n.jefe.invulnerableHasta = 0;
-      n.golpearJefe(n.jugadores[0].x);
+      const antes = j.monedas;
+      n.golpearJefe(j.x);
+      return antes;
     });
     await page.waitForTimeout(120);
   }
 
   const resultado = await page.evaluate(() => {
-    const j = window.juego.scene.getScene('nivel').jugadores[0];
-    return { monedas: j.monedas, jefes: j.jefesDerrotados };
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    return { monedas: j.monedas, jefes: j.jefesDerrotados, jefe: !!n.jefe };
   });
 
-  expect(resultado.monedas).toBe(15); // 5 + 10
+  expect(resultado.jefe).toBe(false);
   expect(resultado.jefes).toBe(1);
+  expect(resultado.monedas).toBe(monedasAntes + 10); // el golpe final da diez
 });
 
 test('los cinco niveles cargan con su jefe y sus dos checkpoints', async ({ page }) => {

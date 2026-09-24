@@ -81,6 +81,11 @@ export class AstronautaBurbuja extends JefeBase {
 
     if (this.estado === 'anda') {
       this.patrullar();
+      // no se pone a dar pisotones si no hay nadie a quien asustar
+      if (!this.hayAlguienEnLaArena()) {
+        this.cambio = this.reloj + TIEMPOS.andaMinMs;
+        return;
+      }
       if (this.reloj >= this.cambio) {
         this.estado = 'avisa';
         this.cambio = this.reloj + TIEMPOS.avisoMs;

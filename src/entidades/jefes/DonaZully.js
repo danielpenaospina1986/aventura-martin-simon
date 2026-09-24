@@ -89,6 +89,17 @@ export class DonaZully extends JefeBase {
       this.x = this.plantada + Math.sin(this.reloj / 620) * VAIVEN;
     }
     this.body.velocity.x = 0;
+
+    // Hasta que el nino no llega, ni dispara ni tira jabones: se queda
+    // esperandolo con el cepillo en la mano.
+    if (!this.hayAlguienEnLaArena()) {
+      this.estado = 'espera';
+      this.cambio = this.reloj + TIEMPOS.esperaMinMs;
+      this.proximoJabon = TIEMPOS.jabonMinMs;
+      if (!this.esInvulnerable) this.setTexture(TEXTURAS.zullyQuieta);
+      return;
+    }
+
     this.mirarAlNino();
     this.gestionarJabones(delta);
 

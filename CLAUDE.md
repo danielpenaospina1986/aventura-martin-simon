@@ -250,6 +250,11 @@ Reglas para los cinco:
   un signo encima antes de cada golpe.
 - **Durante la pelea caen corazones** de vez en cuando (`JEFE.corazonMinMs` y
   `corazonMaxMs`): pelear con un jefe no puede costar la partida.
+- **Un jefe no ataca mientras no haya nadie en su arena**
+  (`hayAlguienEnLaArena`, `JEFE.alcanceArena`). Ademas de raro, a Dona Zully le
+  costo la vida: sus chorros rebotaban en sus propias sombrillas y se empapaba
+  sola, asi que se derrotaba a si misma en doce segundos, mucho antes de que el
+  nino llegara. Quien jugaba encontraba la arena vacia.
 - Cada uno **dice una frase** al empezar (cuando el nino pisa su arena, no
   antes, que si no nadie la lee) y otra al perder, de `config/historia.js`.
 - Mientras no haya arte, se dibujan **por codigo** con los pinceles de tinta.
@@ -743,6 +748,11 @@ baja.
   mueven a mano en `sistemas/planos.js`, contra la esquina izquierda de lo
   visible, y se colocan en `prerender`: hacerlo en el `update` dejaba el HUD
   temblando un fotograma por detras.
+- **2026-09-23** — **Los jefes esperan al nino.** Dona Zully se derrotaba a si
+  misma: disparaba desde que empezaba el tablero, el chorro rebotaba en sus
+  propias sombrillas y volvia a empaparla. Doce segundos y se habia ganado sola,
+  asi que al llegar no habia jefe. Hay una prueba que lo vigila: se deja al jefe
+  a solas catorce segundos y tiene que seguir entero.
 - **2026-09-23** — Dona Zully **no camina**, y plantada en el borde de su arena
   se quedaba pegada al canto derecho de la pantalla: al llegar parecia que no
   hubiera jefe. Ahora se mete un poco hacia dentro, se mece en el sitio y su
