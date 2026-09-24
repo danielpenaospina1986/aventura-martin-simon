@@ -31,6 +31,27 @@
 //   desfase  donde empieza la serie, para que no salgan todos alineados
 import { TEXTURAS } from './estilo.js';
 
+// EL DECORADO DEL PUEBLO: lo que pasa por DETRAS del nino y del suelo.
+//
+// No cruza por delante de nadie ni tapa nada: es la ambientacion del sitio
+// donde se esta jugando. Apoya en la linea del suelo, hundido un pelin por
+// detras del terreno (`PLANOS.detras.hundido`), va opaco y con el contorno a la
+// mitad, y se dibuja en lienzos grandes para que no se vea dentado. Estas
+// medidas estan probadas: sirven de patron para lo que venga.
+//
+// La chiva va dos veces, a distinto tamano y a distinto paso, para que se lea
+// como dos chivas a distinta distancia y no como la misma calcada.
+//
+// De momento es el mismo para las cinco ciudades: Medellin lo tiene dibujado y
+// las otras cuatro lo usan de prestado, hasta que Daniel mande el suyo. Es lo
+// que se ha hecho siempre aqui con lo que falta.
+const DECORADO_DE_PUEBLO = [
+  { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 185, cada: 1240, desfase: 760, detras: true },
+  { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600, detras: true },
+  { textura: TEXTURAS.frenteGuayacanFondo, desde: 'abajo', alto: 246, cada: 1180, desfase: 340, detras: true },
+  { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 216, cada: 1460, desfase: 1120, detras: true },
+];
+
 export const CIUDADES = {
   // Costa espacial: arena de playa y hormigon de plataforma de lanzamiento.
   'space-coast': {
@@ -41,6 +62,7 @@ export const CIUDADES = {
       { textura: TEXTURAS.frentePalmera, desde: 'abajo', alto: 152, cada: 820, desfase: 340 },
       { textura: TEXTURAS.frenteAlien, desde: 'abajo', alto: 112, cada: 1180, desfase: 900 },
       { textura: TEXTURAS.frenteAstronauta, desde: 'arriba', alto: 104, cada: 1020, desfase: 520 },
+      ...DECORADO_DE_PUEBLO,
     ],
     pavimento: { patron: 'arena', claro: 0xe6d2a6, medio: 0xd2b98a, oscuro: 0xb09763 },
     subsuelo: { patron: 'estratos', claro: 0xb49b70, medio: 0x9c8460, oscuro: 0x7d6848 },
@@ -59,20 +81,8 @@ export const CIUDADES = {
       // con su bocadillo, que es el chiste, asi que sigue siendo el mas alto de
       // los adornos de suelo.
       { textura: TEXTURAS.frenteGato, desde: 'abajo', alto: 136, cada: 1460, desfase: 900 },
-
-      // --- el decorado de la ciudad, DETRAS del nino y del suelo ------------
-      //
-      // Estos no cruzan por delante de nadie: son Medellin de fondo. La chiva
-      // va dos veces, a distinto tamano, para que se lea como dos chivas a
-      // distinta distancia y no como la misma calcada; el guayacan sale aqui
-      // ademas de delante, y la casa se reparte entre medias. Cada uno con su
-      // paso y su desfase, para que no salgan a la vez ni en el mismo orden.
-      //
-      // Y sin opacidad: no tapan nada, asi que no hay nada que despejar.
-      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 185, cada: 1240, desfase: 760, detras: true },
-      { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600, detras: true },
-      { textura: TEXTURAS.frenteGuayacanFondo, desde: 'abajo', alto: 246, cada: 1180, desfase: 340, detras: true },
-      { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 216, cada: 1460, desfase: 1120, detras: true },
+      // la chiva, la casa y los guayacanes grandes, por detras del nino
+      ...DECORADO_DE_PUEBLO,
     ],
     pavimento: { patron: 'baldosa', claro: 0xcfc4b0, medio: 0xb5a893, oscuro: 0x8d8070 },
     subsuelo: { patron: 'adoquin', claro: 0xa85f45, medio: 0x8e4d37, oscuro: 0x6b3828 },
@@ -82,6 +92,9 @@ export const CIUDADES = {
   // Atlanta: calle de asfalto con su linea pintada, sobre hormigon.
   atlanta: {
     pais: 'us',
+    // sin adornos propios todavia: de fondo, el decorado prestado; de delante,
+    // los provisionales que pone montarPrimerPlano
+    frente: [...DECORADO_DE_PUEBLO],
     pavimento: { patron: 'asfalto', claro: 0x6a6a6e, medio: 0x55555a, oscuro: 0x3c3c41, linea: 0xd8b44a },
     subsuelo: { patron: 'estratos', claro: 0x807c78, medio: 0x6a6663, oscuro: 0x4e4b48 },
     cornisa: { cuerpo: 0x9c9690, borde: 0x4e4b48 },
@@ -90,6 +103,7 @@ export const CIUDADES = {
   // Miami: acera art deco en rosa palido con junta clara.
   miami: {
     pais: 'us',
+    frente: [...DECORADO_DE_PUEBLO],
     pavimento: { patron: 'baldosa', claro: 0xe7c3bd, medio: 0xd0a49f, oscuro: 0xa87e7a },
     subsuelo: { patron: 'estratos', claro: 0xb99d9b, medio: 0x9d8482, oscuro: 0x7a6563 },
     cornisa: { cuerpo: 0x7fc4c0, borde: 0x3f7a78 },
@@ -98,6 +112,7 @@ export const CIUDADES = {
   // Cartagena: calzada de piedra colonial, ocre y gastada.
   cartagena: {
     pais: 'co',
+    frente: [...DECORADO_DE_PUEBLO],
     pavimento: { patron: 'piedra', claro: 0xdcc28c, medio: 0xc2a670, oscuro: 0x9b8252 },
     subsuelo: { patron: 'piedra', claro: 0xab8f5f, medio: 0x917847, oscuro: 0x6f5c36 },
     cornisa: { cuerpo: 0xd9a05b, borde: 0x8a5f2c },

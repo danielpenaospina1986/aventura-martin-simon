@@ -91,7 +91,13 @@ const PROVISIONALES = [
 
 // Monta el plano de delante y devuelve el grupo, por si hay que apagarlo.
 export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, planos) {
-  const lista = adornos && adornos.length ? adornos : PROVISIONALES;
+  // Una ciudad puede traer solo su decorado de DETRAS y no tener todavia nada
+  // propio para el primer plano. En ese caso se le completan los adornos
+  // provisionales: si no, se quedaria sin nada delante, que es peor que tener
+  // ramas prestadas.
+  const suyos = adornos && adornos.length ? adornos : [];
+  const traeDeDelante = suyos.some((adorno) => !adorno.detras);
+  const lista = traeDeDelante ? suyos : [...suyos, ...PROVISIONALES];
   const velocidad = PLANOS.frente.velocidad;
 
   // Al ir mas rapido que la camara, estos adornos recorren mas mundo del que
@@ -153,7 +159,7 @@ export function montarPrimerPlano(escena, ancho, alto, anchoMundo, adornos, plan
       // apoyan; los de DETRAS apoyan en la linea del suelo, subida un 10%: son
       // decorado de mas lejos, y naciendo del borde de abajo el suelo se les
       // comia el tercio de abajo.
-      if (adorno.detras) pieza.setY(MUNDO.nivelSuelo * MUNDO.casilla * PLANOS.detras.apoyo);
+      if (adorno.detras) pieza.setY(MUNDO.nivelSuelo * MUNDO.casilla + PLANOS.detras.hundido);
       else if (!arriba) pieza.setY(alto + Math.min(14, altoEnPantalla * 0.1));
 
       piezas.push(pieza);

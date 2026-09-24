@@ -1491,3 +1491,56 @@ test('pasarse el juego entero también apunta el puntaje', async ({ page }) => {
   expect(resultado.tabla.length).toBe(1);
   expect(resultado.tabla[0].puntos).toBe(77);
 });
+
+test('la barra del jefe solo se ve cuando el jefe esta en cuadro', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    await new Promise((r) => setTimeout(r, 400));
+    const lejos = n.jefe.chapa.visible;
+
+    const j = n.jugadores[0];
+    j.setPosition(n.jefe.x - 150, n.jefe.y);
+    j.body.setVelocity(0, 0);
+    await new Promise((r) => setTimeout(r, 1500));
+    return { lejos, cerca: n.jefe.chapa.visible };
+  });
+
+  // al principio del tablero no se le ven los puntitos al jefe en una esquina
+  expect(resultado.lejos).toBe(false);
+  expect(resultado.cerca).toBe(true);
+});
+
+test('las cinco ciudades traen decorado de fondo y algo por delante', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const ciudades = await page.evaluate(async () => {
+    const salida = [];
+    for (let i = 0; i < 5; i += 1) {
+      window.juego.scene.stop('nivel');
+      window.juego.scene.start('nivel', { personajeId: 'simon', indiceNivel: i });
+      await new Promise((r) => setTimeout(r, 1300));
+      const n = window.juego.scene.getScene('nivel');
+      const capas = n.planos.capas;
+      salida.push({
+        ciudad: n.datosNivel.fondo,
+        detras: capas.filter((c) => c.velocidad === 0.72).length,
+        delante: capas.filter((c) => c.velocidad === 1.45).length,
+        // todos los de detras apoyan en la misma linea, la del suelo
+        apoyos: [...new Set(capas.filter((c) => c.velocidad === 0.72).map((c) => Math.round(c.objeto.y)))],
+      });
+    }
+    return salida;
+  });
+
+  const suelo = 9 * 32;
+  ciudades.forEach((c) => {
+    expect(c.detras).toBeGreaterThan(5);
+    expect(c.delante).toBeGreaterThan(5);
+    expect(c.apoyos.length).toBe(1);
+    // apoyan en la linea del suelo, hundidos un pelin por detras
+    expect(c.apoyos[0]).toBeGreaterThan(suelo);
+    expect(c.apoyos[0]).toBeLessThan(suelo + 30);
+  });
+});

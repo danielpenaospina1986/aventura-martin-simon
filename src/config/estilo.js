@@ -306,11 +306,15 @@ export const PLANOS = {
     alpha: 1,
     velocidad: 0.72,
     profundidad: -20,
-    // Donde apoyan: en la linea por donde camina el nino, subida un 10%. Los de
-    // delante nacen del borde de abajo de la pantalla porque estan MAS CERCA
-    // que el suelo, pero estos estan mas LEJOS: naciendo de abajo, el suelo se
-    // les comia el tercio inferior y solo asomaban las copas.
-    apoyo: 0.9,
+    // Donde apoyan: en la linea por donde camina el nino, hundidos este pelin
+    // por detras del suelo. Son la ambientacion del pueblo, no cosas que
+    // floten, asi que su base tiene que quedar justo detras del terreno.
+    //
+    // Se ha probado de las dos maneras y las dos estaban mal: naciendo del
+    // borde de abajo de la pantalla (como los de delante, que estan MAS CERCA
+    // que el suelo) el terreno les comia el tercio inferior y solo asomaban los
+    // tejados; a la linea del suelo subida un 10%, se veian volando.
+    hundido: 14,
   },
   // PRIMER PLANO: ramas, postes y matas que cruzan por delante de todo.
   frente: {

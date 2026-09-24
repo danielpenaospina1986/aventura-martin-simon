@@ -115,6 +115,15 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
       izquierda + anchoVisible - medioAncho,
     );
 
+    // La barra solo se ve si el jefe esta en cuadro. Al sujetarla dentro de la
+    // pantalla (para que no se saliera por la derecha estando el en el borde de
+    // su arena) se quedaba visible SIEMPRE: desde la primera pantalla del
+    // tablero ya se le veian los puntitos al jefe, en una esquina, sin jefe.
+    const enCuadro = this.x > izquierda - 140 && this.x < izquierda + anchoVisible + 140;
+    if (this.chapa) this.chapa.setVisible(enCuadro);
+    this.puntos.forEach((punto) => punto.setVisible(enCuadro));
+    if (!enCuadro) return;
+
     if (this.chapa) this.chapa.setPosition(centro, arriba);
     const inicio = centro - ((this.vidasMaximas - 1) * separacion) / 2;
     this.puntos.forEach((punto, i) => {

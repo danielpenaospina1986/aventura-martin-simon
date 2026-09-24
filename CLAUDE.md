@@ -627,10 +627,18 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   `src/config/ciudades.js`. Space Coast tiene palmeras, un vecino de otro
   planeta dandose un bano y un astronauta flotando arriba; Medellin, guayacanes
   en flor, una palmera alta, una olla de frijoles y el gato de la hinchada, que
-  va llorando porque Martain le mocho la cola; y DETRAS, de decorado, la chiva
-  camino del estadio, mas guayacanes y una casa de pueblo con su bandera. Las
-  tres que faltan siguen con los adornos provisionales (ramas, farol, matorral), que
-  es lo que se usa cuando una ciudad no trae los suyos.
+  va llorando porque Martain le mocho la cola. Las tres que faltan siguen con
+  los adornos provisionales (ramas, farol, matorral), que es lo que pone
+  `montarPrimerPlano` cuando una ciudad no trae ninguno propio de delante.
+- **El decorado del pueblo** (`DECORADO_DE_PUEBLO`, en `ciudades.js`) es lo que
+  va DETRAS: la chiva camino del estadio, dos guayacanes grandes y una casa de
+  pueblo con su bandera. Lo llevan **las cinco ciudades**: Medellin lo tiene
+  dibujado y las otras cuatro lo usan de prestado hasta que llegue el suyo, que
+  es lo que se ha hecho siempre aqui con lo que falta.
+
+  Sus medidas (lienzos de 480-660 px, contorno a la mitad, opaco, apoyado en la
+  linea del suelo) **estan probadas y valen de patron** para lo que venga: un
+  recurso nuevo para esta capa se prepara igual y se cuelga de esa misma lista.
 - **En la arena del jefe no se planta nada por delante.** Al final del tablero
   la camara ya no avanza, asi que un adorno que caiga ahi se queda clavado en
   mitad del cuadro y tapa al jefe justo cuando hay que verle venir el golpe. Lo
@@ -649,9 +657,12 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   los de **detras, no**: no tapan a nadie, y bajarles la opacidad solo los
   dejaba desvaidos contra la ilustracion de la ciudad.
 - Los de delante **nacen del borde de abajo de la pantalla**; los de **detras**
-  apoyan en la **linea del suelo, subida un 10%** (`PLANOS.detras.apoyo`). Estan
-  mas LEJOS que el suelo, no mas cerca: naciendo de abajo, el terreno se les
-  comia el tercio inferior y solo asomaban las copas.
+  apoyan en la **linea del suelo**, hundidos un pelin por detras del terreno
+  (`PLANOS.detras.hundido`). Son la ambientacion del pueblo, no cosas que
+  floten. Se probo de las otras dos maneras y las dos estaban mal: naciendo del
+  borde de abajo (como los de delante, que estan mas CERCA que el suelo) el
+  terreno les comia el tercio inferior y solo asomaban los tejados; a la linea
+  del suelo subida un 10%, se veian volando.
 - Y llevan el **contorno a la mitad** (`contornoRelativo` en
   `preparar-sprites.mjs`). Con la linea de los de delante se veian recortados a
   tijera contra la ilustracion de la ciudad.
@@ -1165,3 +1176,20 @@ baja.
   tal cual, y con zoom eso no es la esquina izquierda de lo visible: a densidad
   2 aparecian de golpe ya dentro de la pantalla, en vez de venir de fuera. Se
   saca como en `Planos`. Mismo cuidado con los toros.
+- **2026-09-24** — El decorado de detras apoya en la **linea del suelo**,
+  hundido un pelin por detras del terreno. Subido un 10% por encima de esa linea
+  se veia **volando**: son la ambientacion del pueblo, tienen que estar
+  plantados. Entre esto, el contorno a la mitad, la opacidad quitada y los
+  lienzos grandes, las medidas de esta capa quedan como **patron** para los
+  recursos que vengan.
+- **2026-09-24** — El decorado de pueblo pasa a estar en **las cinco ciudades**,
+  el mismo, hasta que cada una tenga el suyo. Y `montarPrimerPlano` deja de
+  elegir entre "los tuyos" o "los provisionales": ahora mira si la ciudad trae
+  algo **de delante**, y si no, le completa los provisionales. Sin eso, darles a
+  Atlanta, Miami y Cartagena solo el decorado de fondo las habria dejado sin
+  nada delante.
+- **2026-09-24** — La **barra de vida del jefe se veia desde la primera
+  pantalla** del tablero, en una esquina y sin jefe a la vista. Fue culpa de
+  sujetarla dentro de la pantalla (para que no se saliera por la derecha con el
+  jefe en el borde de su arena): al sujetarla, quedaba visible siempre. Ahora se
+  esconde si el jefe no esta en cuadro.
