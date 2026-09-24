@@ -1220,3 +1220,169 @@ test('el nivel entero se recorre de la salida a la meta', async ({ page }) => {
   expect(recorrido.recogidas).toBeGreaterThan(10);
   expect(errores).toEqual([]);
 });
+
+// Lleva al nino a la arena del jefe de un tablero cualquiera y devuelve la
+// escena lista para pelear. Se usa en las pruebas de los jefes nuevos.
+async function entrarALaArena(page, indiceNivel) {
+  await page.evaluate(async (indice) => {
+    window.juego.scene.stop('nivel');
+    window.juego.scene.start('nivel', { personajeId: 'simon', indiceNivel: indice });
+    await new Promise((r) => setTimeout(r, 1800));
+    const n = window.juego.scene.getScene('nivel');
+    n.probabilidadCorazon = 0;
+    n.probabilidadVidaExtra = 0;
+    const j = n.jugadores[0];
+    j.setPosition(n.jefe.x - 150, n.jefe.y);
+    j.body.setVelocity(0, 0);
+    await new Promise((r) => setTimeout(r, 600));
+  }, indiceNivel);
+}
+
+test('al Carrotanque no se le pega: lo para un matero', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'simon');
+  await entrarALaArena(page, 1);
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+    const clase = jefe.constructor.name;
+    const materos = n.materos.getChildren().length;
+
+    // de frente no se le hace nada, por mucho que se insista
+    jefe.invulnerableHasta = 0;
+    const antesDeFrente = jefe.vidas;
+    n.golpearJefe(jefe.x - 40);
+    const trasGolpeDeFrente = jefe.vidas;
+
+    // y ahora un matero encima
+    const vidasAntes = jefe.vidas;
+    for (let i = 0; i < 400 && jefe.vidas === vidasAntes; i += 1) {
+      const cerca = n.materos
+        .getChildren()
+        .filter((m) => m.active && !m.cayendo)
+        .sort((a, b) => Math.abs(a.x - jefe.x) - Math.abs(b.x - jefe.x))[0];
+      if (cerca && Math.abs(cerca.x - jefe.x) < 70) n.tirarMatero(cerca, cerca.x);
+      await new Promise((r) => setTimeout(r, 55));
+    }
+    return { clase, materos, antesDeFrente, trasGolpeDeFrente, vidasAntes, vidas: jefe.vidas };
+  });
+
+  expect(resultado.clase).toBe('Carrotanque');
+  expect(resultado.materos).toBeGreaterThanOrEqual(3);
+  expect(resultado.trasGolpeDeFrente).toBe(resultado.antesDeFrente); // de frente, nada
+  expect(resultado.vidas).toBe(resultado.vidasAntes - 1); // el matero si cuenta
+  expect(errores).toEqual([]);
+});
+
+test('al Salvavidas solo se le da cuando baja de la torre', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'simon');
+  await entrarALaArena(page, 3);
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+    const clase = jefe.constructor.name;
+    const torres = n.torres.length;
+
+    // subido a la torre no se le llega
+    let enAlto = 0;
+    let deFrenteEnAlto = 0;
+    for (let i = 0; i < 40 && jefe.estado !== 'suelo'; i += 1) {
+      if (jefe.estado === 'vigila' || jefe.estado === 'tira') {
+        enAlto += 1;
+        jefe.invulnerableHasta = 0;
+        const antes = jefe.vidas;
+        n.golpearJefe(jefe.x - 40);
+        if (jefe.vidas < antes) deFrenteEnAlto += 1;
+      }
+      await new Promise((r) => setTimeout(r, 55));
+    }
+
+    // cuando baja, si
+    const vidasAntes = jefe.vidas;
+    for (let i = 0; i < 400 && jefe.vidas === vidasAntes; i += 1) {
+      const j = n.jugadores[0];
+      j.setPosition(jefe.x - 150, j.y);
+      j.body.setVelocity(0, 0);
+      if (jefe.puedeRecibirGolpe()) n.golpearJefe(jefe.x - 40);
+      await new Promise((r) => setTimeout(r, 55));
+    }
+    return { clase, torres, enAlto, deFrenteEnAlto, vidasAntes, vidas: jefe.vidas };
+  });
+
+  expect(resultado.clase).toBe('Salvavidas');
+  expect(resultado.torres).toBeGreaterThanOrEqual(2);
+  expect(resultado.enAlto).toBeGreaterThan(0); // que de verdad estuvo arriba
+  expect(resultado.deFrenteEnAlto).toBe(0); // y que ahi no se le hizo nada
+  expect(resultado.vidas).toBe(resultado.vidasAntes - 1);
+  expect(errores).toEqual([]);
+});
+
+test('al Capitán Tapón se le gana quitándole el tapón', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'simon');
+  await entrarALaArena(page, 4);
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+    const clase = jefe.constructor.name;
+
+    // de cara no se le hace nada
+    let deCara = 0;
+    let contaronDeCara = 0;
+    for (let i = 0; i < 40 && jefe.estado !== 'recarga'; i += 1) {
+      deCara += 1;
+      jefe.invulnerableHasta = 0;
+      const antes = jefe.vidas;
+      n.golpearJefe(jefe.x - 40);
+      if (jefe.vidas < antes) contaronDeCara += 1;
+      await new Promise((r) => setTimeout(r, 55));
+    }
+
+    // de espaldas, recargando, si
+    const vidasAntes = jefe.vidas;
+    for (let i = 0; i < 400 && jefe.vidas === vidasAntes; i += 1) {
+      const j = n.jugadores[0];
+      j.setPosition(jefe.x - 150, j.y);
+      j.body.setVelocity(0, 0);
+      if (jefe.puedeRecibirGolpe()) n.golpearJefe(jefe.x - 40);
+      await new Promise((r) => setTimeout(r, 55));
+    }
+    return { clase, deCara, contaronDeCara, vidasAntes, vidas: jefe.vidas };
+  });
+
+  expect(resultado.clase).toBe('CapitanTapon');
+  expect(resultado.deCara).toBeGreaterThan(0);
+  expect(resultado.contaronDeCara).toBe(0);
+  expect(resultado.vidas).toBe(resultado.vidasAntes - 1);
+  expect(errores).toEqual([]);
+});
+
+test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const jefes = await page.evaluate(async () => {
+    const salida = [];
+    for (let i = 0; i < 5; i += 1) {
+      window.juego.scene.stop('nivel');
+      window.juego.scene.start('nivel', { personajeId: 'simon', indiceNivel: i });
+      await new Promise((r) => setTimeout(r, 1300));
+      const n = window.juego.scene.getScene('nivel');
+      salida.push({
+        ciudad: n.datosNivel.fondo,
+        clase: n.jefe ? n.jefe.constructor.name : null,
+        vidas: n.jefe ? n.jefe.vidas : 0,
+      });
+    }
+    return salida;
+  });
+
+  expect(jefes.map((j) => j.clase)).toEqual([
+    'AstronautaBurbuja', 'Carrotanque', 'DonaZully', 'Salvavidas', 'CapitanTapon',
+  ]);
+  // ninguno es el provisional, y todos aguantan mas de un golpe
+  jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
+});

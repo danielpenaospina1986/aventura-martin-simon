@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { ENEMIGO, JEFE, MUNDO, RENDER } from '../config/ajustes.js';
+import { BALA, ENEMIGO, FLOTADOR, JEFE, MATERO, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
@@ -624,6 +624,320 @@ export function generarTexturas(escena) {
   generar(escena, TEXTURAS.jefeAstronauta, JEFE.ancho, JEFE.alto, astronauta('normal'));
   generar(escena, TEXTURAS.jefeAstronautaAtascado, JEFE.ancho, JEFE.alto, astronauta('atascado'));
   generar(escena, TEXTURAS.jefeAstronautaMareado, JEFE.ancho, JEFE.alto, astronauta('mareado'));
+
+  // --- Medellin: el Carrotanque ---------------------------------------------
+  //
+  // El camion del agua, con ojos en el parabrisas. Embiste y no hay forma de
+  // pegarle: lo que lo para son los materos que le caen de los balcones.
+  const carrotanque = (modo) => (g) => {
+    const a = JEFE.ancho;
+    const h = JEFE.alto;
+    const cx = a / 2;
+
+    // ruedas, bien gordas
+    [cx - 50, cx + 44].forEach((x) => {
+      tintaCirculo(g, x, h - 26, 24, COLORES.carroRueda, 5);
+      tintaCirculo(g, x, h - 26, 9, COLORES.carroLlanta, 3);
+    });
+
+    // chasis
+    tintaRedonda(g, 8, h - 74, a - 16, 34, 8, COLORES.carroTanque, 5);
+
+    // el tanque del agua, con su gota pintada
+    tintaRedonda(g, 12, h - 136, 100, 70, 30, COLORES.carroTanqueClaro, 6);
+    g.fillStyle(COLORES.carroCabina, 1);
+    g.fillCircle(62, h - 96, 15);
+    g.fillTriangle(62 - 11, h - 100, 62 + 11, h - 100, 62, h - 126);
+    g.lineStyle(3, TINTA, 1);
+    g.strokeCircle(62, h - 96, 15);
+
+    // cabina
+    tintaRedonda(g, 108, h - 128, 56, 62, 12, COLORES.carroCabina, 5);
+    tintaRedonda(g, 116, h - 120, 42, 30, 6, COLORES.carroCristal, 4);
+
+    // la manguera, por delante
+    tintaRedonda(g, 158, h - 62, 12, 10, 3, COLORES.carroRueda, 3);
+
+    // los ojos, detras del parabrisas
+    const ojoY = h - 106;
+    if (modo === 'florido') {
+      g.lineStyle(5, TINTA, 1);
+      [126, 148].forEach((x) => {
+        g.beginPath();
+        g.moveTo(x - 6, ojoY - 6);
+        g.lineTo(x + 6, ojoY + 6);
+        g.moveTo(x + 6, ojoY - 6);
+        g.lineTo(x - 6, ojoY + 6);
+        g.strokePath();
+      });
+    } else {
+      tintaCirculo(g, 126, ojoY, 10, 0xffffff, 3);
+      tintaCirculo(g, 148, ojoY, 10, 0xffffff, 3);
+      g.fillStyle(TINTA, 1);
+      const mira = modo === 'embiste' ? 4 : 1;
+      g.fillCircle(126 + mira, ojoY + 1, 5);
+      g.fillCircle(148 + mira, ojoY + 1, 5);
+      if (modo === 'embiste') {
+        g.lineStyle(4, TINTA, 1);
+        g.beginPath();
+        g.moveTo(118, ojoY - 13);
+        g.lineTo(134, ojoY - 6);
+        g.moveTo(140, ojoY - 6);
+        g.lineTo(156, ojoY - 13);
+        g.strokePath();
+      }
+    }
+
+    // embistiendo: humo por el tubo de escape
+    if (modo === 'embiste') {
+      g.fillStyle(COLORES.espuma, 0.85);
+      [[6, h - 58, 12], [-8, h - 70, 9], [-18, h - 60, 7]].forEach(([x, y, r]) =>
+        g.fillCircle(x, y, r),
+      );
+    }
+
+    // derrotado: cubierto de flores, como una silleta
+    if (modo === 'florido') {
+      const flores = [
+        [30, h - 146, 11, COLORES.florAmarilla], [52, h - 154, 13, COLORES.florRoja],
+        [76, h - 148, 11, COLORES.florBlanca], [98, h - 152, 12, COLORES.florAmarilla],
+        [40, h - 132, 10, COLORES.florRoja], [86, h - 134, 10, COLORES.florBlanca],
+      ];
+      flores.forEach(([x, y, r, color]) => {
+        tintaCirculo(g, x, y, r, COLORES.florHoja, 3);
+        tintaCirculo(g, x, y, r - 4, color, 2);
+      });
+    }
+
+    brillo(g, 34, h - 122, 8);
+  };
+
+  generar(escena, TEXTURAS.jefeCarrotanque, JEFE.ancho, JEFE.alto, carrotanque('normal'));
+  generar(escena, TEXTURAS.jefeCarrotanqueEmbiste, JEFE.ancho, JEFE.alto, carrotanque('embiste'));
+  generar(escena, TEXTURAS.jefeCarrotanqueFlorido, JEFE.ancho, JEFE.alto, carrotanque('florido'));
+
+  // El matero del balcon: barro, tierra y flores. Es lo unico que para al
+  // Carrotanque, asi que tiene que leerse de lejos.
+  generar(escena, TEXTURAS.matero, MATERO.ancho, MATERO.alto, (g) => {
+    const a = MATERO.ancho;
+    const h = MATERO.alto;
+
+    // flores asomando por arriba
+    [
+      [a * 0.26, h * 0.2, 10, COLORES.florRoja],
+      [a * 0.52, h * 0.13, 11, COLORES.florAmarilla],
+      [a * 0.78, h * 0.21, 10, COLORES.florBlanca],
+    ].forEach(([x, y, r, color]) => {
+      tintaCirculo(g, x, y, r, COLORES.florHoja, 3);
+      tintaCirculo(g, x, y, r - 4, color, 2);
+    });
+
+    // la maceta
+    tintaRedonda(g, a * 0.14, h * 0.42, a * 0.72, h * 0.5, 6, COLORES.materoBarro, 4);
+    tintaRedonda(g, a * 0.06, h * 0.34, a * 0.88, h * 0.16, 5, COLORES.materoBarroClaro, 4);
+    g.fillStyle(COLORES.materoTierra, 1);
+    g.fillRect(a * 0.14, h * 0.38, a * 0.72, 5);
+    brillo(g, a * 0.28, h * 0.56, 4);
+  });
+
+  // --- Miami: el Salvavidas --------------------------------------------------
+  //
+  // El socorrista de la playa, que no quiere ninos sucios en SU arena. Salta de
+  // torre en torre y tira flotadores; solo se le puede dar cuando baja.
+  const salvavidas = (modo) => (g) => {
+    const a = JEFE.ancho;
+    const h = JEFE.alto;
+    const cx = a / 2;
+    const resbala = modo === 'resbala';
+
+    // piernas
+    const piernaY = resbala ? h - 40 : h - 58;
+    tintaRedonda(g, cx - 34, piernaY, 26, resbala ? 34 : 54, 10, COLORES.salvavidasPiel, 5);
+    tintaRedonda(g, cx + 8, piernaY, 26, resbala ? 34 : 54, 10, COLORES.salvavidasPiel, 5);
+
+    // banador
+    tintaRedonda(g, cx - 38, piernaY - 26, 76, 34, 12, COLORES.salvavidasBanador, 5);
+
+    // torso
+    tintaRedonda(g, cx - 40, piernaY - 84, 80, 62, 20, COLORES.salvavidasCamiseta, 6);
+    // la cruz del socorrista
+    g.fillStyle(COLORES.salvavidasBanador, 1);
+    g.fillRect(cx - 7, piernaY - 74, 14, 38);
+    g.fillRect(cx - 19, piernaY - 62, 38, 14);
+
+    // brazos: uno levantado cuando tira
+    tintaRedonda(g, cx - 58, piernaY - 80, 20, 48, 9, COLORES.salvavidasPiel, 5);
+    if (modo === 'tira') {
+      tintaRedonda(g, cx + 38, piernaY - 116, 20, 52, 9, COLORES.salvavidasPiel, 5);
+    } else {
+      tintaRedonda(g, cx + 38, piernaY - 80, 20, 48, 9, COLORES.salvavidasPiel, 5);
+    }
+
+    // cabeza con gorra y gafas de sol
+    const cabezaY = piernaY - 104;
+    tintaCirculo(g, cx, cabezaY, 30, COLORES.salvavidasPiel, 6);
+    tintaRedonda(g, cx - 32, cabezaY - 30, 64, 20, 9, COLORES.salvavidasBanador, 5);
+    tintaRedonda(g, cx + 24, cabezaY - 16, 22, 10, 4, COLORES.salvavidasBanador, 4);
+    if (resbala) {
+      g.lineStyle(5, TINTA, 1);
+      [[cx - 12, cabezaY - 2], [cx + 12, cabezaY - 2]].forEach(([x, y]) => {
+        g.beginPath();
+        g.moveTo(x - 6, y - 6);
+        g.lineTo(x + 6, y + 6);
+        g.moveTo(x + 6, y - 6);
+        g.lineTo(x - 6, y + 6);
+        g.strokePath();
+      });
+      tintaCirculo(g, cx + 2, cabezaY + 18, 8, COLORES.espuma, 3);
+    } else {
+      tintaRedonda(g, cx - 24, cabezaY - 10, 48, 15, 6, COLORES.salvavidasGafas, 4);
+      g.fillStyle(0xffffff, 0.5);
+      g.fillRect(cx - 20, cabezaY - 7, 8, 4);
+      // boca: el silbato
+      tintaCirculo(g, cx + 4, cabezaY + 16, 7, COLORES.salvavidasGafas, 3);
+    }
+
+    brillo(g, cx - 16, cabezaY - 16, 6);
+  };
+
+  generar(escena, TEXTURAS.jefeSalvavidas, JEFE.ancho, JEFE.alto, salvavidas('normal'));
+  generar(escena, TEXTURAS.jefeSalvavidasTira, JEFE.ancho, JEFE.alto, salvavidas('tira'));
+  generar(escena, TEXTURAS.jefeSalvavidasResbala, JEFE.ancho, JEFE.alto, salvavidas('resbala'));
+
+  // Su torre de vigia, en art deco de Miami. Es decorado: no se sube nadie.
+  generar(escena, TEXTURAS.torreVigia, TORRE.ancho, TORRE.alto, (g) => {
+    const a = TORRE.ancho;
+    const h = TORRE.alto;
+    // patas
+    tintaRedonda(g, 10, h * 0.42, 12, h * 0.58, 4, COLORES.torreMadera, 4);
+    tintaRedonda(g, a - 22, h * 0.42, 12, h * 0.58, 4, COLORES.torreMadera, 4);
+    // caseta
+    tintaRedonda(g, 4, h * 0.2, a - 8, h * 0.28, 8, COLORES.torreMadera, 5);
+    // techo, con las franjas art deco
+    tintaRedonda(g, 0, h * 0.06, a, h * 0.16, 6, COLORES.torreTecho, 5);
+    g.fillStyle(COLORES.salvavidasCamiseta, 1);
+    g.fillRect(6, h * 0.1, a - 12, 4);
+    brillo(g, 14, h * 0.24, 5);
+  });
+
+  // El flotador que tira, que rueda por el suelo.
+  generar(escena, TEXTURAS.flotador, FLOTADOR.ancho, FLOTADOR.alto, (g) => {
+    const r = FLOTADOR.ancho / 2;
+    tintaCirculo(g, r, r, r - 2, COLORES.flotadorAro, 4);
+    g.fillStyle(COLORES.flotadorAro2, 1);
+    g.slice(r, r, r - 3, 0, Math.PI / 2, false);
+    g.fillPath();
+    g.slice(r, r, r - 3, Math.PI, Math.PI * 1.5, false);
+    g.fillPath();
+    tintaCirculo(g, r, r, r * 0.38, COLORES.carroCristal, 4);
+    brillo(g, r * 0.6, r * 0.6, 4);
+  });
+
+  // --- Cartagena: el Capitan Tapon -------------------------------------------
+  //
+  // El ultimo guardian del bano, con su bañera de galeon y el tapon a la
+  // espalda. A el no se le pega: lo que se le hace es QUITARLE EL TAPON.
+  const capitan = (modo) => (g) => {
+    const a = JEFE.ancho;
+    const h = JEFE.alto;
+    const cx = a / 2;
+    const vencido = modo === 'sinTapon';
+
+    // botas
+    tintaRedonda(g, cx - 42, h - 30, 36, 26, 9, COLORES.capitanSombrero, 5);
+    tintaRedonda(g, cx + 8, h - 30, 36, 26, 9, COLORES.capitanSombrero, 5);
+
+    // el tapon, a la espalda (a su izquierda, que mira a la derecha)
+    if (!vencido) {
+      const taponX = cx - 62;
+      const taponY = h - 92;
+      g.lineStyle(5, COLORES.cadena, 1);
+      g.beginPath();
+      g.moveTo(taponX + 12, taponY - 18);
+      g.lineTo(cx - 30, taponY - 40);
+      g.strokePath();
+      tintaRedonda(g, taponX - 12, taponY - 14, 34, 40, 10, COLORES.taponCuerpo, 5);
+      tintaRedonda(g, taponX - 17, taponY - 22, 44, 14, 6, COLORES.taponBrillo, 4);
+      if (modo === 'espalda') brillo(g, taponX - 2, taponY - 4, 7);
+    }
+
+    // casaca
+    tintaRedonda(g, cx - 46, h - 114, 92, 88, 22, COLORES.capitanCasaca, 6);
+    g.fillStyle(COLORES.capitanCamisa, 1);
+    g.fillRect(cx - 12, h - 112, 24, 60);
+    g.fillStyle(COLORES.doradoViejo, 1);
+    g.fillRect(cx - 46, h - 68, 92, 12);
+    g.fillCircle(cx - 20, h - 62, 4);
+    g.fillCircle(cx + 20, h - 62, 4);
+
+    // cabeza
+    const cabezaY = h - 134;
+    tintaCirculo(g, cx, cabezaY, 28, COLORES.capitanPiel, 6);
+    // barba
+    g.fillStyle(COLORES.capitanCamisa, 1);
+    g.fillCircle(cx + 2, cabezaY + 18, 16);
+    g.lineStyle(3, TINTA, 1);
+    g.strokeCircle(cx + 2, cabezaY + 18, 16);
+    // sombrero de pico
+    tintaRedonda(g, cx - 40, cabezaY - 40, 80, 20, 9, COLORES.capitanSombrero, 5);
+    g.fillStyle(COLORES.capitanSombrero, 1);
+    g.fillTriangle(cx - 34, cabezaY - 30, cx + 34, cabezaY - 30, cx, cabezaY - 58);
+    g.lineStyle(4, TINTA, 1);
+    g.strokeTriangle(cx - 34, cabezaY - 30, cx + 34, cabezaY - 30, cx, cabezaY - 58);
+    tintaCirculo(g, cx, cabezaY - 40, 7, COLORES.capitanCamisa, 3);
+
+    // cara
+    if (vencido) {
+      g.lineStyle(5, TINTA, 1);
+      [[cx - 11, cabezaY - 2], [cx + 13, cabezaY - 2]].forEach(([x, y]) => {
+        g.beginPath();
+        g.moveTo(x - 6, y - 6);
+        g.lineTo(x + 6, y + 6);
+        g.moveTo(x + 6, y - 6);
+        g.lineTo(x - 6, y + 6);
+        g.strokePath();
+      });
+    } else if (modo === 'espalda') {
+      // de espaldas: se le ve la nuca y el tapon brillando
+      g.fillStyle(COLORES.capitanSombrero, 1);
+      g.fillCircle(cx, cabezaY + 2, 20);
+    } else {
+      // parche en un ojo y el otro bien abierto
+      tintaCirculo(g, cx + 13, cabezaY - 2, 10, 0xffffff, 3);
+      g.fillStyle(TINTA, 1);
+      g.fillCircle(cx + 16, cabezaY - 1, 5);
+      g.fillStyle(COLORES.capitanSombrero, 1);
+      g.fillCircle(cx - 11, cabezaY - 2, 10);
+      g.lineStyle(4, COLORES.capitanSombrero, 1);
+      g.beginPath();
+      g.moveTo(cx - 24, cabezaY - 14);
+      g.lineTo(cx + 22, cabezaY - 20);
+      g.strokePath();
+    }
+
+    // vencido: se le escapa el agua por donde estaba el tapon
+    if (vencido) {
+      g.fillStyle(COLORES.aguaJabon, 0.9);
+      [[cx - 58, h - 50, 14], [cx - 74, h - 34, 11], [cx - 44, h - 34, 9]].forEach(([x, y, r]) =>
+        g.fillCircle(x, y, r),
+      );
+    }
+
+    brillo(g, cx - 18, cabezaY - 14, 7);
+  };
+
+  generar(escena, TEXTURAS.jefeCapitan, JEFE.ancho, JEFE.alto, capitan('normal'));
+  generar(escena, TEXTURAS.jefeCapitanEspalda, JEFE.ancho, JEFE.alto, capitan('espalda'));
+  generar(escena, TEXTURAS.jefeCapitanSinTapon, JEFE.ancho, JEFE.alto, capitan('sinTapon'));
+
+  // La bala de espuma que dispara el Capitan.
+  generar(escena, TEXTURAS.balaEspuma, BALA.ancho, BALA.alto, (g) => {
+    tintaCirculo(g, BALA.ancho * 0.36, BALA.alto * 0.5, BALA.alto * 0.42, COLORES.espuma, 4);
+    tintaCirculo(g, BALA.ancho * 0.7, BALA.alto * 0.42, BALA.alto * 0.3, COLORES.espuma, 4);
+    g.fillStyle(COLORES.aguaJabon, 0.8);
+    g.fillCircle(BALA.ancho * 0.3, BALA.alto * 0.58, BALA.alto * 0.16);
+    brillo(g, BALA.ancho * 0.26, BALA.alto * 0.34, 4);
+  });
 
   generar(escena, TEXTURAS.jefe, JEFE.ancho, JEFE.alto, jefe(COLORES.jefe));
   generar(escena, TEXTURAS.jefeEnfadado, JEFE.ancho, JEFE.alto, jefe(0xb583cc));

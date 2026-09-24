@@ -198,10 +198,57 @@ export const CHORRO = {
   duracionMs: 3200,
 };
 
+// El matero del balcon, en la arena del Carrotanque. Cuelga a la altura justa:
+// por encima de la cabeza del nino de pie, pero al alcance de un salto, para que
+// valgan las tres formas de darle (la katana, un bloque o un cabezazo).
+export const MATERO = {
+  ancho: 58,
+  alto: 66,
+  caja: { ancho: 48, alto: 54 },
+  altura: 118,           // lo que cuelga por encima del suelo, a su centro
+  separacionMinima: 128, // para que quepan varios sin taparse
+  cuantos: 5,
+  minimo: 3,
+  margen: 40,            // lo mas cerca del borde de la arena que se planta uno
+  recambioMs: 3600,      // lo que tarda en volver a salir uno roto
+  gravedad: 1500,
+};
+
+// La torre de vigia de Miami. Es decorado: el Salvavidas salta de una a otra,
+// pero nadie se sube a ellas.
+export const TORRE = {
+  ancho: 86,
+  alto: 132,
+  cuantas: 3,
+  margen: 90,
+};
+
+// El flotador que tira el Salvavidas: rueda por el suelo y hay que saltarlo.
+export const FLOTADOR = {
+  ancho: 46,
+  alto: 46,
+  caja: { ancho: 38, alto: 38 },
+  velocidad: 190,
+  duracionMs: 5200,
+};
+
+// La bala de espuma del Capitan Tapon.
+export const BALA = {
+  ancho: 46,
+  alto: 34,
+  caja: { ancho: 34, alto: 24 },
+  velocidad: 220,
+  duracionMs: 3600,
+  salidaY: -8,
+};
+
 export const JEFE = {
   // Hasta donde considera que el nino ya esta en su arena. Mientras no llegue,
   // el jefe espera sin atacar.
   alcanceArena: 380,
+  // Lo que se deja fuera por la izquierda al mirar si el nino esta en la arena:
+  // el porche del checkpoint. Llegar a la bandera no despierta al jefe.
+  margenDeArena: 170,
   // Durante la pelea caen corazones de vez en cuando: pelear con un jefe no
   // puede costar la partida.
   corazonMinMs: 5200,

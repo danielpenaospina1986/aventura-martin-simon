@@ -60,19 +60,19 @@ export const JEFES = {
     derrota: '—¡Me varé… y con flores encima!',
   },
   atlanta: {
-    nombre: 'la Gran Ducha',
-    saludo: '—Nadie sale seco de aquí.',
-    derrota: '—¡Me tapé con mi propio jabón!',
-  },
-  miami: {
-    nombre: 'el Salvavidas',
-    saludo: '—¡Al agua, patos!',
-    derrota: '—¡Me resbalé con mi bloqueador!',
-  },
-  cartagena: {
     nombre: 'Doña Zully',
     saludo: '—Hasta aquí llegaron, mis amores. ¡A la tina!',
     derrota: '—Está bien, está bien… váyanse.',
+  },
+  miami: {
+    nombre: 'el Salvavidas',
+    saludo: '—¡Al agua, patos! Aquí nadie entra sucio.',
+    derrota: '—¡Me resbalé con mi propio bloqueador!',
+  },
+  cartagena: {
+    nombre: 'el Capitán Tapón',
+    saludo: '—¡Al abordaje, grumetes! Aquí se baña hasta el loro.',
+    derrota: '—¡Me quitaron el tapón! ¡Se me va el agua!',
   },
 };
 

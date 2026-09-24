@@ -244,7 +244,7 @@ tablero ya esta montado.
 Lo comun esta en `entidades/JefeBase.js` (vidas con su barra de puntitos,
 parpadeo tras cada golpe, el aviso antes de atacar) y **como se le gana** lo
 pone cada uno, en `entidades/jefes/`. Quien guarda que ciudad se decide en
-`entidades/jefes/index.js`; las que aun no tienen el suyo se quedan con el
+`entidades/jefes/index.js`. Las cinco tienen ya el suyo; queda como respaldo el
 **provisional**, el bicho morado de siempre.
 
 Reglas para los cinco:
@@ -277,6 +277,25 @@ katana o con un bloque. Fuera de ella el golpe rebota con un ¡clonc! y no cuent
 Con el tercer golpe queda **mareado** y ya no vuelve a andar: da tumbos en el
 sitio esperando el remate, que lo manda flotando al espacio.
 
+#### 2. Medellin: el Carrotanque
+
+El camion del agua que sube a repartir bano a domicilio. Ronda su arena, avisa,
+y **embiste** de lado a lado; al chocar se queda resoplando unos segundos, que
+es la unica pausa que da. **Aguanta cuatro materos.**
+
+**A el no se le pega**: los golpes rebotan con un ¡clonc!. Lo que lo para son
+los **materos** de los balcones, que cuelgan por encima de la cabeza del nino.
+Se les da desde abajo —con la katana, con un bloque o con un cabezazo en pleno
+salto, las tres valen— y caen rectos, con una **sombra** en el suelo que avisa
+donde. Si uno le cae encima, abollon.
+
+Cuelgan a la altura justa (`MATERO.altura`): por encima del nino de pie, pero al
+alcance de un salto. Por eso la pelea no pide habilidad ninguna. Cuando uno se
+rompe **sale otro en su sitio** a los pocos segundos: quedarse sin materos seria
+quedarse sin pelea.
+
+Al cuarto se vara, cubierto de flores, como una silleta.
+
 #### 3. Atlanta: Dona Zully
 
 La mama, con su gorro de bano, su cepillo y su manguera. **Aguanta cuatro
@@ -300,6 +319,39 @@ Samaon y para Martain.
 Sus dibujos son de verdad (`src/assets/jefes/zully/`), sacados de la hoja que
 paso Daniel: cuatro poses de cuerpo (quieta, la mirada, empapada y victoria) y
 cuatro de manguera.
+
+#### 4. Miami: el Salvavidas
+
+El socorrista que no piensa dejar entrar al mar a dos ninos sin banar. Se pasa
+la pelea subido a sus **torres de vigia**, tirando **flotadores** que ruedan por
+la arena y hay que saltar. **Aguanta ocho golpes.**
+
+Arriba no se le llega. Cada dos flotadores **baja** a dar la charla, y ahi vale
+cualquier golpe: pisarlo, la katana o un bloque. Los golpes **no le cortan la
+bajada**: mientras esta abajo se le puede dar varias veces, con el parpadeo de
+por medio. Cortandola al primero, aguantar ocho salia a mas de un minuto.
+
+Es la pelea mas larga de las cinco, y por eso es en la que mas corazones caen.
+Al octavo se resbala con su propio bloqueador.
+
+Las torres son **decorado**: nadie se sube a ellas, pero marcan por donde va a
+saltar, que es lo que hace la pelea legible. Al subirse se pone **claramente**
+mas alto que en el suelo: mide 172 px y, con poca diferencia, "esta arriba, no
+le llego" y "ha bajado, dale" se veian igual.
+
+#### 5. Cartagena: el Capitan Tapon
+
+El ultimo guardian, y el mas terco: un capitan de banera con su casaca, su
+sombrero de pico y, colgado a la espalda con su cadena, un **tapon** enorme.
+Todo el agua de la partida esta ahi dentro. **Aguanta cinco tirones.**
+
+Marcha por su arena y dispara **balas de espuma**; cuando se le acaban, se da la
+vuelta a **recargar** y ahi se le ve el tapon. Un golpe al tapon en ese momento
+—pisandolo, con la katana o con un bloque— y se le sale un poco. El tiron no le
+corta la recarga, asi que en una ventana caben dos.
+
+Es el final y tiene su gracia: al jefe final de un juego que se llama "La gran
+fuga del bano" se le gana **quitandole el tapon**.
 
 ## 5. Sensacion de movimiento
 
@@ -1016,3 +1068,26 @@ baja.
   tamano y a distinto paso, para que se lea como dos chivas a distinta
   distancia y no como la misma calcada. El gato baja al **65%** (de 190 a 124):
   a 190 se comia a las baneras cuando se cruzaban.
+- **2026-09-24** — Entran los **tres jefes que faltaban**, y con ellos las cinco
+  ciudades quedan con el suyo: el **Carrotanque** de Medellin (embiste, y lo
+  paran los materos de los balcones), el **Salvavidas** de Miami (salta de torre
+  en torre y solo se le da cuando baja) y el **Capitan Tapon** de Cartagena, el
+  final (se le gana quitandole el tapon mientras recarga). Doña Zully pasa a ser
+  la de Atlanta tambien en los textos del cuento, que se habian quedado atras.
+- **2026-09-24** — "Estar en la arena del jefe" deja de medirse **por distancia
+  al jefe** y pasa a medirse por **los bordes de su arena**
+  (`bordesDeLaArena`). Los que se mueven se alejaban ellos solos del nino, se
+  quedaban "sin nadie cerca" y dejaban de pelear en mitad del combate: al
+  Salvavidas le pasaba cada vez que saltaba a la torre del extremo, y se comia
+  el 76% de la pelea plantado. Ademas, el jefe **ya no se sale de su arena**: el
+  suelo sigue hacia atras por el porche del checkpoint, y metiendose ahi se
+  llevaba la pelea fuera de su propia pantalla.
+- **2026-09-24** — Los golpes **no cortan la ventana** del Salvavidas ni la del
+  Capitan: mientras esta abierta se puede dar dos o tres veces, con el parpadeo
+  de por medio. Cortandola al primer golpe, ocho vidas salian a mas de un minuto
+  de pelea y cinco tapones a casi otro tanto. Asi las tres peleas nuevas caen
+  entre 10 y 25 segundos, que es lo que ya duraban las dos que habia.
+- **2026-09-24** — Un jefe con arte propio (Zully) cabe en su dibujo, pero los
+  que se dibujan por codigo miden **172 px**, media pantalla. Al Salvavidas hubo
+  que separarle bien el sitio de la torre del sitio del suelo: con 26 px de
+  diferencia, "esta arriba y no le llego" y "ha bajado, dale" se veian igual.

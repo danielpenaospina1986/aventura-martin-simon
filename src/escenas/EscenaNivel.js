@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, CAMARA, CHORRO, ENEMIGO, JEFE, JUGADOR, LANZAMIENTO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VIDA } from '../config/ajustes.js';
+import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -82,14 +82,28 @@ export class EscenaNivel extends Phaser.Scene {
     this.enemigos = this.nivel.enemigos;
     this.jefe = this.nivel.jefe;
 
-    // La arena de Dona Zully. Se crean aqui, antes de que el jefe prepare lo
-    // suyo: si se creasen mas abajo, al plantar las sombrillas el grupo todavia
-    // no existiria.
+    // Los trastos de las arenas de los jefes. Se crean aqui, antes de que el
+    // jefe prepare lo suyo: si se creasen mas abajo, al plantar las sombrillas
+    // o los materos el grupo todavia no existiria.
     this.chorros = this.physics.add.group({ allowGravity: false });
     this.sombrillas = this.physics.add.staticGroup();
+    // los materos de los balcones de Medellin: cuelgan quietos hasta que les dan
+    this.materos = this.physics.add.group({ allowGravity: false });
+    // los flotadores que rueda el Salvavidas de Miami
+    this.flotadores = this.physics.add.group();
+    // las balas de espuma del Capitan Tapon
+    this.balas = this.physics.add.group({ allowGravity: false });
+    // las torres de vigia son decorado, sin fisica ninguna
+    this.torres = [];
 
-    // El jefe ya puede mirar su arena: el tablero esta montado.
-    if (this.jefe && this.jefe.prepararArena) this.jefe.prepararArena();
+    // El jefe ya puede mirar su arena: el tablero esta montado. Primero se le
+    // dicen sus bordes, que es contra lo que mira si el nino ha llegado: por
+    // distancia AL JEFE, los que se mueven se alejaban ellos solos y se
+    // quedaban plantados en mitad de la pelea.
+    if (this.jefe) {
+      this.jefe.arena = this.bordesDeLaArena(this.jefe);
+      if (this.jefe.prepararArena) this.jefe.prepararArena();
+    }
     this.terminado = false;
 
     // bloques que Samaon lanza por los aires
@@ -231,6 +245,54 @@ export class EscenaNivel extends Phaser.Scene {
         this.romperChorro(chorro);
       });
     }
+
+    // Los materos del Carrotanque. Un cabezazo en pleno salto los tira: hay que
+    // ir subiendo, no basta con rozarlos al caer.
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.materos, (a, b) => {
+        const matero = this.materos.contains(a) ? a : b;
+        if (jugador.body.velocity.y >= 0) return;
+        this.tirarMatero(matero, jugador.x);
+      });
+    });
+    this.physics.add.overlap(this.proyectiles, this.materos, (a, b) => {
+      // Aqui no se pueden usar todavia los ayudantes de mas abajo: se declaran
+      // despues. Y el orden de los dos objetos no se puede dar por hecho.
+      const proyectil = this.proyectiles.contains(a) ? a : b;
+      this.tirarMatero(proyectil === a ? b : a, proyectil.x);
+      this.romperProyectil(proyectil);
+    });
+    this.physics.add.collider(this.materos, solidos, (a, b) => {
+      this.romperMatero(this.materos.contains(a) ? a : b);
+    });
+    if (this.jefe) {
+      this.physics.add.overlap(this.materos, this.jefe, (a, b) => {
+        const matero = this.materos.contains(a) ? a : b;
+        if (!matero.cayendo || !this.jefe || !this.jefe.recibirMatero) return;
+        if (this.jefe.recibirMatero(matero.x)) this.anotarGolpeAlJefe();
+        this.romperMatero(matero);
+      });
+    }
+
+    // Los flotadores del Salvavidas ruedan por el suelo y hay que saltarlos.
+    this.physics.add.collider(this.flotadores, solidos);
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.flotadores, (a, b) => {
+        if (jugador.estaCongelado) return;
+        const flotador = this.flotadores.contains(a) ? a : b;
+        this.romperFlotador(flotador);
+        this.herirJugador(jugador);
+      });
+    });
+
+    // Las balas de espuma del Capitan.
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.balas, (a, b) => {
+        if (jugador.estaCongelado) return;
+        this.romperBala(this.balas.contains(a) ? a : b);
+        this.herirJugador(jugador);
+      });
+    });
     this.jugadores.forEach((jugador) => {
       this.physics.add.overlap(jugador, this.regalos, (a, b) => {
         this.recogerRegalo(jugador, this.regalos.contains(a) ? a : b);
@@ -771,6 +833,191 @@ export class EscenaNivel extends Phaser.Scene {
     if (!chorro || !chorro.active) return;
     burbujas(this, chorro.x, chorro.y, 5);
     chorro.destroy();
+  }
+
+  // --- la arena del Carrotanque ---------------------------------------------
+
+  // Los materos de los balcones. Cuelgan por encima de la cabeza del nino de
+  // pie, pero al alcance de un salto: asi valen las tres formas de tirarlos (la
+  // katana, un bloque o un cabezazo), que es lo que hace que los dos ninos
+  // puedan con el. Se reparten por el ancho de la arena para que siempre haya
+  // uno cerca de donde el camion se para a resoplar.
+  // Donde empieza y donde acaba la arena del jefe. Se saca del terreno, no de
+  // numeros fijos, para que cada ciudad reparta lo suyo por el sitio que hay de
+  // verdad.
+  //
+  // El PORCHE del checkpoint no cuenta como arena: ni se planta nada ahi ni el
+  // jefe se mete. Metiendose, se llevaba la pelea fuera de su pantalla y ademas
+  // dejaba de considerar que el nino estuviera con el.
+  bordesDeLaArena(jefe) {
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    const bordeDe = (paso) => {
+      let x = jefe.x;
+      while (Math.abs(x - jefe.x) < 700 && this.haySoporteEn(x + paso, suelo + 6)) x += paso;
+      return x;
+    };
+    return { izquierda: bordeDe(-16) + JEFE.margenDeArena, derecha: bordeDe(16) };
+  }
+
+  plantarMateros(jefe) {
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    const y = suelo - MATERO.altura;
+
+    const bordes = this.bordesDeLaArena(jefe);
+    const izquierda = bordes.izquierda + MATERO.margen;
+    const derecha = bordes.derecha - MATERO.margen;
+    const tramo = Math.max(MATERO.separacionMinima, derecha - izquierda);
+    const cuantos = Phaser.Math.Clamp(
+      Math.round(tramo / MATERO.separacionMinima) + 1,
+      MATERO.minimo,
+      MATERO.cuantos,
+    );
+
+    const plantados = [];
+    for (let i = 0; i < cuantos; i += 1) {
+      const parte = cuantos === 1 ? 0.5 : i / (cuantos - 1);
+      plantados.push(this.colgarMatero(izquierda + tramo * parte, y));
+    }
+    return plantados;
+  }
+
+  colgarMatero(x, y) {
+    const matero = this.materos.create(x, y, TEXTURAS.matero);
+    matero.setDisplaySize(MATERO.ancho, MATERO.alto).setDepth(7);
+    matero.body.setSize(MATERO.caja.ancho / matero.scaleX, MATERO.caja.alto / matero.scaleY, true);
+    matero.body.setAllowGravity(false);
+    matero.body.setVelocity(0, 0);
+    matero.cayendo = false;
+    matero.sitio = { x, y };
+    // se mece, para que se lea que cuelga y no que flota
+    matero.vaiven = this.tweens.add({
+      targets: matero,
+      angle: { from: -5, to: 5 },
+      duration: 1700,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    return matero;
+  }
+
+  // Le dan desde abajo y se viene abajo, recto. La sombra en el suelo dice
+  // donde va a caer, que es lo que deja calcular si le va a dar al camion.
+  tirarMatero(matero, desdeX) {
+    if (!matero || !matero.active || matero.cayendo) return;
+    matero.cayendo = true;
+    if (matero.vaiven) matero.vaiven.stop();
+    matero.setAngle(0);
+    matero.body.setAllowGravity(true);
+    matero.body.setGravityY(MATERO.gravedad - this.physics.world.gravity.y);
+    matero.body.setVelocity(0, 0);
+
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    matero.sombra = this.add
+      .ellipse(matero.x, suelo - 5, MATERO.ancho, 14, 0x000000, 0.35)
+      .setDepth(3);
+    textoFlotante(this, matero.x, matero.y - 26, '¡Ojo abajo!', COLORES.textoAcento, 900);
+    return desdeX;
+  }
+
+  romperMatero(matero) {
+    if (!matero || !matero.active) return;
+    const sitio = matero.sitio || { x: matero.x, y: matero.y };
+    if (matero.sombra) matero.sombra.destroy();
+    if (matero.vaiven) matero.vaiven.stop();
+    estrellitas(this, matero.x, matero.y, 8);
+    polvo(this, matero.x, matero.y + 10);
+    matero.destroy();
+
+    // sale otro en su sitio: quedarse sin materos seria quedarse sin pelea
+    this.time.delayedCall(MATERO.recambioMs, () => {
+      if (this.terminado || !this.jefe || !this.jefe.active || !this.materos) return;
+      const nuevo = this.colgarMatero(sitio.x, sitio.y);
+      if (this.jefe.materos) this.jefe.materos.push(nuevo);
+    });
+  }
+
+  // La katana no choca con nada: mira una zona. Esto es lo que le deja tirar un
+  // matero igual que tira a un bicho.
+  golpearColgantes(zona, desdeX) {
+    if (!this.materos) return;
+    this.materos
+      .getChildren()
+      .slice()
+      .forEach((matero) => {
+        if (!matero.active || matero.cayendo) return;
+        if (Phaser.Geom.Intersects.RectangleToRectangle(zona, matero.getBounds())) {
+          this.tirarMatero(matero, desdeX);
+        }
+      });
+  }
+
+  // --- la arena del Salvavidas ----------------------------------------------
+
+  // Sus torres de vigia. Son decorado: nadie se sube, pero marcan por donde va
+  // a saltar, que es lo que hace la pelea legible.
+  plantarTorres(jefe) {
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    const bordes = this.bordesDeLaArena(jefe);
+    const izquierda = bordes.izquierda + 20;
+    const derecha = bordes.derecha - TORRE.margen;
+    const tramo = Math.max(TORRE.margen, derecha - izquierda);
+
+    const sitios = [];
+    for (let i = 0; i < TORRE.cuantas; i += 1) {
+      const parte = TORRE.cuantas === 1 ? 0.5 : i / (TORRE.cuantas - 1);
+      const x = izquierda + tramo * parte;
+      const torre = this.add.image(x, suelo + 4, TEXTURAS.torreVigia);
+      torre.setOrigin(0.5, 1).setDisplaySize(TORRE.ancho, TORRE.alto).setDepth(4);
+      this.torres.push(torre);
+      // Donde se pone el cuando esta subido. Tiene que quedar CLARAMENTE mas
+      // alto que en el suelo: mide 172 px, asi que con 26 px de diferencia no
+      // se distinguia "esta arriba, no le llego" de "ha bajado, dale".
+      sitios.push({ x, y: suelo - TORRE.alto + 56 - jefe.config.alto / 2 });
+    }
+    return sitios;
+  }
+
+  // Un flotador que sale rodando por el suelo.
+  lanzarFlotador(jefe, direccion) {
+    const flotador = this.flotadores.create(jefe.x + direccion * 40, jefe.y, TEXTURAS.flotador);
+    flotador.setDisplaySize(FLOTADOR.ancho, FLOTADOR.alto).setDepth(8);
+    flotador.body.setSize(
+      FLOTADOR.caja.ancho / flotador.scaleX,
+      FLOTADOR.caja.alto / flotador.scaleY,
+      true,
+    );
+    flotador.body.setVelocityX(direccion * FLOTADOR.velocidad);
+    flotador.body.setBounce(0.2, 0.2);
+    this.time.delayedCall(FLOTADOR.duracionMs, () => flotador.active && this.romperFlotador(flotador));
+    return flotador;
+  }
+
+  romperFlotador(flotador) {
+    if (!flotador || !flotador.active) return;
+    burbujas(this, flotador.x, flotador.y, 5);
+    flotador.destroy();
+  }
+
+  // --- la arena del Capitan Tapon -------------------------------------------
+
+  // Una bala de espuma, recta y lenta: se la ve venir.
+  lanzarBala(jefe) {
+    const dir = jefe.direccion;
+    const bala = this.balas.create(jefe.x + dir * 60, jefe.y + BALA.salidaY, TEXTURAS.balaEspuma);
+    bala.setDisplaySize(BALA.ancho, BALA.alto).setDepth(8);
+    bala.setFlipX(dir < 0);
+    bala.body.setSize(BALA.caja.ancho / bala.scaleX, BALA.caja.alto / bala.scaleY, true);
+    bala.body.setAllowGravity(false);
+    bala.body.setVelocityX(dir * BALA.velocidad);
+    this.time.delayedCall(BALA.duracionMs, () => bala.active && this.romperBala(bala));
+    return bala;
+  }
+
+  romperBala(bala) {
+    if (!bala || !bala.active) return;
+    burbujas(this, bala.x, bala.y, 4);
+    bala.destroy();
   }
 
   // Lo que pasa cuando a un jefe le cuenta un golpe, venga de donde venga.

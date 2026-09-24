@@ -132,18 +132,36 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
   // ademas de raro (pelea solo), a Dona Zully le costo la vida, porque sus
   // chorros rebotaban en sus propias sombrillas y la empapaban a ella. Se
   // derrotaba sola en doce segundos, antes de que el nino llegara.
+  //
+  // No se mide por distancia AL JEFE, sino por el suelo de su arena: los que se
+  // mueven (el Carrotanque patrulla, el Salvavidas salta de torre en torre) se
+  // alejaban del nino ellos solos, se quedaban "sin nadie cerca" y dejaban de
+  // pelear en mitad del combate. Al Salvavidas le pasaba cada vez que saltaba a
+  // la torre del extremo.
+  //
+  // La escena le pasa los bordes antes de prepararArena. El margen por la
+  // izquierda deja fuera el porche del checkpoint: llegar hasta la bandera no
+  // despierta a nadie, entrar a la arena si.
   hayAlguienEnLaArena(alcance = JEFE.alcanceArena) {
     const nino = this.escena.jugadores && this.escena.jugadores[0];
     if (!nino || !nino.active) return false;
+    if (this.arena) return nino.x >= this.arena.izquierda && nino.x <= this.arena.derecha;
     return Math.abs(nino.x - this.x) <= alcance;
   }
 
-  // Da la vuelta al llegar a una pared o al borde de su arena.
+  // Da la vuelta al llegar a una pared, al borde de su arena o al canto del
+  // suelo. Los bordes de la arena mandan sobre el terreno: el suelo sigue hacia
+  // atras por el porche del checkpoint, y un jefe que se meta ahi se saca la
+  // pelea de su propia pantalla.
   patrullar(velocidad = this.config.velocidad) {
     const cuerpo = this.body;
+    const arena = this.arena;
     if (cuerpo.blocked.left) this.girar(1);
     else if (cuerpo.blocked.right) this.girar(-1);
-    else if (cuerpo.blocked.down) {
+    else if (arena && this.direccion < 0 && this.x <= arena.izquierda) this.girar(1);
+    else if (arena && this.direccion > 0 && this.x >= arena.derecha - cuerpo.halfWidth) {
+      this.girar(-1);
+    } else if (cuerpo.blocked.down) {
       const puntaX = this.x + this.direccion * (cuerpo.halfWidth + 8);
       if (!this.escena.haySoporteEn(puntaX, cuerpo.bottom + 4)) this.girar(-this.direccion);
     }

@@ -53,6 +53,10 @@ function katana(jugador, escena) {
       }
     });
 
+  // Lo que cuelgue en la arena de un jefe (los materos del Carrotanque) se
+  // lleva el golpe igual: es justo asi como se le gana.
+  if (escena.golpearColgantes) escena.golpearColgantes(zona, jugador.x);
+
   // el jefe tambien se lleva lo suyo
   if (escena.jefe && escena.jefe.active) {
     if (Phaser.Geom.Intersects.RectangleToRectangle(zona, escena.jefe.getBounds())) {
