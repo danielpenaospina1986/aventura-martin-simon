@@ -163,6 +163,76 @@ const PERSONAJES = [
       },
     ],
   },
+  // --- el decorado de fondo de Space Coast ---------------------------------
+  //
+  // Las tres laminas de Daniel para el plano de DETRAS de la costa espacial.
+  // Van con las medidas de esa capa, que son las que quedaron probadas: lienzo
+  // grande (para que no se vean dentadas a densidad 3), contorno a la mitad y
+  // salida en webp.
+  //
+  // Las dos primeras vienen sobre BLANCO. El blanco no tiene tono, asi que el
+  // detector no lo toma por "fondo liso de color": se le dice a mano que compare
+  // el color exacto. Y NO se les limpia por color el interior (`limpiarBolsas`):
+  // las casas tienen marcos, columnas y barandas blancas, y se las comeria.
+  {
+    nombre: 'casa-florida',
+    colorExacto: true,
+    tolerancia: 45,
+    lienzo: { ancho: 880, alto: 500 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'casa-florida',
+        porPieza: true,
+        nombres: ['casa-florida'],
+        zonas: [{ x: 38, y: 12, ancho: 1348, alto: 742 }],
+      },
+    ],
+  },
+  {
+    nombre: 'jeep',
+    colorExacto: true,
+    tolerancia: 45,
+    lienzo: { ancho: 700, alto: 520 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'jeep',
+        porPieza: true,
+        nombres: ['jeep'],
+        zonas: [{ x: 286, y: 76, ancho: 876, alto: 652 }],
+      },
+    ],
+  },
+  {
+    // Este viene sobre el damero gris de siempre, asi que se deja al detector
+    // por defecto: con "color exacto" solo se iria uno de los dos grises y el
+    // otro se quedaria pegado.
+    nombre: 'letrero',
+    limpiarBolsas: true,
+    lienzo: { ancho: 700, alto: 520 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    origen: 'src/assets/objetos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'letrero',
+        porPieza: true,
+        nombres: ['letrero'],
+        zonas: [{ x: 208, y: 28, ancho: 974, alto: 708 }],
+      },
+    ],
+  },
   {
     // El mismo guayacan, pero para el plano de DETRAS: mismo dibujo con el
     // contorno a la mitad. Los adornos del fondo con la linea de delante se
@@ -890,9 +960,43 @@ async function recortarPose(pagina, opciones) {
         // solo lo piden los dibujos que vienen sobre un turquesa que no aparece
         // en ninguna parte del dibujo.
         if (limpiarBolsas) {
-          for (let idx = 0; idx < ancho * alto; idx += 1) {
-            const i = idx * 4;
-            if (p[i + 3] !== 0 && esFondo(i)) p[i + 3] = 0;
+          // Se buscan las BOLSAS: manchas de pixeles con pinta de fondo que han
+          // quedado encerradas. No vale borrar por color a secas toda la lamina
+          // (un dibujo puede tener puntos del color del fondo aqui y alla), ni
+          // vale mirar manchas de pixeles opacos, porque la bolsa y el dibujo se
+          // tocan y salen como una sola.
+          //
+          // Y se pide un tamano minimo: asi se va el damero que quedaba entre
+          // los postes de un letrero y se quedan los brillitos blancos de un
+          // dibujo, que son cuatro pixeles.
+          const cuantos = ancho * alto;
+          const mirado = new Uint8Array(cuantos);
+          const minimo = Math.max(120, Math.round(cuantos * 0.0002));
+          for (let inicio = 0; inicio < cuantos; inicio += 1) {
+            if (mirado[inicio] || p[inicio * 4 + 3] === 0 || !esFondo(inicio * 4)) continue;
+            const bolsa = [];
+            const pendientes = [inicio];
+            mirado[inicio] = 1;
+            while (pendientes.length) {
+              const idx = pendientes.pop();
+              bolsa.push(idx);
+              const x = idx % ancho;
+              const vecinos = [idx + 1, idx - 1, idx + ancho, idx - ancho];
+              for (let k = 0; k < 4; k += 1) {
+                const v = vecinos[k];
+                if (v < 0 || v >= cuantos || mirado[v]) continue;
+                if (k === 0 && x === ancho - 1) continue;
+                if (k === 1 && x === 0) continue;
+                if (p[v * 4 + 3] === 0 || !esFondo(v * 4)) continue;
+                mirado[v] = 1;
+                pendientes.push(v);
+              }
+            }
+            if (bolsa.length >= minimo) {
+              bolsa.forEach((idx) => {
+                p[idx * 4 + 3] = 0;
+              });
+            }
           }
         }
 

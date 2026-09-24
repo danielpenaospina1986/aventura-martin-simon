@@ -52,6 +52,16 @@ const DECORADO_DE_PUEBLO = [
   { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 216, cada: 1460, desfase: 1120, detras: true },
 ];
 
+// Y el de Space Coast, que ya tiene el suyo: la casa de Florida con su
+// cocodrilo en el jardin, el jeep de los surfistas (que va dos veces, a
+// distinto tamano, como la chiva) y el letrero del muelle.
+const DECORADO_DE_COCOA = [
+  { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 184, cada: 1240, desfase: 760, detras: true },
+  { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600, detras: true },
+  { textura: TEXTURAS.frenteLetrero, desde: 'abajo', alto: 163, cada: 1180, desfase: 340, detras: true },
+  { textura: TEXTURAS.frenteCasaFlorida, desde: 'abajo', alto: 206, cada: 1460, desfase: 1120, detras: true },
+];
+
 export const CIUDADES = {
   // Costa espacial: arena de playa y hormigon de plataforma de lanzamiento.
   'space-coast': {
@@ -62,7 +72,8 @@ export const CIUDADES = {
       { textura: TEXTURAS.frentePalmera, desde: 'abajo', alto: 152, cada: 820, desfase: 340 },
       { textura: TEXTURAS.frenteAlien, desde: 'abajo', alto: 112, cada: 1180, desfase: 900 },
       { textura: TEXTURAS.frenteAstronauta, desde: 'arriba', alto: 104, cada: 1020, desfase: 520 },
-      ...DECORADO_DE_PUEBLO,
+      // y por detras, el pueblo: la casa, el jeep y el letrero del muelle
+      ...DECORADO_DE_COCOA,
     ],
     pavimento: { patron: 'arena', claro: 0xe6d2a6, medio: 0xd2b98a, oscuro: 0xb09763 },
     subsuelo: { patron: 'estratos', claro: 0xb49b70, medio: 0x9c8460, oscuro: 0x7d6848 },

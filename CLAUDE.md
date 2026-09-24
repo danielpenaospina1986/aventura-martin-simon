@@ -630,11 +630,13 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   va llorando porque Martain le mocho la cola. Las tres que faltan siguen con
   los adornos provisionales (ramas, farol, matorral), que es lo que pone
   `montarPrimerPlano` cuando una ciudad no trae ninguno propio de delante.
-- **El decorado del pueblo** (`DECORADO_DE_PUEBLO`, en `ciudades.js`) es lo que
-  va DETRAS: la chiva camino del estadio, dos guayacanes grandes y una casa de
-  pueblo con su bandera. Lo llevan **las cinco ciudades**: Medellin lo tiene
-  dibujado y las otras cuatro lo usan de prestado hasta que llegue el suyo, que
-  es lo que se ha hecho siempre aqui con lo que falta.
+- **El decorado del pueblo** es lo que va DETRAS. Cada ciudad tiene su lista en
+  `ciudades.js`: Space Coast, `DECORADO_DE_COCOA` (la casa de Florida con su
+  cocodrilo, el jeep de los surfistas y el letrero del muelle); Medellin,
+  `DECORADO_DE_PUEBLO` (la chiva camino del estadio, dos guayacanes grandes y
+  una casa de pueblo con su bandera). Atlanta, Miami y Cartagena **usan el de
+  Medellin de prestado** hasta que llegue el suyo, que es lo que se ha hecho
+  siempre aqui con lo que falta.
 
   Sus medidas (lienzos de 480-660 px, contorno a la mitad, opaco, apoyado en la
   linea del suelo) **estan probadas y valen de patron** para lo que venga: un
@@ -1193,3 +1195,17 @@ baja.
   sujetarla dentro de la pantalla (para que no se saliera por la derecha con el
   jefe en el borde de su arena): al sujetarla, quedaba visible siempre. Ahora se
   esconde si el jefe no esta en cuadro.
+- **2026-09-24** — Space Coast estrena **su propio decorado de fondo**: la casa
+  de Florida con el cocodrilo en el jardin, el jeep de los surfistas y el
+  letrero del muelle. Se prepararon con las medidas que quedaron de patron para
+  esa capa. Dos de las laminas venian sobre **blanco**: el blanco no tiene tono,
+  asi que el detector no lo toma por "fondo liso de color" y hay que decirle a
+  mano que compare el color exacto. La tercera venia sobre el damero de siempre
+  y esa, al reves, NO puede ir por color exacto: solo se iria uno de los dos
+  grises.
+- **2026-09-24** — `limpiarBolsas` deja de barrer la lamina entera por color y
+  pasa a buscar **manchas de fondo encerradas**, con un tamano minimo. Barrer
+  por color a secas se comia los brillos blancos de un dibujo sobre fondo
+  blanco; mirar manchas de pixeles opacos no sirve, porque la bolsa y el dibujo
+  se tocan y salen como una sola. Asi se fue el damero que quedaba entre los
+  postes del letrero sin tocar sus letras.

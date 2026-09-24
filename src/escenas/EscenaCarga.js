@@ -33,6 +33,9 @@ import frenteGuayacan from '../assets/frente/guayacan.webp';
 import frenteGuayacanFondo from '../assets/frente/guayacan-fondo.webp';
 import frenteGato from '../assets/frente/gato.webp';
 import frenteCasa from '../assets/frente/casa.webp';
+import frenteCasaFlorida from '../assets/frente/casa-florida.webp';
+import frenteJeep from '../assets/frente/jeep.webp';
+import frenteLetrero from '../assets/frente/letrero.webp';
 import portadaMenu from '../assets/portada-menu.jpg';
 import fondoSpaceCoast from '../assets/fondos/space-coast.jpg';
 import fondoMedellin from '../assets/fondos/medellin.jpg';
@@ -114,6 +117,9 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.frenteGuayacanFondo, frenteGuayacanFondo);
     this.load.image(TEXTURAS.frenteGato, frenteGato);
     this.load.image(TEXTURAS.frenteCasa, frenteCasa);
+    this.load.image(TEXTURAS.frenteCasaFlorida, frenteCasaFlorida);
+    this.load.image(TEXTURAS.frenteJeep, frenteJeep);
+    this.load.image(TEXTURAS.frenteLetrero, frenteLetrero);
     this.load.image(TEXTURAS.portadaMenu, portadaMenu);
     Object.entries(FONDOS_CIUDAD).forEach(([ciudad, url]) => {
       this.load.image(TEXTURAS.fondoDe(ciudad), url);

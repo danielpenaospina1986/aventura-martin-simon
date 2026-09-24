@@ -249,6 +249,9 @@ export const TEXTURAS = {
   frenteGuayacan: 'tex-frente-guayacan',
   frenteGuayacanFondo: 'tex-frente-guayacan-fondo',
   frenteCasa: 'tex-frente-casa',
+  frenteCasaFlorida: 'tex-frente-casa-florida',
+  frenteJeep: 'tex-frente-jeep',
+  frenteLetrero: 'tex-frente-letrero',
   frenteGato: 'tex-frente-gato',
 
   frenteRama: 'tex-frente-rama',
