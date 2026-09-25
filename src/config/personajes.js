@@ -69,7 +69,10 @@ export const PERSONAJES = {
     msPorPaso: 95, // lo que dura cada pose del ciclo de carrera
     margenPie: 3,   // aire que queda bajo los pies dentro del lienzo
     moneda: TEXTURAS.sushi,
-    nombreMoneda: 'bloques',
+    // Los dos recogen lo mismo desde que se volvio atras lo de un premio por
+    // personaje. Aqui se habia quedado el nombre viejo, y el marcador de Samaon
+    // decia "bloques recogidos" mientras el dibujo era un sushi.
+    nombreMoneda: 'sushis',
     ancho: 86,
     alto: 86,
     color: 0xef7d1e,        // naranja (solo para el dibujo de respaldo)

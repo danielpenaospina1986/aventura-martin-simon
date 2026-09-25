@@ -596,7 +596,23 @@ falta para que cada punto caiga en un pixel de verdad, y ni uno mas. En una
 ventana de 1280 x 720 sale 2; a pantalla completa en 1920 x 1080, 3. Se puede
 forzar desde la barra de direcciones con `?densidad=1`.
 
-Dos cosas que hay que tener en cuenta al tocar codigo:
+Tres cosas que hay que tener en cuenta al tocar codigo:
+
+- **El texto tambien se rasteriza, y por defecto a 1x.** Phaser dibuja cada
+  texto en su propia textura al tamano que se le pide, y luego la camara la
+  amplia: a densidad 3, una letra de 16 px se pintaba en 16 y se estiraba a 48,
+  de ahi que los textos y los carteles se vieran pixelados al lado de las
+  ilustraciones. En `main.js` se le pide a TODOS que se dibujen a
+  `RENDER.densidad`; en pantalla ocupan lo mismo, pero la textura sale D veces
+  mayor.
+
+  Ojo con el como: se parchea el **prototipo** de la fabrica de Phaser, no con
+  `register`. En Phaser 4, registrar un nombre que ya existe no lo reemplaza, y
+  el envoltorio se quedaba sin llamar. Hay una prueba que lo vigila, y se abre a
+  densidad 3 a proposito: a 1 no probaria nada.
+
+  Las **cajas de dialogo** (`panelDeco`) no tenian este problema: son Graphics,
+  se dibujan como vectores a la resolucion final.
 
 - **Las texturas que se dibujan por codigo se generan a esa densidad.** Quien
   use una y llame a `setDisplaySize` no tiene que hacer nada; quien no, tiene
@@ -1251,3 +1267,18 @@ baja.
   azul y, ademas, van por dentro de la casa, donde el relleno de los bordes no
   entra. Lo que NO se puede usar aqui es `limpiarBolsas`: con el blanco de fondo
   se llevaria por delante las columnas y los marcos, que son casi blancos.
+- **2026-09-25** — **Los textos dejan de verse pixelados.** Phaser los rasteriza
+  a 1x y la camara los amplia, asi que a densidad 3 se estiraban tres veces
+  mientras las ilustraciones iban nitidas. Ahora todos se dibujan a
+  `RENDER.densidad`. Habia un intento anterior con `register`, pero en Phaser 4
+  registrar un nombre que ya existe **no lo reemplaza**: el envoltorio nunca se
+  llamaba. Se parchea el prototipo de la fabrica.
+- **2026-09-25** — La pantalla de **victoria se le salia el texto del panel**.
+  Venian tres cosas apiladas en el mismo sitio: el "Total", el mensaje del
+  marcador y el aviso de que el puntaje quedo apuntado, que se habia anadido
+  como un letrero suelto encima. Ahora el aviso va DENTRO del mensaje, en una
+  sola linea, y el bloque entero sube para que el menu no pise el panel: con
+  tres opciones la primera caia justo encima del borde.
+- **2026-09-25** — El marcador de Samaon decia **"bloques recogidos"** con un
+  sushi dibujado al lado. Era el nombre viejo, de cuando cada nino tenia su
+  premio; se volvio atras hace tiempo y esto se quedo sin cambiar.

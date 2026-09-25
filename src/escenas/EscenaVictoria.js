@@ -51,7 +51,7 @@ export class EscenaVictoria extends Phaser.Scene {
     pintarFondoDeMenu(this, ancho, alto);
 
     this.add
-      .text(ancho / 2, 38, this.hayOtroNivel ? '¡Nivel superado!' : '¡Lo lograste!', {
+      .text(ancho / 2, 34, this.hayOtroNivel ? '¡Nivel superado!' : '¡Lo lograste!', {
         fontFamily: FUENTE.familia,
         fontSize: '34px',
         color: COLORES.textoAcento,
@@ -65,7 +65,7 @@ export class EscenaVictoria extends Phaser.Scene {
       : `${datos.nombre} se ha pasado los ${TOTAL_NIVELES} niveles`;
 
     this.add
-      .text(ancho / 2, 68, subtitulo, {
+      .text(ancho / 2, 62, subtitulo, {
         fontFamily: FUENTE.familia,
         fontSize: '15px',
         color: COLORES.textoClaro,
@@ -78,7 +78,7 @@ export class EscenaVictoria extends Phaser.Scene {
     // si el personaje tiene pose de celebracion, se usa esa; si no, su carita
     const celebra = datos.poses && datos.poses.victoria;
     const figura = this.add
-      .image(100, 205, celebra || datos.cara)
+      .image(100, 196, celebra || datos.cara)
       .setDisplaySize(celebra ? 130 : 100, celebra ? 130 : 100);
     this.tweens.add({
       targets: figura,
@@ -91,10 +91,10 @@ export class EscenaVictoria extends Phaser.Scene {
     this.time.addEvent({
       delay: 620,
       loop: true,
-      callback: () => estrellitas(this, 100, 180, 7),
+      callback: () => estrellitas(this, 100, 172, 7),
     });
 
-    this.pintarMarcador(ancho / 2 + 62, 198);
+    this.pintarMarcador(ancho / 2 + 62, 172);
 
     // Pasarse los cinco tableros TAMBIEN cuenta para el tablero de mejores.
     // Antes solo se apuntaba la partida de quien se quedaba sin vidas, asi que
@@ -104,15 +104,6 @@ export class EscenaVictoria extends Phaser.Scene {
         personaje: datos.nombre,
         nivel: TOTAL_NIVELES,
       });
-      this.add
-        .text(ancho / 2, 276, 'Tu puntaje quedó en el tablero de mejores', {
-          fontFamily: FUENTE.familia,
-          fontSize: '13px',
-          color: COLORES.textoAcento,
-          stroke: '#1b1410',
-          strokeThickness: 4,
-        })
-        .setOrigin(0.5);
     }
 
     // Lo que se arrastra al siguiente nivel: la partida es de los cinco.
@@ -142,10 +133,14 @@ export class EscenaVictoria extends Phaser.Scene {
     });
     opciones.push({ etiqueta: 'Cambiar personaje', alElegir: () => this.scene.start('seleccion') });
 
+    // Debajo del marcador, que acaba en 274. Con tres opciones la ultima cae en
+    // 342, y el borde de la pantalla esta en 360: por eso la separacion baja a
+    // 25. Antes el menu empezaba en 296 y la primera opcion se montaba encima
+    // del panel.
     new Menu(this, opciones, {
       x: ancho / 2,
-      y: this.hayOtroNivel ? 296 : 302,
-      separacion: 27,
+      y: 292,
+      separacion: 25,
       tamano: 16,
     });
   }
@@ -232,7 +227,7 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(1, 0.5);
 
     this.add
-      .text(cx, cy + 88, this.mensaje(), {
+      .text(cx, cy + 84, this.mensaje(), {
         fontFamily: FUENTE.familia,
         fontSize: '10px',
         color: COLORES.textoSuave,
@@ -242,7 +237,12 @@ export class EscenaVictoria extends Phaser.Scene {
   }
 
   mensaje() {
-    if (!this.hayOtroNivel) return '¡Te has pasado el juego entero!';
+    // Al acabarse el juego, esta linea cuenta ademas que el puntaje quedo
+    // apuntado. Iba en un letrero aparte y se montaba encima del total; en dos
+    // lineas se salia del panel por abajo, asi que va en una sola.
+    if (!this.hayOtroNivel) {
+      return '¡Te pasaste el juego entero! Tu puntaje quedó en el tablero.';
+    }
     if (this.golpes === 0) return '¡Sin un solo golpe! Eso tiene mucho mérito.';
     if (this.recogidas >= this.total) return '¡No se te ha escapado ni uno!';
     const otro = this.personajeId === 'martin' ? PERSONAJES.simon : PERSONAJES.martin;

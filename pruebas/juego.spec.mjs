@@ -1595,3 +1595,88 @@ test('al salir una vaca sale su cartel de aviso', async ({ page }) => {
   expect(resultado.cartel).toBe(true);
   expect(resultado.texto).toBe('¡CUIDADO CON LA BERRIONDA VACA!');
 });
+
+test('los textos se dibujan a la densidad del render, no a 1x', async ({ page }) => {
+  // Esta se abre a densidad 3 a proposito: a 1 no probaria nada, porque
+  // "resolucion 1" seria lo correcto y lo roto a la vez. Aqui no se juega, solo
+  // se miran propiedades, asi que el navegador lento no estorba.
+  await page.goto('/?densidad=3');
+  await page.waitForFunction(() => window.juego && window.juego.isRunning, null, {
+    timeout: 20000,
+  });
+  await esperarEscena(page, 'titulo');
+
+  const resultado = await page.evaluate(async () => {
+    const { RENDER } = await import('/src/config/ajustes.js');
+    const escena = window.juego.scene.getScene('titulo');
+
+    const t = escena.add.text(0, 0, 'prueba', { fontSize: '16px' });
+    const fuente = t.texture.source[0];
+    const info = {
+      densidad: RENDER.densidad,
+      resolucion: t.style.resolution,
+      // la textura sale D veces mas grande que lo que ocupa en pantalla
+      vecesMasGrande: Math.round(fuente.width / t.displayWidth),
+      // y los que ya estan puestos en la pantalla, igual
+      losDeLaPantalla: [
+        ...new Set(
+          escena.children.list.filter((o) => o.type === 'Text').map((o) => o.style.resolution),
+        ),
+      ],
+    };
+    t.destroy();
+    return info;
+  });
+
+  expect(resultado.densidad).toBe(3);
+  expect(resultado.resolucion).toBe(3);
+  // la textura sale tres veces mas grande que lo que ocupa en pantalla: eso es
+  // lo que hace que la camara, con su zoom, no tenga que estirarla
+  expect(resultado.vecesMasGrande).toBe(3);
+  resultado.losDeLaPantalla.forEach((r) => expect(r).toBe(3));
+});
+
+test('el marcador de victoria cabe en su panel y no pisa el menu', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const mirar = async (datos) => {
+      window.juego.scene.stop('nivel');
+      window.juego.scene.stop('victoria');
+      window.juego.scene.start('victoria', datos);
+      await new Promise((r) => setTimeout(r, 800));
+      const e = window.juego.scene.getScene('victoria');
+      const textos = e.children.list.filter((o) => o.type === 'Text' && o.text);
+      const abajo = Math.max(...textos.map((o) => o.y + o.displayHeight / 2));
+      // el panel del marcador: se pinta centrado en 172 y mide 204 de alto
+      const panelAbajo = 172 + 204 / 2;
+      const mensaje = textos.find((o) => o.text.startsWith('¡') && o.style.fontSize === '10px');
+      return {
+        abajo: Math.round(abajo),
+        mensajeAbajo: mensaje ? Math.round(mensaje.y + mensaje.displayHeight / 2) : null,
+        panelAbajo,
+      };
+    };
+
+    return {
+      final: await mirar({
+        personajeId: 'martin', monedas: 128, indiceNivel: TOTAL_NIVELES - 1,
+        recogidas: 140, golpes: 7, jefesDerrotados: 5, enemigosVencidos: 12,
+      }),
+      media: await mirar({
+        personajeId: 'simon', monedas: 40, indiceNivel: 1, nombreNivel: 'Medellín',
+        recogidas: 44, golpes: 2, jefesDerrotados: 1, enemigosVencidos: 3,
+      }),
+    };
+  });
+
+  [resultado.final, resultado.media].forEach((pantalla) => {
+    // nada se sale de la pantalla por abajo
+    expect(pantalla.abajo).toBeLessThan(358);
+    // y la linea del mensaje se queda dentro del panel
+    if (pantalla.mensajeAbajo !== null) {
+      expect(pantalla.mensajeAbajo).toBeLessThan(pantalla.panelAbajo);
+    }
+  });
+});

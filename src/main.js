@@ -16,14 +16,20 @@ import { EscenaVictoria } from './escenas/EscenaVictoria.js';
 import { EscenaFinal } from './escenas/EscenaFinal.js';
 
 // Los textos se rasterizan al tamano que se les pide y luego la camara los
-// amplia, asi que con zoom saldrian borrosos. Se les sube la resolucion a la
-// misma densidad, de una vez y para todos, envolviendo la fabrica de Phaser.
+// amplia, asi que con zoom saldrian pixelados: a densidad 3, una letra de 16 px
+// se dibuja en una textura de 16 y se estira a 48. Se les pide a todos que se
+// dibujen a la densidad del render; en pantalla ocupan lo mismo, pero nitidos.
+//
+// Se parchea el PROTOTIPO de la fabrica y no con `register`: en Phaser 4,
+// registrar un nombre que ya existe no lo reemplaza, asi que el envoltorio se
+// quedaba sin llamar y los textos seguian saliendo a 1x.
 const fabricaDeTexto = Phaser.GameObjects.GameObjectFactory.prototype.text;
-Phaser.GameObjects.GameObjectFactory.register('text', function (x, y, contenido, estilo) {
-  const texto = fabricaDeTexto.call(this, x, y, contenido, estilo);
-  if (texto.setResolution) texto.setResolution(RENDER.densidad);
-  return texto;
-});
+Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, contenido, estilo) {
+  return fabricaDeTexto.call(this, x, y, contenido, {
+    resolution: RENDER.densidad,
+    ...(estilo || {}),
+  });
+};
 
 const configuracion = {
   type: Phaser.AUTO,
