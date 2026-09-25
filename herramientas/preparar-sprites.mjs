@@ -222,6 +222,12 @@ const PERSONAJES = [
     nombre: 'casa-florida',
     colorExacto: true,
     tolerancia: 45,
+    // La lamina trae el CIELO pintado dentro, en un ovalo detras de la casa.
+    // En el juego va delante de la ilustracion de la ciudad, asi que ese cielo
+    // sobra: se declara como fondo tambien. Las ventanas no corren peligro,
+    // estan a mas de 170 de ese azul (y ademas van por dentro de la casa, donde
+    // el relleno de los bordes no entra).
+    fondosExtra: [{ color: [146, 216, 242], tolerancia: 115 }],
     lienzo: { ancho: 880, alto: 500 },
     contornoRelativo: 0.5,
     salida: 'webp',
@@ -479,7 +485,7 @@ await pagina.evaluate(() => {
   // el dibujo tiene partes del MISMO color que el fondo (las hojas verdes de
   // una palmera sobre una lamina verde): por tono se las come, y por color solo
   // se va el verde plano del fondo, que es uniforme.
-  window.detectorDeFondo = (p, ancho, alto, tolerancia, colorExacto) => {
+  window.detectorDeFondo = (p, ancho, alto, tolerancia, colorExacto, fondosExtra) => {
     const en = (x, y) => {
       const i = (y * ancho + x) * 4;
       return [p[i], p[i + 1], p[i + 2]];
@@ -488,10 +494,28 @@ await pagina.evaluate(() => {
     if (colorExacto) {
       const [r0, g0, b0] = en(2, 2);
       const margen = tolerancia || 42;
+
+      // Ademas del color del borde, una hoja puede declarar OTROS colores que
+      // tambien son fondo, cada uno con su tolerancia. Hace falta cuando el
+      // dibujo trae parte del decorado pintado dentro: la casita de Florida
+      // viene con su propio cielo, y en el juego, delante de la ilustracion de
+      // la ciudad, ese cielo no pinta nada.
+      const fondos = [{ color: [r0, g0, b0], margen }].concat(
+        (fondosExtra || []).map((f) => ({
+          color: f.color,
+          margen: f.tolerancia === undefined ? margen : f.tolerancia,
+        })),
+      );
       const cerca = (i, extra) =>
-        Math.abs(p[i] - r0) + Math.abs(p[i + 1] - g0) + Math.abs(p[i + 2] - b0) <
-        margen + extra;
-      window.__modoFondo = `color exacto (${r0},${g0},${b0})`;
+        fondos.some(
+          (f) =>
+            Math.abs(p[i] - f.color[0]) +
+              Math.abs(p[i + 1] - f.color[1]) +
+              Math.abs(p[i + 2] - f.color[2]) <
+            f.margen + extra,
+        );
+      window.__modoFondo = `color exacto (${r0},${g0},${b0})` +
+        (fondos.length > 1 ? ` + ${fondos.length - 1} mas` : '');
       return {
         esFondo: (i) => cerca(i, 0),
         esResiduo: (i) => cerca(i, margen * 0.7),
@@ -645,8 +669,15 @@ for (const personaje of aTrabajar) {
           personaje.tolerancia,
           hoja.separacion,
           personaje.colorExacto,
+          personaje.fondosExtra,
         )
-        : await buscarPoses(pagina, datos, personaje.tolerancia);
+        : await buscarPoses(
+          pagina,
+          datos,
+          personaje.tolerancia,
+          personaje.colorExacto,
+          personaje.fondosExtra,
+        );
     console.log(`  ${hoja.archivo}: encontradas ${zonas.length} poses`);
     for (let i = 0; i < zonas.length && i < hoja.nombres.length; i += 1) {
       trabajos.push({
@@ -684,6 +715,7 @@ for (const personaje of aTrabajar) {
       lienzoAncho: lienzo.ancho,
       lienzoAlto: lienzo.alto,
       colorExacto: personaje.colorExacto || false,
+      fondosExtra: personaje.fondosExtra,
       limpiarBolsas: personaje.limpiarBolsas || false,
       bolsaMinima: bolsaMinimaDeEste,
     });
@@ -734,6 +766,7 @@ for (const personaje of aTrabajar) {
       contorno: contornoDeEste,
       tinta: TINTA,
       colorExacto: personaje.colorExacto || false,
+      fondosExtra: personaje.fondosExtra,
       limpiarBolsas: personaje.limpiarBolsas || false,
       bolsaMinima: bolsaMinimaDeEste,
       soloElCuerpo: trabajo.soloElCuerpo || false,
@@ -762,8 +795,8 @@ await navegador.close();
 // Busca los dibujos sueltos dentro de una hoja. Quita el fondo, mira que filas
 // y que columnas tienen algo, y de ahi saca los rectangulos. Descarta lo que sea
 // demasiado bajo para ser un personaje: son las etiquetas escritas debajo.
-async function buscarPoses(pagina, origen, tolerancia, colorExacto = false) {
-  return pagina.evaluate(async ({ origen, tolerancia, colorExacto }) => {
+async function buscarPoses(pagina, origen, tolerancia, colorExacto = false, fondosExtra = null) {
+  return pagina.evaluate(async ({ origen, tolerancia, colorExacto, fondosExtra }) => {
     const imagen = new Image();
     imagen.src = origen;
     await imagen.decode();
@@ -778,7 +811,7 @@ async function buscarPoses(pagina, origen, tolerancia, colorExacto = false) {
 
     const datos = ctx.getImageData(0, 0, ancho, alto);
     const p = datos.data;
-    const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
+    const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto, fondosExtra);
 
     const hay = new Uint8Array(ancho * alto);
     for (let i = 0; i < ancho * alto; i += 1) hay[i] = esFondo(i * 4) ? 0 : 1;
@@ -824,7 +857,7 @@ async function buscarPoses(pagina, origen, tolerancia, colorExacto = false) {
       }
     }
     return zonas;
-  }, { origen, tolerancia, colorExacto });
+  }, { origen, tolerancia, colorExacto, fondosExtra });
 }
 
 // Busca los dibujos de una hoja por MANCHAS, no por filas y columnas.
@@ -834,9 +867,9 @@ async function buscarPoses(pagina, origen, tolerancia, colorExacto = false) {
 // que rellenan los huecos entre uno y otro. Aqui se buscan las manchas de
 // tinta, se juntan las que estan cerca (una estrellita pertenece a su paloma) y
 // cada grupo resultante es un dibujo.
-async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34, colorExacto = false) {
+async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34, colorExacto = false, fondosExtra = null) {
   return pagina.evaluate(
-    async ({ origen, tolerancia, separacion, colorExacto }) => {
+    async ({ origen, tolerancia, separacion, colorExacto, fondosExtra }) => {
       const imagen = new Image();
       imagen.src = origen;
       await imagen.decode();
@@ -850,7 +883,7 @@ async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34, col
       ctx.drawImage(imagen, 0, 0);
 
       const p = ctx.getImageData(0, 0, ancho, alto).data;
-      const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
+      const { esFondo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto, fondosExtra);
 
       // 1. las manchas, por vecindad de 4
       const visto = new Uint8Array(ancho * alto);
@@ -934,7 +967,7 @@ async function buscarPorManchas(pagina, origen, tolerancia, separacion = 34, col
         alto: g.y2 - g.y1 + 1,
       }));
     },
-    { origen, tolerancia, separacion, colorExacto },
+    { origen, tolerancia, separacion, colorExacto, fondosExtra },
   );
 }
 
@@ -957,6 +990,7 @@ async function recortarPose(pagina, opciones) {
         contorno,
         tinta,
         colorExacto,
+        fondosExtra,
         limpiarBolsas,
         bolsaMinima,
         soloElCuerpo,
@@ -990,7 +1024,7 @@ async function recortarPose(pagina, opciones) {
         const datos = ctx.getImageData(0, 0, ancho, alto);
         const p = datos.data;
         const visto = new Uint8Array(ancho * alto);
-        const { esFondo, esResiduo, esBolsa } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
+        const { esFondo, esResiduo, esBolsa } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto, fondosExtra);
 
         const pila = [];
         for (let x = 0; x < ancho; x += 1) pila.push([x, 0], [x, alto - 1]);

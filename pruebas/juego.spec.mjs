@@ -1403,7 +1403,10 @@ test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ pag
     j.body.setVelocity(0, 0);
 
     const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
-    const vaca = new Vaca(n, j.x + 260, suelo - VACA.alto / 2, -1);
+    // Bien lejos a proposito: baja la cabeza a 240 px, asi que soltandola mas
+    // cerca trotaba dos suspiros y no daba tiempo a que cambiara de paso, que
+    // es justo lo que se quiere comprobar.
+    const vaca = new Vaca(n, j.x + 460, suelo - VACA.alto / 2, -1);
     n.vacas.add(vaca);
 
     // primero trota (y anima el paso); al tener al nino delante baja la cabeza,

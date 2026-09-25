@@ -1243,3 +1243,11 @@ baja.
   de color saturado; en damero y en fondo por tono, `esBolsa` es `esFondo`, que
   si no se comeria las gaviotas blancas de un letrero. El tamano minimo de una
   bolsa tambien se puede bajar por hoja (`bolsaMinima`).
+- **2026-09-25** — La casita de Florida venia con **su propio cielo pintado**
+  dentro, en un ovalo detras de la casa, y en el juego se veia como un parche
+  azul delante de la ilustracion de la ciudad. El recorte gana `fondosExtra`:
+  una hoja puede declarar OTROS colores que tambien son fondo, cada uno con su
+  tolerancia. Las ventanas no corrieron peligro porque estan a mas de 170 de ese
+  azul y, ademas, van por dentro de la casa, donde el relleno de los bordes no
+  entra. Lo que NO se puede usar aqui es `limpiarBolsas`: con el blanco de fondo
+  se llevaria por delante las columnas y los marcos, que son casi blancos.
