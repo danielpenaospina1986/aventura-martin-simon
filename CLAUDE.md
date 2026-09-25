@@ -68,7 +68,7 @@ aventura-martin-simon/
       EscenaVictoria.js
       EscenaPausa.js
       EscenaNombre.js   quien juega: se teclea el nombre de la sesion
-      EscenaRelato.js   las vinetas del cuento
+      EscenaRelato.js   la resena de cada ciudad
       EscenaFinal.js    fin de partida y tablero de mejores puntajes
     entidades/
       Jugador.js        movimiento, habilidades, estados
@@ -151,15 +151,19 @@ empapados son ellos.
 
 ### Como se cuenta
 
-Todos los textos estan en `src/config/historia.js`; quien los pinta es
-`EscenaRelato` (paneles `panelDeco`, se pasan con **Enter** o clic) y quien
-decide cuando salen es `sistemas/cuento.js`. **Esc se salta el cuento entero**,
-no vineta a vineta: quien ya se lo sabe, a jugar.
+**No hay hilo de historia.** Lo anterior es el mundo en el que pasa el juego, no
+un cuento que se narre: no hay vinetas de apertura ni de despedida. Lo unico que
+se cuenta es:
 
-- **Intro** de cuatro vinetas al empezar partida nueva.
-- **Tarjeta** de ciudad antes de cada tablero, con su recuerdo.
+- Una **resena** de cada ciudad, antes de su tablero, con su recuerdo. Es lo que
+  mas adelante llevara la **ilustracion de entrada** de cada mundo.
 - **Cada jefe** dice una frase al empezar la pelea y otra al perder.
-- **Final** despues de Cartagena: se salvaron del bano... por hoy.
+
+Los textos estan en `src/config/historia.js`; quien pinta la resena es
+`EscenaRelato` (panel `panelDeco`, se pasa con **Enter** o clic) y quien decide
+cuando sale es `sistemas/cuento.js`. `EscenaRelato` sigue aceptando varias
+vinetas aunque hoy le llegue una sola: es lo que la hacia servir tambien para la
+intro y el final.
 
 El juego habla el idioma del cuento: un golpe es **mojarse** (el nino chorrea y
 suelta burbujas), quedarse sin corazones es **"¡Te banaron!"** y el fin de
@@ -1291,3 +1295,13 @@ baja.
   en bajar la cabeza y arrancar: se quedaba en el filo y fallaba en cuanto el
   navegador iba lento. Se espera al **suceso**, no a un numero de vueltas, que
   es la regla que ya valia para el movimiento y para las palomas.
+- **2026-09-25** — **Fuera el hilo de historia.** Se quitan las cuatro vinetas
+  de apertura y las tres de despedida: el juego ya no narra un cuento, solo
+  presenta cada ciudad con su resena antes de su tablero, que es donde luego ira
+  su ilustracion de entrada. `empezarPartida` pasa a ser `empezarNivel` del
+  primero y `terminarPartida`, un paso directo al marcador. `EscenaRelato` se
+  queda como esta, aceptando varias vinetas aunque hoy le llegue una: es una
+  escena de paso y no cuesta nada. Los textos de `INTRO` y `FINAL` se borran de
+  `historia.js` (estan en el historial de git): dejar texto muerto en el sitio
+  que es la unica fuente de la verdad es justo lo que nos colo el "bloques
+  recogidos" de Samaon.

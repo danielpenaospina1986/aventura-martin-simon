@@ -1,26 +1,20 @@
 // ---------------------------------------------------------------------------
-// LA HISTORIA: "La gran fuga del bano"
+// LOS TEXTOS DEL JUEGO
 //
-// Todos los textos del cuento en un solo sitio, para poder cambiarles una coma
-// sin abrir una sola escena.
+// Todos en un solo sitio, para poder cambiarles una coma sin abrir una sola
+// escena.
 //
 // El tono es de travesura, nunca de miedo. Los jefes son guardianes del bano,
 // comicos, y cuando pierden los empapados son ellos. Ganar es terminar la
 // partida sin banarse.
 //
-// Las cinco ciudades no son decorado: son las ciudades de Martin y Simon, en el
-// orden en que las vivieron.
+// **No hay hilo de historia.** Se quitaron las vinetas de apertura y las de
+// despedida: lo unico que se cuenta es la resena de cada ciudad, que es lo que
+// mas adelante llevara su ilustracion de entrada. Las cinco no son decorado:
+// son las ciudades de Martin y Simon, en el orden en que las vivieron.
 // ---------------------------------------------------------------------------
 
-// Las cuatro vinetas del principio, al empezar partida nueva.
-export const INTRO = [
-  'Era jueves por la tarde y en la casa pasó lo peor que puede pasar:\nmamá abrió la llave de la bañera.',
-  '—¡Samaón! ¡Martaín! ¡A bañarse! —gritó desde el baño.\nEl agua ya echaba espuma.',
-  'Los dos se miraron. No hizo falta decir nada:\nsalieron por la puerta como dos cohetes.',
-  'Cinco ciudades por delante y una sola regla:\nllegar hasta el final SIN BAÑARSE.',
-];
-
-// La tarjeta que sale antes de cada tablero: la ciudad y por que importa.
+// La resena que sale antes de cada tablero: la ciudad y por que importa.
 export const CIUDADES = {
   'space-coast': {
     titulo: 'Space Coast',
@@ -76,13 +70,6 @@ export const JEFES = {
   },
 };
 
-// El final, despues de Cartagena.
-export const FINAL = [
-  'Cinco ciudades, cinco guardianes del baño\ny ni una gota encima.',
-  'Doña Zully los miró, se rió y bajó la manguera.\n—Váyanse… por hoy.',
-  'Samaón y Martaín salieron corriendo.\nMañana será otro día. Y mañana… habrá otro baño.',
-];
-
 // Lo que el juego dice cuando pasan cosas. Las reglas no cambian, solo como se
 // cuentan: un golpe es mojarse, quedarse sin corazones es que te banaron.
 export const AVISOS = {
@@ -105,4 +92,4 @@ export function jefeDelCuento(nombre) {
   return JEFES[nombre] || null;
 }
 
-export default { INTRO, CIUDADES, JEFES, FINAL, AVISOS };
+export default { CIUDADES, JEFES, AVISOS };

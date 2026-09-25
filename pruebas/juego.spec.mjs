@@ -906,7 +906,7 @@ test('el nombre del jugador se recorta a diez letras y se guarda', async ({ page
   expect(guardado).toBe('Samaonelme');
 });
 
-test('la partida nueva empieza contando el cuento', async ({ page }) => {
+test('la partida nueva entra derecho por la reseña de la primera ciudad', async ({ page }) => {
   await abrirJuego(page);
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'nombre');
@@ -915,24 +915,40 @@ test('la partida nueva empieza contando el cuento', async ({ page }) => {
   await esperarEscena(page, 'seleccion');
   await page.keyboard.press('Enter');
 
+  // Ya no hay vinetas de apertura: lo primero que se ve es Space Coast.
   await esperarEscena(page, 'relato');
-  const primera = await page.evaluate(() => window.juego.scene.getScene('relato').texto.text);
-  expect(primera).toContain('bañera');
-
-  // las cuatro vinetas de la intro y luego la tarjeta de la ciudad
-  for (let i = 0; i < 4; i += 1) {
-    await page.keyboard.press('Enter');
-    await page.waitForTimeout(320);
-  }
   const tarjeta = await page.evaluate(() => {
     const e = window.juego.scene.getScene('relato');
-    return { titulo: e.titulo, texto: e.texto.text };
+    return { titulo: e.titulo, texto: e.texto.text, cuantas: e.vinetas.length };
   });
   expect(tarjeta.titulo).toBe('Space Coast');
   expect(tarjeta.texto).toContain('nacieron');
+  expect(tarjeta.cuantas).toBe(1);
+
+  // y de ahi, con un Enter, a jugar
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nivel');
 });
 
-test('Esc se salta el cuento entero y deja jugando', async ({ page }) => {
+test('acabar la última ciudad lleva al marcador, sin despedida', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const escenas = await page.evaluate(async () => {
+    const mod = await import('/src/sistemas/cuento.js');
+    const n = window.juego.scene.getScene('nivel');
+    mod.terminarPartida(n, { personajeId: 'martin', monedas: 40, indiceNivel: 4 });
+    await new Promise((r) => setTimeout(r, 900));
+    return {
+      victoria: window.juego.scene.isActive('victoria'),
+      relato: window.juego.scene.isActive('relato'),
+    };
+  });
+
+  expect(escenas.victoria).toBe(true);
+  expect(escenas.relato).toBe(false);
+});
+
+test('Esc se salta la reseña y deja jugando', async ({ page }) => {
   await abrirJuego(page);
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'nombre');
@@ -943,7 +959,7 @@ test('Esc se salta el cuento entero y deja jugando', async ({ page }) => {
 
   await esperarEscena(page, 'relato');
   await page.keyboard.press('Escape');
-  await esperarEscena(page, 'nivel'); // de un solo Esc, sin pasar por la tarjeta
+  await esperarEscena(page, 'nivel');
 });
 
 test('cada ciudad entra con su tarjeta', async ({ page }) => {

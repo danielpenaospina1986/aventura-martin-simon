@@ -1,12 +1,13 @@
 // ---------------------------------------------------------------------------
-// EL RELATO
+// LA RESENA DE CIUDAD
 //
-// Las vinetas del cuento: la intro de la fuga, la tarjeta de cada ciudad y el
-// final. Se pasan con Enter o con un clic, y con Esc se saltan todas de una
-// (que los ninos se lo van a saber de memoria a la tercera partida).
+// La tarjeta que sale antes de cada tablero. Se pasa con Enter o con un clic, y
+// con Esc tambien, que a la tercera partida ya se la saben.
 //
-// Es una escena de paso: recibe las vinetas y a donde ir despues, las cuenta y
-// se aparta. Asi el cuento no se mete dentro del tablero ni de los menus.
+// Es una escena de paso: recibe lo que hay que contar y a donde ir despues, lo
+// cuenta y se aparta. Sigue aceptando varias vinetas aunque hoy le llegue una
+// sola, que es lo que la hacia servir tambien para la intro y el final: esos se
+// quitaron, porque el juego ya no lleva hilo de historia.
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
@@ -109,7 +110,10 @@ export class EscenaRelato extends Phaser.Scene {
     this.texto.setText(this.vinetas[this.indice]);
     this.texto.setAlpha(0);
     this.tweens.add({ targets: this.texto, alpha: 1, duration: 240 });
-    this.pie.setText(esUltima ? 'Enter para empezar      Esc saltar' : 'Enter para seguir      Esc saltar');
+    // Con una sola resena, Enter y Esc llevan al mismo sitio: anunciar "saltar"
+    // seria ofrecer algo que no existe.
+    if (this.vinetas.length === 1) this.pie.setText('Enter o clic para empezar');
+    else this.pie.setText(esUltima ? 'Enter para empezar      Esc saltar' : 'Enter para seguir      Esc saltar');
   }
 
   avanzar() {
