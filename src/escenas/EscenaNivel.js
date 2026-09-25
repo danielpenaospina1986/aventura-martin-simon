@@ -8,13 +8,13 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, TORO, TORRE, VIDA } from '../config/ajustes.js';
-import { COLORES, TEXTURAS } from '../config/estilo.js';
+import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
 import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
-import { aEscalaDeJuego, escalaDeJuego, pintarFondo } from '../sistemas/dibujo.js';
+import { aEscalaDeJuego, escalaDeJuego, panelDeco, pintarFondo } from '../sistemas/dibujo.js';
 import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
@@ -23,7 +23,7 @@ import { brilloMoneda, burbujas, estrellitas, polvo, textoFlotante } from '../si
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
 import { Paloma } from '../entidades/Paloma.js';
-import { Toro } from '../entidades/Toro.js';
+import { Vaca } from '../entidades/Vaca.js';
 
 const C = MUNDO.casilla;
 
@@ -112,12 +112,12 @@ export class EscenaNivel extends Phaser.Scene {
     // lo que sueltan los bichos: agua con jabon y lo de las palomas
     this.peligros = this.physics.add.group();
     this.palomas = this.physics.add.group({ allowGravity: false });
-    // los toros, que entran corriendo por un lado del cuadro
-    this.toros = this.physics.add.group();
+    // los vacas, que entran corriendo por un lado del cuadro
+    this.vacas = this.physics.add.group();
     // corazones y vidas que sueltan los bichos, esperando en el suelo
     this.regalos = this.physics.add.group({ allowGravity: true });
     this.proximaPaloma = this.esperaDePaloma();
-    this.proximoToro = this.esperaDeToro();
+    this.proximaVaca = this.esperaDeVaca();
 
     this.physics.world.setBounds(0, 0, this.nivel.ancho, this.nivel.alto + 400);
     // Alto de pantalla, no del mundo: el terreno llega mas abajo del borde a
@@ -225,13 +225,13 @@ export class EscenaNivel extends Phaser.Scene {
     this.physics.add.collider(this.palomas, solidos);
     this.physics.add.collider(this.regalos, solidos);
 
-    // El toro corre por el suelo y por las plataformas, y se le pisa igual que
+    // El vaca corre por el suelo y por las plataformas, y se le pisa igual que
     // a una banera. De frente, embiste.
-    this.physics.add.collider(this.toros, solidos);
-    this.physics.add.collider(this.toros, plataformas);
+    this.physics.add.collider(this.vacas, solidos);
+    this.physics.add.collider(this.vacas, plataformas);
     this.jugadores.forEach((jugador) => {
-      this.physics.add.overlap(jugador, this.toros, (a, b) => {
-        this.tocarToro(jugador, this.toros.contains(a) ? a : b);
+      this.physics.add.overlap(jugador, this.vacas, (a, b) => {
+        this.tocarVaca(jugador, this.vacas.contains(a) ? a : b);
       });
     });
 
@@ -346,9 +346,9 @@ export class EscenaNivel extends Phaser.Scene {
       this.eliminarEnemigo(elOtro(a, b, proyectil));
       this.romperProyectil(proyectil);
     });
-    this.physics.add.overlap(this.proyectiles, this.toros, (a, b) => {
+    this.physics.add.overlap(this.proyectiles, this.vacas, (a, b) => {
       const proyectil = cualEsElProyectil(a, b);
-      this.eliminarEnemigo(elOtro(a, b, proyectil));
+      this.derribarVaca(elOtro(a, b, proyectil));
       this.romperProyectil(proyectil);
     });
     if (this.jefe) {
@@ -392,7 +392,7 @@ export class EscenaNivel extends Phaser.Scene {
       if (paloma.active) paloma.actualizar(delta);
     });
     this.gestionarPalomas(delta);
-    this.gestionarToros(delta);
+    this.gestionarVacas(delta);
 
     this.peligros.getChildren().forEach((peligro) => {
       if (!peligro.active) return;
@@ -471,12 +471,12 @@ export class EscenaNivel extends Phaser.Scene {
       bicho.proximoAtaque = bicho.reloj + respiro;
     });
 
-    // Y se van los toros que vengan lanzados: reaparecer justo delante de una
+    // Y se van los vacas que vengan lanzados: reaparecer justo delante de una
     // embestida no es dificultad, es un callejon sin salida.
-    this.toros.getChildren().forEach((toro) => {
-      if (toro.active) toro.destroy();
+    this.vacas.getChildren().forEach((vaca) => {
+      if (vaca.active) vaca.destroy();
     });
-    this.proximoToro = Math.max(this.proximoToro, 3000);
+    this.proximaVaca = Math.max(this.proximaVaca, 3000);
   }
 
   herirJugador(jugador, opciones = {}) {
@@ -1207,61 +1207,126 @@ export class EscenaNivel extends Phaser.Scene {
     return Phaser.Math.Between(minimo, maximo);
   }
 
-  // --- los toros -------------------------------------------------------------
+  // --- las vacas -------------------------------------------------------------
 
-  esperaDeToro() {
-    const recorte = Math.max(0, 1 - this.indiceNivel * TORO.recortePorNivel);
-    const minimo = Math.max(TORO.esperaMinima, TORO.esperaMinMs * recorte);
-    const maximo = Math.max(minimo + 2000, TORO.esperaMaxMs * recorte);
+  esperaDeVaca() {
+    const recorte = Math.max(0, 1 - this.indiceNivel * VACA.recortePorNivel);
+    const minimo = Math.max(VACA.esperaMinima, VACA.esperaMinMs * recorte);
+    const maximo = Math.max(minimo + 2000, VACA.esperaMaxMs * recorte);
     return Phaser.Math.Between(minimo, maximo);
   }
 
-  gestionarToros(delta) {
-    this.toros.getChildren().forEach((toro) => {
-      if (!toro.active) return;
-      toro.actualizar(delta);
-      // fuera del mundo o caido a un hueco: se va
-      if (toro.y > this.nivel.alto + 80 || toro.x < -200 || toro.x > this.nivel.ancho + 200) {
-        toro.destroy();
+  gestionarVacas(delta) {
+    this.vacas.getChildren().forEach((vaca) => {
+      if (!vaca.active) return;
+      vaca.actualizar(delta);
+      // fuera del mundo o caida a un hueco: se va
+      if (vaca.y > this.nivel.alto + 80 || vaca.x < -200 || vaca.x > this.nivel.ancho + 200) {
+        vaca.destroy();
       }
     });
 
-    this.proximoToro -= delta;
-    if (this.proximoToro > 0) return;
-    this.proximoToro = this.esperaDeToro();
+    this.proximaVaca -= delta;
+    if (this.proximaVaca > 0) return;
+    // Si no se puede soltar ahora, se reintenta enseguida en vez de perder el
+    // turno entero: al principio y al final del tablero uno de los dos lados
+    // cae fuera del mundo, y esperando otra tanda las vacas salian la mitad de
+    // veces de lo que dicen sus tiempos.
+    this.proximaVaca = 900;
 
-    // En la arena del jefe no entra ninguno: bastante tiene el nino con el jefe.
+    // En la arena del jefe no entra ninguna: bastante tiene el nino con el jefe.
     if (this.jefe && this.jefe.active && this.jefe.hayAlguienEnLaArena()) return;
 
     const camara = this.cameras.main;
     const zoom = camara.zoom || 1;
     const izquierda = camara.scrollX + (camara.width * (1 - 1 / zoom)) / 2;
-    const porLaDerecha = Math.random() < 0.5;
-    const x = porLaDerecha ? izquierda + MUNDO.ancho + 80 : izquierda - 80;
-    if (x < 40 || x > this.nivel.ancho - 40) return;
-
-    // Solo entra si donde aparece hay suelo: si no, nace cayendose al vacio.
     const suelo = MUNDO.nivelSuelo * C;
-    if (!this.haySoporteEn(x, suelo + 6)) return;
 
-    const toro = new Toro(this, x, suelo - TORO.alto / 2, porLaDerecha ? -1 : 1);
-    this.toros.add(toro);
+    // Entra por fuera del cuadro, para que se la vea venir. Se prueban los dos
+    // lados: el que salga primero, y si no cabe, el otro.
+    const preferido = Math.random() < 0.5;
+    const lados = [preferido, !preferido];
+    const sitio = lados
+      .map((porLaDerecha) => ({
+        porLaDerecha,
+        x: porLaDerecha ? izquierda + MUNDO.ancho + 80 : izquierda - 80,
+      }))
+      .find(({ x }) => x > 40 && x < this.nivel.ancho - 40 && this.haySoporteEn(x, suelo + 6));
+    if (!sitio) return;
+
+    this.proximaVaca = this.esperaDeVaca();
+    const vaca = new Vaca(this, sitio.x, suelo - VACA.alto / 2, sitio.porLaDerecha ? -1 : 1);
+    this.vacas.add(vaca);
+    // el cartel sale con ella, no cuando ya la tienes encima
+    this.avisarDeLaVaca();
   }
 
-  tocarToro(jugador, toro) {
-    if (!toro || !toro.active || jugador.estaCongelado) return;
+  tocarVaca(jugador, vaca) {
+    if (!vaca || !vaca.active || vaca.derribada || jugador.estaCongelado) return;
 
     // mismo criterio generoso que con las baneras: si viene cayendo y sus pies
-    // estan en la mitad de arriba del bicho, lo aplasta
+    // estan en la mitad de arriba del bicho, la aplasta
     const cayendo = jugador.body.velocity.y > 30;
-    const porEncima = jugador.body.bottom <= toro.body.top + toro.body.height * 0.5;
+    const porEncima = jugador.body.bottom <= vaca.body.top + vaca.body.height * 0.5;
 
     if (cayendo && porEncima) {
-      this.eliminarEnemigo(toro);
+      this.derribarVaca(vaca);
       jugador.rebotar();
     } else {
       this.herirJugador(jugador);
     }
+  }
+
+  // La vaca no se esfuma de golpe como una banera: se cae patas arriba, con las
+  // X en los ojos y sus estrellitas, titila y desaparece dejando el premio
+  // donde cayo. Igual que la paloma derribada.
+  derribarVaca(vaca) {
+    if (!vaca || !vaca.active || !vaca.derribar()) return;
+
+    estrellitas(this, vaca.x, vaca.y, 8);
+    const jugador = this.jugadores[0];
+    jugador.enemigosVencidos += 1;
+
+    if (Math.random() < this.probabilidadCorazon) {
+      this.soltarRegalo(vaca.x, vaca.y - 20, 'corazon');
+      return;
+    }
+    jugador.monedas += PUNTOS.porEnemigo;
+    textoFlotante(this, vaca.x, vaca.y - 30, `+${PUNTOS.porEnemigo}`, COLORES.textoAcento);
+  }
+
+  // El cartel que sale cuando una vaca baja la cabeza. Va clavado en pantalla,
+  // no en el mundo: es un aviso, tiene que poderse leer aunque la vaca ya venga
+  // lanzada.
+  avisarDeLaVaca() {
+    if (this.cartelDeVaca) return; // ya hay uno puesto
+    const ancho = 400;
+    const y = 74;
+    const panel = panelDeco(this, MUNDO.ancho / 2, y, ancho, 40, { escalon: 10 });
+    const texto = this.add
+      .text(MUNDO.ancho / 2, y, AVISOS.vaca, {
+        fontFamily: FUENTE.familia,
+        fontSize: '15px',
+        color: COLORES.textoAcento,
+      })
+      .setOrigin(0.5);
+    panel.setDepth(40);
+    texto.setDepth(41);
+
+    this.cartelDeVaca = [panel, texto];
+    if (this.planos) this.planos.fijar(this.cartelDeVaca);
+
+    this.tweens.add({
+      targets: this.cartelDeVaca,
+      alpha: { from: 0, to: 1 },
+      duration: 160,
+      yoyo: true,
+      hold: VACA.cartelMs,
+      onComplete: () => {
+        this.cartelDeVaca.forEach((pieza) => pieza.destroy());
+        this.cartelDeVaca = null;
+      },
+    });
   }
 
   gestionarPalomas(delta) {

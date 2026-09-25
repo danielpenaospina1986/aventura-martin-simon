@@ -92,6 +92,9 @@ export const AVISOS = {
   finDePartidaPie: 'Te agarraron… hasta la próxima fuga.',
   metaAbierta: '¡La salida está libre!',
   checkpoint: '¡Escondite seguro!',
+  // La vaca que persiguió a Martín en la finca de los abuelos, y que por poco
+  // se lo lleva por delante. Ahora se la encuentran por todos los tableros.
+  vaca: '¡CUIDADO CON LA BERRIONDA VACA!',
 };
 
 export function ciudadDelCuento(nombre) {

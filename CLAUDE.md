@@ -234,24 +234,39 @@ De cada tres, mas o menos una baja a volar **a la altura del segundo piso**
 (`PALOMA.probabilidadMedia`), rozando las plataformas. Ahi ya no se la ve pasar
 por arriba: estorba, hay que saltarla o pisarla desde la plataforma.
 
-### El toro
+### La vaca berrionda
 
 El **bicho intermedio**: ni se pasea por una plataforma como una banera ni
 guarda una arena como un jefe. **Entra corriendo por un lado del cuadro**, al
 azar por la derecha o por la izquierda, cruza el tablero y, cuando tiene al nino
 delante, **baja la cabeza y embiste**.
 
-- Se le ve venir: antes de acelerar se planta un momento, agacha la cabeza, se
-  le pone el ojo rojo y echa vaho por el hocico.
-- **Se salta los huecos del suelo el solo.** Si no, en cuanto pillara el primero
-  se caeria al vacio y no llegaria a cruzarse con nadie.
-- Se le gana como a cualquier bicho: **pisandolo, con la katana o con un
-  bloque**, y da lo mismo que ellos. De frente no hay quien lo pare.
+> **De donde sale.** A Martin lo persiguio una vaca en la finca de los abuelos y
+> casi se lo lleva por delante. Por eso, cuando entra una, sale en pantalla el
+> cartel de **"¡CUIDADO CON LA BERRIONDA VACA!"** (`AVISOS.vaca`), en la caja
+> art deco de la casa y clavado en pantalla, no en el mundo: es un aviso, tiene
+> que poder leerse aunque la vaca ya venga lanzada.
+
+Es una **Holstein de manchas amarillas** con cara de pocos amigos, dibujada por
+Daniel. Seis poses (`src/assets/bichos/vaca/`): dos de trote, una de aviso, dos
+de galope y una tumbada.
+
+- Se le ve venir: antes de acelerar se planta un momento, agacha la cabeza y
+  resopla (esa es la pose de aviso).
+- **Se salta los huecos del suelo ella sola.** Si no, en cuanto pillara el
+  primero se caeria al vacio y no llegaria a cruzarse con nadie.
+- Se le gana como a cualquier bicho: **pisandola, con la katana o con un
+  bloque**, y da lo mismo que ellos. De frente no hay quien la pare.
+- Al derribarla **no se esfuma**: se cae patas arriba, con las X en los ojos y
+  sus estrellitas, titila y desaparece dejando el premio donde cayo, igual que
+  la paloma. Se le dejan la gravedad y el suelo para que se acueste donde toque:
+  quitandole el cuerpo se quedaba flotando si la pisaban en pleno salto sobre un
+  hueco.
 - No entra en la **arena del jefe**: bastante tiene el nino con el jefe.
-- Al volver al checkpoint **se van los toros que vengan lanzados**: reaparecer
+- Al volver al checkpoint **se van las vacas que vengan lanzadas**: reaparecer
   delante de una embestida no es dificultad, es un callejon sin salida.
 
-Vive en `entidades/Toro.js` y en su propio grupo (`escena.toros`), no en el de
+Vive en `entidades/Vaca.js` y en su propio grupo (`escena.vacas`), no en el de
 los bichos: asi lo que cuenta enemigos en pantalla sigue contando baneras.
 
 ### Los jefes
@@ -1209,3 +1224,22 @@ baja.
   blanco; mirar manchas de pixeles opacos no sirve, porque la bolsa y el dibujo
   se tocan y salen como una sola. Asi se fue el damero que quedaba entre los
   postes del letrero sin tocar sus letras.
+- **2026-09-25** — El toro pasa a ser **la vaca berrionda**, con dibujos de
+  verdad: una Holstein de manchas amarillas y mala cara, en seis poses (dos de
+  trote, una de aviso, dos de galope y una tumbada). Ya no se dibuja por codigo.
+  Y con ella sale el cartel de **"¡CUIDADO CON LA BERRIONDA VACA!"**, porque a
+  Martin lo persiguio una en la finca de los abuelos.
+- **2026-09-25** — Al derribarla **se le dejan la gravedad y el suelo**. Con el
+  cuerpo desactivado se quedaba flotando en el aire cuando la pisaban en pleno
+  salto sobre un hueco, que es justo cuando mas se salta.
+- **2026-09-25** — Si el lado por el que iba a entrar una vaca no tiene suelo
+  (al principio y al final del tablero, uno de los dos cae fuera del mundo), ya
+  no se pierde el turno: se prueba el otro lado y, si tampoco, se reintenta a
+  los 900 ms. Antes salian **la mitad de veces** de lo que decian sus tiempos.
+- **2026-09-25** — El recorte gana `esBolsa`, un test de fondo **mas ancho que
+  el normal, solo para las bolsas encerradas**. Un hueco entre dos patas es casi
+  todo halo del contorno: el JPG lo deja a 180-200 de distancia del turquesa del
+  borde, fuera de la tolerancia, y se quedaba puesto. Solo se ensancha con fondo
+  de color saturado; en damero y en fondo por tono, `esBolsa` es `esFondo`, que
+  si no se comeria las gaviotas blancas de un letrero. El tamano minimo de una
+  bolsa tambien se puede bajar por hoja (`bolsaMinima`).

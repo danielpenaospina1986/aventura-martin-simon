@@ -87,6 +87,12 @@ import palomaCae1 from '../assets/bichos/paloma/cae1.png';
 import palomaCae2 from '../assets/bichos/paloma/cae2.png';
 import palomaCae3 from '../assets/bichos/paloma/cae3.png';
 import palomaSuelo from '../assets/bichos/paloma/suelo.png';
+import vacaAnda1 from '../assets/bichos/vaca/anda1.webp';
+import vacaAnda2 from '../assets/bichos/vaca/anda2.webp';
+import vacaAvisa from '../assets/bichos/vaca/avisa.webp';
+import vacaEmbiste1 from '../assets/bichos/vaca/embiste1.webp';
+import vacaEmbiste2 from '../assets/bichos/vaca/embiste2.webp';
+import vacaTumbada from '../assets/bichos/vaca/tumbada.webp';
 
 export class EscenaCarga extends Phaser.Scene {
   constructor() {
@@ -159,6 +165,12 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.palomaCae2, palomaCae2);
     this.load.image(TEXTURAS.palomaCae3, palomaCae3);
     this.load.image(TEXTURAS.palomaSuelo, palomaSuelo);
+    this.load.image(TEXTURAS.vacaAnda1, vacaAnda1);
+    this.load.image(TEXTURAS.vacaAnda2, vacaAnda2);
+    this.load.image(TEXTURAS.vacaAvisa, vacaAvisa);
+    this.load.image(TEXTURAS.vacaEmbiste1, vacaEmbiste1);
+    this.load.image(TEXTURAS.vacaEmbiste2, vacaEmbiste2);
+    this.load.image(TEXTURAS.vacaTumbada, vacaTumbada);
   }
 
   create() {

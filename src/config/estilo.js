@@ -111,13 +111,6 @@ export const COLORES = {
   torreMadera: 0xd9b57e,
   torreTecho: 0x7fc4c0,
 
-  // El toro, el bicho intermedio
-  toroCuerpo: 0x5b4034,
-  toroLomo: 0x3d2a22,
-  toroCuerno: 0xf2e3c8,
-  toroHocico: 0xc99a86,
-  toroFuria: 0xe0603f,
-
   // Cartagena: el Capitan Tapon
   capitanCasaca: 0x7a4a7f,
   capitanCasacaClara: 0x9c6aa1,
@@ -230,8 +223,13 @@ export const TEXTURAS = {
   jefeCapitanEspalda: 'tex-jefe-capitan-espalda',
   jefeCapitanSinTapon: 'tex-jefe-capitan-sin-tapon',
   balaEspuma: 'tex-bala-espuma',
-  toro: 'tex-toro',
-  toroEmbiste: 'tex-toro-embiste',
+  // la vaca berrionda, con sus seis poses dibujadas
+  vacaAnda1: 'tex-vaca-anda1',
+  vacaAnda2: 'tex-vaca-anda2',
+  vacaAvisa: 'tex-vaca-avisa',
+  vacaEmbiste1: 'tex-vaca-embiste1',
+  vacaEmbiste2: 'tex-vaca-embiste2',
+  vacaTumbada: 'tex-vaca-tumbada',
   checkpointApagado: 'tex-checkpoint-apagado',
   checkpointEncendido: 'tex-checkpoint-encendido',
   meta: 'tex-meta',

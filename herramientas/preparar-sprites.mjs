@@ -56,6 +56,50 @@ const PERSONAJES = [
     ],
   },
   {
+    // LA VACA BERRIONDA, el bicho intermedio de los tableros.
+    //
+    // Su hoja viene sobre turquesa liso, asi que se recorta por color exacto.
+    // La tolerancia va alta (100) a proposito: las poses de arriba llevan una
+    // SOMBRA ovalada debajo, que es el mismo turquesa mas oscuro, y con la
+    // tolerancia de siempre se quedaba pegada como un halo gris bajo las
+    // pezunas. Lo que de verdad tiene la vaca (crema, amarillo, rosa, marron)
+    // esta a mas de 250 de distancia del fondo, asi que no corre peligro.
+    //
+    // Las zonas van a mano por dos razones: la fila de abajo trae una LINEA DE
+    // SUELO dibujada que hay que dejar fuera (por eso todas cortan en y=686, a
+    // un pixel de las pezunas), y el vaho y las estrellitas son manchas sueltas
+    // que hay que meter dentro del recuadro de su pose.
+    nombre: 'vaca',
+    colorExacto: true,
+    limpiarBolsas: true,
+    // entre las patas quedan bolsas de turquesa de unos 60 px; con el minimo
+    // de casa se quedaban puestas. La vaca no tiene nada turquesa, asi que
+    // bajarlo no se lleva nada por delante.
+    bolsaMinima: 40,
+    tolerancia: 100,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/vaca',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'vaca',
+        // SIN porPieza: las seis comparten escala, que es lo que hace que la
+        // vaca no encoja ni crezca al cambiar de pose.
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 40, y: 60, ancho: 400, alto: 285 },   // trota, fase A
+          { x: 468, y: 88, ancho: 422, alto: 257 },  // trota, fase B
+          { x: 915, y: 85, ancho: 430, alto: 260 },  // se planta y resopla
+          { x: 16, y: 440, ancho: 492, alto: 246 },  // embiste, patas estiradas
+          { x: 510, y: 440, ancho: 405, alto: 246 }, // embiste, patas recogidas
+          { x: 916, y: 470, ancho: 428, alto: 216 }, // tumbada, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
     nombre: 'paloma',
     tolerancia: 6,
     origen: 'src/assets/bichos-origen',
@@ -451,6 +495,12 @@ await pagina.evaluate(() => {
       return {
         esFondo: (i) => cerca(i, 0),
         esResiduo: (i) => cerca(i, margen * 0.7),
+        // Para las BOLSAS encerradas se es mucho mas ancho. Un hueco entre dos
+        // patas es casi todo halo del contorno: el JPG deja ahi un turquesa
+        // bastante mas oscuro que el del borde de la lamina, y con la
+        // tolerancia normal se quedaba puesto. Solo hace falta con fondo de
+        // color saturado; en damero y en fondo por tono, esBolsa es esFondo.
+        esBolsa: (i) => cerca(i, margen * 1.2),
       };
     }
 
@@ -505,6 +555,7 @@ await pagina.evaluate(() => {
         window.__modoFondo = `liso tonos ${Math.round(desde)}-${Math.round(hasta)}`;
         return {
           esFondo: (i) => comoElFondo(i, 0, 0.17),
+          esBolsa: (i) => comoElFondo(i, 0, 0.17),
           // mas ancho, para el halo que deja la compresion del JPG en el contorno
           esResiduo: (i) => comoElFondo(i, 14, 0.10),
         };
@@ -522,6 +573,7 @@ await pagina.evaluate(() => {
     window.__modoFondo = 'damero';
     return {
       esFondo: (i) => gris(i, tol, 92),
+      esBolsa: (i) => gris(i, tol, 92),
       esResiduo: (i) => gris(i, 26, 120),
     };
   };
@@ -545,6 +597,10 @@ for (const personaje of aTrabajar) {
   // Un lienzo grande pesa 700 KB en PNG. En webp, con transparencia y sin que
   // se note la diferencia, baja a la quinta parte.
   const salida = personaje.salida === 'webp' ? 'webp' : 'png';
+
+  // Lo minimo que tiene que medir una bolsa de fondo encerrada para que se
+  // borre. Ver el comentario de limpiarBolsas, mas abajo.
+  const bolsaMinimaDeEste = personaje.bolsaMinima === undefined ? 120 : personaje.bolsaMinima;
 
   // CONTORNO va en pixeles del lienzo de 260, asi que en un lienzo mayor la
   // misma cifra se lee mas fina: hay que escalarla con el. Encima,
@@ -629,6 +685,7 @@ for (const personaje of aTrabajar) {
       lienzoAlto: lienzo.alto,
       colorExacto: personaje.colorExacto || false,
       limpiarBolsas: personaje.limpiarBolsas || false,
+      bolsaMinima: bolsaMinimaDeEste,
     });
     medidas.push(m);
   }
@@ -678,6 +735,7 @@ for (const personaje of aTrabajar) {
       tinta: TINTA,
       colorExacto: personaje.colorExacto || false,
       limpiarBolsas: personaje.limpiarBolsas || false,
+      bolsaMinima: bolsaMinimaDeEste,
       soloElCuerpo: trabajo.soloElCuerpo || false,
       formato: salida,
     });
@@ -900,6 +958,7 @@ async function recortarPose(pagina, opciones) {
         tinta,
         colorExacto,
         limpiarBolsas,
+        bolsaMinima,
         soloElCuerpo,
         formato,
       }) => {
@@ -931,7 +990,7 @@ async function recortarPose(pagina, opciones) {
         const datos = ctx.getImageData(0, 0, ancho, alto);
         const p = datos.data;
         const visto = new Uint8Array(ancho * alto);
-        const { esFondo, esResiduo } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
+        const { esFondo, esResiduo, esBolsa } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto);
 
         const pila = [];
         for (let x = 0; x < ancho; x += 1) pila.push([x, 0], [x, alto - 1]);
@@ -968,12 +1027,15 @@ async function recortarPose(pagina, opciones) {
           //
           // Y se pide un tamano minimo: asi se va el damero que quedaba entre
           // los postes de un letrero y se quedan los brillitos blancos de un
-          // dibujo, que son cuatro pixeles.
+          // dibujo, que son cuatro pixeles. Se puede bajar por hoja
+          // (`bolsaMinima`) cuando el dibujo no tenga NADA del color del fondo:
+          // en la vaca, sobre turquesa, las bolsas entre las patas son de unos
+          // 60 pixeles y con el minimo de casa se quedaban puestas.
           const cuantos = ancho * alto;
           const mirado = new Uint8Array(cuantos);
-          const minimo = Math.max(120, Math.round(cuantos * 0.0002));
+          const minimo = Math.max(bolsaMinima, Math.round(cuantos * 0.0002));
           for (let inicio = 0; inicio < cuantos; inicio += 1) {
-            if (mirado[inicio] || p[inicio * 4 + 3] === 0 || !esFondo(inicio * 4)) continue;
+            if (mirado[inicio] || p[inicio * 4 + 3] === 0 || !esBolsa(inicio * 4)) continue;
             const bolsa = [];
             const pendientes = [inicio];
             mirado[inicio] = 1;
@@ -987,7 +1049,7 @@ async function recortarPose(pagina, opciones) {
                 if (v < 0 || v >= cuantos || mirado[v]) continue;
                 if (k === 0 && x === ancho - 1) continue;
                 if (k === 1 && x === 0) continue;
-                if (p[v * 4 + 3] === 0 || !esFondo(v * 4)) continue;
+                if (p[v * 4 + 3] === 0 || !esBolsa(v * 4)) continue;
                 mirado[v] = 1;
                 pendientes.push(v);
               }

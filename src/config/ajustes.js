@@ -198,26 +198,40 @@ export const CHORRO = {
   duracionMs: 3200,
 };
 
-// EL TORO. El bicho intermedio: ni se pasea como una banera ni guarda una
-// arena como un jefe. Entra corriendo por un lado del cuadro, cruza el tablero
-// y, cuando tiene al nino delante, baja la cabeza y EMBISTE.
+// LA VACA BERRIONDA. El bicho intermedio: ni se pasea como una banera ni
+// guarda una arena como un jefe. Entra corriendo por un lado del cuadro, cruza
+// el tablero y, cuando tiene al nino delante, baja la cabeza y EMBISTE.
 //
-// Se le gana como a los demas: pisandolo, con la katana o con un bloque. Lo que
-// no se puede es pararlo de frente.
-export const TORO = {
-  ancho: 116,
-  alto: 88,
-  caja: { ancho: 80, alto: 58 },
+// Viene de una de verdad: a Martin lo persiguio una vaca en la finca de los
+// abuelos y casi se lo lleva por delante. Por eso, cuando entra, sale el cartel
+// de "¡CUIDADO CON LA BERRIONDA VACA!".
+//
+// Se le gana como a los demas: pisandola, con la katana o con un bloque. Lo que
+// no se puede es pararla de frente.
+export const VACA = {
+  // El dibujo es apaisado: 160 x 104 es el lienzo entero, y la vaca ocupa unos
+  // 86 px de alto, la altura de un nino.
+  ancho: 160,
+  alto: 104,
+  // Bien por dentro del dibujo, como la banera: los cuernos y la cola asoman
+  // fuera de la caja, que es lo que hace que un roce no castigue.
+  caja: { ancho: 104, alto: 66 },
   velocidad: 115,
   velocidadEmbestida: 245,
   distanciaEmbestida: 240, // a que distancia baja la cabeza
-  avisoMs: 420,            // lo que tarda en arrancar desde que la baja
+  avisoMs: 520,            // lo que tarda en arrancar desde que la baja
   impulsoSalto: 440,       // para saltarse los huecos del suelo
-  // cada cuanto aparece uno. Como las palomas, mas a menudo segun avanza.
+  msPorPaso: 150,          // el trote
+  msPorTranco: 100,        // el galope de la embestida, mas vivo
+  // cada cuanto aparece una. Como las palomas, mas a menudo segun avanza.
   esperaMinMs: 9000,
   esperaMaxMs: 16000,
   recortePorNivel: 0.12,
   esperaMinima: 4500,
+  // cuando le saltan encima: se queda tumbada, titila y desaparece
+  titileoMs: 130,
+  titileos: 7,
+  cartelMs: 2400,          // lo que se queda el cartel de aviso en pantalla
 };
 
 // El matero del balcon, en la arena del Carrotanque. Cuelga a la altura justa:

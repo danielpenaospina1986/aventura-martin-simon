@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { BALA, ENEMIGO, FLOTADOR, JEFE, MATERO, MUNDO, RENDER, TORO, TORRE } from '../config/ajustes.js';
+import { BALA, ENEMIGO, FLOTADOR, JEFE, MATERO, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
@@ -624,84 +624,6 @@ export function generarTexturas(escena) {
   generar(escena, TEXTURAS.jefeAstronauta, JEFE.ancho, JEFE.alto, astronauta('normal'));
   generar(escena, TEXTURAS.jefeAstronautaAtascado, JEFE.ancho, JEFE.alto, astronauta('atascado'));
   generar(escena, TEXTURAS.jefeAstronautaMareado, JEFE.ancho, JEFE.alto, astronauta('mareado'));
-
-  // --- el toro, el bicho intermedio -----------------------------------------
-  //
-  // Entra corriendo por un lado del cuadro y embiste. Mira a la derecha, como
-  // todos los dibujos del juego; al ir hacia la izquierda se voltea.
-  const toro = (embistiendo) => (g) => {
-    const a = TORO.ancho;
-    const h = TORO.alto;
-
-    // patas: al embestir, una estirada adelante y otra atras
-    const patas = embistiendo
-      ? [[a * 0.14, 12], [a * 0.3, 16], [a * 0.56, 16], [a * 0.76, 12]]
-      : [[a * 0.2, 16], [a * 0.34, 14], [a * 0.58, 14], [a * 0.72, 16]];
-    patas.forEach(([x, alto]) => {
-      tintaRedonda(g, x, h - alto - 2, 14, alto + 2, 5, COLORES.toroLomo, 4);
-    });
-
-    // rabo, dando latigazos
-    g.lineStyle(6, COLORES.toroLomo, 1);
-    g.beginPath();
-    g.moveTo(a * 0.12, h * 0.42);
-    if (embistiendo) {
-      g.lineTo(a * 0.02, h * 0.2);
-      g.lineTo(a * 0.1, h * 0.12);
-    } else {
-      g.lineTo(a * 0.03, h * 0.5);
-      g.lineTo(a * 0.06, h * 0.68);
-    }
-    g.strokePath();
-
-    // cuerpo
-    tintaRedonda(g, a * 0.1, h * 0.28, a * 0.58, h * 0.44, 22, COLORES.toroCuerpo, 5);
-    // lomo mas oscuro
-    g.fillStyle(COLORES.toroLomo, 1);
-    g.fillRoundedRect(a * 0.14, h * 0.3, a * 0.5, h * 0.12, 8);
-
-    // cabeza, agachada al embestir
-    const cabezaY = embistiendo ? h * 0.52 : h * 0.42;
-    tintaRedonda(g, a * 0.6, cabezaY - h * 0.16, a * 0.3, h * 0.38, 16, COLORES.toroCuerpo, 5);
-    // hocico
-    tintaRedonda(g, a * 0.76, cabezaY + h * 0.04, a * 0.2, h * 0.17, 9, COLORES.toroHocico, 4);
-    g.fillStyle(TINTA, 1);
-    g.fillCircle(a * 0.84, cabezaY + h * 0.12, 3.4);
-    g.fillCircle(a * 0.92, cabezaY + h * 0.12, 3.4);
-
-    // cuernos
-    const cuernoY = cabezaY - h * 0.2;
-    [[a * 0.62, -1], [a * 0.88, 1]].forEach(([x, hacia]) => {
-      g.fillStyle(COLORES.toroCuerno, 1);
-      g.fillTriangle(x, cuernoY + 8, x + hacia * 16, cuernoY - 14, x + hacia * 4, cuernoY + 12);
-      g.lineStyle(3, TINTA, 1);
-      g.strokeTriangle(x, cuernoY + 8, x + hacia * 16, cuernoY - 14, x + hacia * 4, cuernoY + 12);
-    });
-
-    // ojo: tranquilo o furioso
-    const ojoX = a * 0.74;
-    const ojoY = cabezaY - h * 0.06;
-    tintaCirculo(g, ojoX, ojoY, 9, 0xffffff, 3);
-    g.fillStyle(embistiendo ? COLORES.toroFuria : TINTA, 1);
-    g.fillCircle(ojoX + 3, ojoY + 1, 5);
-    if (embistiendo) {
-      g.lineStyle(4, TINTA, 1);
-      g.beginPath();
-      g.moveTo(ojoX - 10, ojoY - 12);
-      g.lineTo(ojoX + 9, ojoY - 6);
-      g.strokePath();
-      // vaho por el hocico
-      g.fillStyle(COLORES.espuma, 0.9);
-      [[a * 1.0, cabezaY + h * 0.06, 9], [a * 1.06, cabezaY - h * 0.02, 6]].forEach(
-        ([x, y, r]) => g.fillCircle(x, y, r),
-      );
-    }
-
-    brillo(g, a * 0.26, h * 0.36, 6);
-  };
-
-  generar(escena, TEXTURAS.toro, TORO.ancho, TORO.alto, toro(false));
-  generar(escena, TEXTURAS.toroEmbiste, TORO.ancho, TORO.alto, toro(true));
 
   // --- Medellin: el Carrotanque ---------------------------------------------
   //

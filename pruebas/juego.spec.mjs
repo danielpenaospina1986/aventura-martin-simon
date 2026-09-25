@@ -82,9 +82,9 @@ async function entrarAlNivel(page, personaje = 'martin') {
     const n = window.juego.scene.getScene('nivel');
     n.probabilidadCorazon = 0;
     n.probabilidadVidaExtra = 0;
-    // Y no entran toros por su cuenta: cruzan corriendo y, en una prueba que
+    // Y no entran vacas por su cuenta: cruzan corriendo y, en una prueba que
     // mide monedas o golpes, meterian ruido sin avisar.
-    n.proximoToro = Number.MAX_SAFE_INTEGER;
+    n.proximaVaca = Number.MAX_SAFE_INTEGER;
   });
 }
 
@@ -1390,48 +1390,66 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
 });
 
-test('el toro entra corriendo, embiste y se le puede pisar', async ({ page }) => {
+test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'simon');
 
   const resultado = await page.evaluate(async () => {
     const n = window.juego.scene.getScene('nivel');
-    const { Toro } = await import('/src/entidades/Toro.js');
+    const { Vaca } = await import('/src/entidades/Vaca.js');
+    const { VACA, MUNDO } = await import('/src/config/ajustes.js');
     const j = n.jugadores[0];
     j.setPosition(9 * 32, 9 * 32 - 60);
     j.body.setVelocity(0, 0);
 
-    const toro = new Toro(n, j.x + 240, 9 * 32 - 44, -1);
-    n.toros.add(toro);
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    const vaca = new Vaca(n, j.x + 260, suelo - VACA.alto / 2, -1);
+    n.vacas.add(vaca);
 
-    // primero trota; al tener al nino delante baja la cabeza y arranca
+    // primero trota (y anima el paso); al tener al nino delante baja la cabeza,
+    // resopla y arranca
     const estados = new Set();
-    for (let i = 0; i < 30; i += 1) {
-      estados.add(toro.estado);
+    const texturas = new Set();
+    for (let i = 0; i < 40; i += 1) {
+      estados.add(vaca.estado);
+      texturas.add(vaca.texture.key);
       await new Promise((r) => setTimeout(r, 55));
-      if (toro.estado === 'embiste') break;
+      if (vaca.estado === 'embiste') break;
     }
-    estados.add(toro.estado);
+    estados.add(vaca.estado);
+    texturas.add(vaca.texture.key);
 
     // y se le pisa como a cualquier bicho
     const antes = j.enemigosVencidos;
-    for (let i = 0; i < 26 && toro.active; i += 1) {
-      j.setPosition(toro.x, toro.body.top - 44);
+    for (let i = 0; i < 26 && !vaca.derribada; i += 1) {
+      j.setPosition(vaca.x, vaca.body.top - 44);
       j.body.setVelocity(0, 260);
       await new Promise((r) => setTimeout(r, 50));
     }
+    // y se cae al suelo, no se queda flotando
+    await new Promise((r) => setTimeout(r, 500));
 
     return {
       estados: [...estados],
+      texturas: [...texturas],
       vencidosAntes: antes,
       vencidosDespues: j.enemigosVencidos,
-      sigueVivo: toro.active,
+      derribada: vaca.derribada,
+      texturaFinal: vaca.texture.key,
+      apoyada: Math.round(vaca.body.bottom) === suelo,
     };
   });
 
   expect(resultado.estados).toContain('trota');
+  expect(resultado.estados).toContain('avisa');
   expect(resultado.estados).toContain('embiste');
-  expect(resultado.sigueVivo).toBe(false);
+  // el trote se anima: las dos poses de andar salen
+  expect(resultado.texturas).toContain('tex-vaca-anda1');
+  expect(resultado.texturas).toContain('tex-vaca-anda2');
+  expect(resultado.texturas).toContain('tex-vaca-avisa');
+  expect(resultado.derribada).toBe(true);
+  expect(resultado.texturaFinal).toBe('tex-vaca-tumbada');
+  expect(resultado.apoyada).toBe(true);
   expect(resultado.vencidosDespues).toBe(resultado.vencidosAntes + 1);
   expect(errores).toEqual([]);
 });
@@ -1543,4 +1561,34 @@ test('las cinco ciudades traen decorado de fondo y algo por delante', async ({ p
     expect(c.apoyos[0]).toBeGreaterThan(suelo);
     expect(c.apoyos[0]).toBeLessThan(suelo + 30);
   });
+});
+
+test('al salir una vaca sale su cartel de aviso', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const { AVISOS } = await import('/src/config/historia.js');
+    const antes = !!n.cartelDeVaca;
+
+    // se le fuerza la salida: el nino en medio del tablero, para que haya
+    // suelo a los dos lados
+    const j = n.jugadores[0];
+    j.setPosition(20 * 32, 9 * 32 - 60);
+    j.body.setVelocity(0, 0);
+    await new Promise((r) => setTimeout(r, 600));
+    n.proximaVaca = 10;
+
+    let salio = false;
+    for (let i = 0; i < 60 && !salio; i += 1) {
+      await new Promise((r) => setTimeout(r, 80));
+      salio = n.vacas.getChildren().some((v) => v.active);
+    }
+    return { antes, salio, cartel: !!n.cartelDeVaca, texto: AVISOS.vaca };
+  });
+
+  expect(resultado.antes).toBe(false); // sin vacas, sin cartel
+  expect(resultado.salio).toBe(true);
+  expect(resultado.cartel).toBe(true);
+  expect(resultado.texto).toBe('¡CUIDADO CON LA BERRIONDA VACA!');
 });
