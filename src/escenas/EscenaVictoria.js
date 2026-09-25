@@ -206,8 +206,10 @@ export class EscenaVictoria extends Phaser.Scene {
     raya.lineTo(derecha, cy + 42);
     raya.strokePath();
 
+    // El total y la linea de cierre van separados a proposito: pegados (64 y 84)
+    // el numero, que va a 25 px, casi rozaba el letrero de abajo.
     this.add
-      .text(izquierda, cy + 64, 'Total', {
+      .text(izquierda, cy + 60, 'Total', {
         fontFamily: FUENTE.familia,
         fontSize: '20px',
         color: COLORES.textoAcento,
@@ -215,11 +217,11 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.add
-      .image(derecha - 54, cy + 64, datos.moneda)
+      .image(derecha - 54, cy + 60, datos.moneda)
       .setDisplaySize(PREMIO.ancho, PREMIO.alto);
 
     this.add
-      .text(derecha, cy + 64, String(this.monedas), {
+      .text(derecha, cy + 60, String(this.monedas), {
         fontFamily: FUENTE.familia,
         fontSize: '25px',
         color: COLORES.textoAcento,
@@ -227,7 +229,7 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(1, 0.5);
 
     this.add
-      .text(cx, cy + 84, this.mensaje(), {
+      .text(cx, cy + 86, this.mensaje(), {
         fontFamily: FUENTE.familia,
         fontSize: '10px',
         color: COLORES.textoSuave,

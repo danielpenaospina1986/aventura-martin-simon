@@ -1411,9 +1411,13 @@ test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ pag
 
     // primero trota (y anima el paso); al tener al nino delante baja la cabeza,
     // resopla y arranca
+    // El bucle espera al SUCESO (que embista) y no un numero de vueltas: soltada
+    // a 460 px, la vaca trota 220 antes de bajar la cabeza y espera otro medio
+    // segundo, o sea dos segundos y medio largos. Con 40 vueltas de 55 ms se
+    // quedaba justo en el filo y fallaba en cuanto el navegador iba lento.
     const estados = new Set();
     const texturas = new Set();
-    for (let i = 0; i < 40; i += 1) {
+    for (let i = 0; i < 100; i += 1) {
       estados.add(vaca.estado);
       texturas.add(vaca.texture.key);
       await new Promise((r) => setTimeout(r, 55));

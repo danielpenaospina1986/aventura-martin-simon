@@ -1282,3 +1282,12 @@ baja.
 - **2026-09-25** — El marcador de Samaon decia **"bloques recogidos"** con un
   sushi dibujado al lado. Era el nombre viejo, de cuando cada nino tenia su
   premio; se volvio atras hace tiempo y esto se quedo sin cambiar.
+- **2026-09-25** — En el panel de victoria, el **total** y la linea de cierre se
+  separan un poco mas (de 64 y 84 a 60 y 86). No se montaban, pero el numero va
+  a 25 px y casi rozaba el letrero de abajo, que es la misma sensacion de
+  apelotonado que se venia a quitar.
+- **2026-09-25** — La prueba de la vaca esperaba **40 vueltas de 55 ms** para
+  verla embestir, y soltada a 460 px la vaca tarda dos segundos y medio largos
+  en bajar la cabeza y arrancar: se quedaba en el filo y fallaba en cuanto el
+  navegador iba lento. Se espera al **suceso**, no a un numero de vueltas, que
+  es la regla que ya valia para el movimiento y para las palomas.
