@@ -12,6 +12,7 @@ import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
 import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
+import { hayTactil } from '../sistemas/tactil.js';
 import { LARGO_MAXIMO, guardarNombre, limpiarNombre, nombreDeSesion } from '../sistemas/sesion.js';
 import { mejoresPuntajes } from '../sistemas/puntajes.js';
 
@@ -39,8 +40,16 @@ export class EscenaNombre extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // En un telefono no hay teclado, asi que se pinta uno aqui mismo. Y si se
+    // pinta, no cabe el tablero de los mejores: se deja para el titulo.
+    this.conTeclado = hayTactil();
+
+    const pista = this.conTeclado
+      ? `Toca las letras (hasta ${LARGO_MAXIMO}) y luego LISTO`
+      : `Escribe tu nombre (hasta ${LARGO_MAXIMO} letras) y pulsa Enter`;
+
     this.add
-      .text(ancho / 2, 80, `Escribe tu nombre (hasta ${LARGO_MAXIMO} letras) y pulsa Enter`, {
+      .text(ancho / 2, 80, pista, {
         fontFamily: FUENTE.familia,
         fontSize: '12px',
         color: COLORES.textoClaro,
@@ -82,9 +91,75 @@ export class EscenaNombre extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.pintarTabla(ancho / 2, 250);
+    if (this.conTeclado) this.pintarTecladoEnPantalla(ancho / 2, 186);
+    else this.pintarTabla(ancho / 2, 250);
     this.pintar();
     this.escucharTeclado();
+  }
+
+  // --- el teclado de la pantalla --------------------------------------------
+  //
+  // Las mismas letras que acepta `limpiarNombre`, con la ene incluida, que este
+  // juego esta en espanol. Cada tecla es un rectangulo con su letra encima; se
+  // tocan, no se escriben.
+  pintarTecladoEnPantalla(cx, arriba) {
+    const filas = ['ABCDEFGHIJ', 'KLMNÑOPQRS', 'TUVWXYZ'];
+    const paso = 52;
+    const anchoTecla = 44;
+    const altoTecla = 32;
+    const separacion = 38;
+
+    filas.forEach((fila, f) => {
+      const letras = fila.split('');
+      const inicio = cx - ((letras.length - 1) * paso) / 2;
+      letras.forEach((letra, i) => {
+        this.tecla(inicio + i * paso, arriba + f * separacion, anchoTecla, altoTecla, letra, () =>
+          this.escribir(letra),
+        );
+      });
+    });
+
+    // la fila de abajo: espacio, borrar y listo
+    const abajo = arriba + filas.length * separacion + 6;
+    this.tecla(cx - 180, abajo, 140, altoTecla, 'ESPACIO', () => this.escribir(' '));
+    this.tecla(cx, abajo, 140, altoTecla, 'BORRAR', () => {
+      this.nombre = this.nombre.slice(0, -1);
+      this.pintar();
+    });
+    this.tecla(cx + 180, abajo, 140, altoTecla, 'LISTO', () => this.confirmar(), true);
+  }
+
+  tecla(x, y, ancho, alto, texto, alTocar, destacada = false) {
+    const fondo = this.add
+      .rectangle(x, y, ancho, alto, COLORES.decoFondo, 0.82)
+      .setStrokeStyle(2, destacada ? COLORES.textoAcento : COLORES.decoMarco, 0.95)
+      .setInteractive({ useHandCursor: true });
+
+    const etiqueta = this.add
+      .text(x, y, texto, {
+        fontFamily: FUENTE.familia,
+        fontSize: texto.length > 1 ? '13px' : '19px',
+        color: destacada ? COLORES.textoAcento : COLORES.textoClaro,
+      })
+      .setOrigin(0.5);
+
+    fondo.on('pointerdown', () => {
+      fondo.setFillStyle(COLORES.decoMarco, 0.9);
+      alTocar();
+    });
+    const apagar = () => fondo.setFillStyle(COLORES.decoFondo, 0.82);
+    fondo.on('pointerup', apagar);
+    fondo.on('pointerout', apagar);
+    return { fondo, etiqueta };
+  }
+
+  escribir(letra) {
+    const propuesto = limpiarNombre(this.nombre + letra);
+    if (propuesto === this.nombre && this.nombre.length >= LARGO_MAXIMO) {
+      this.aviso.setText(`Con ${LARGO_MAXIMO} letras basta`);
+    }
+    this.nombre = propuesto;
+    this.pintar();
   }
 
   escucharTeclado() {
@@ -120,7 +195,10 @@ export class EscenaNombre extends Phaser.Scene {
     teclado.on('keydown', this.alTeclear);
     this.events.once('shutdown', () => teclado.off('keydown', this.alTeclear));
 
-    this.input.once('pointerdown', () => this.confirmar());
+    // Con el teclado en pantalla NO vale tocar en cualquier sitio para
+    // confirmar: el primer toque en una letra se llevaria la pantalla por
+    // delante. Ahi se confirma con LISTO.
+    if (!this.conTeclado) this.input.once('pointerdown', () => this.confirmar());
   }
 
   pintar() {

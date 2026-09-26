@@ -16,6 +16,7 @@ import { Hud } from '../sistemas/hud.js';
 import { construirNivel, baseY, centroX, SIMBOLOS } from '../sistemas/constructor-nivel.js';
 import { aEscalaDeJuego, escalaDeJuego, panelDeco, pintarFondo } from '../sistemas/dibujo.js';
 import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
+import { hayTactil, MandosTactiles } from '../sistemas/tactil.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
 import { AVISOS, jefeDelCuento } from '../config/historia.js';
@@ -155,9 +156,21 @@ export class EscenaNivel extends Phaser.Scene {
     this.input.keyboard.on('keydown-ESC', () => this.pausar());
     this.input.keyboard.on('keydown-H', () => this.alternarCajas());
 
+    // En un telefono no hay teclado: joystick abajo a la izquierda, saltar y
+    // atacar abajo a la derecha, y la pausa arriba en medio. Van sujetos a la
+    // pantalla como el HUD, y por eso entran en el mismo `fijar`.
+    if (hayTactil()) {
+      this.mandos = new MandosTactiles(this, this.jugadores[0].controles, {
+        alPausar: () => this.pausar(),
+      });
+      this.planos.fijar(this.mandos.piezas);
+    }
+
     this.events.once('shutdown', () => {
       this.input.keyboard.off('keydown-ESC');
       this.input.keyboard.off('keydown-H');
+      if (this.mandos) this.mandos.destruir();
+      this.mandos = null;
     });
   }
 

@@ -77,6 +77,7 @@ aventura-martin-simon/
       jefes/            uno por ciudad, cada cual con su forma de caer
     sistemas/
       controles.js      mapeo de teclas por jugador (preparado para 2 jugadores)
+      tactil.js         el joystick y los botones, para jugar en un telefono
       constructor-nivel.js  convierte el mapa de texto en objetos del mundo
       planos.js         el plano de delante de la camara multiplanar
       hud.js            monedas, corazones, vidas y nombre del personaje
@@ -521,8 +522,40 @@ casa tiene el suyo.
 | Pausa | Esc |
 | Ver cajas de colision | H |
 
+En un telefono, todo eso se hace con los **mandos en pantalla** (ver mas abajo).
+
 El mapeo vive en `src/sistemas/controles.js`, hecho por **perfiles de jugador**, para
 que agregar un segundo jugador simultaneo sea anadir un perfil, no reescribir nada.
+
+### Con el dedo
+
+En un telefono salen **mandos en pantalla** (`src/sistemas/tactil.js`): un
+**joystick** abajo a la izquierda, y abajo a la derecha los botones de **saltar**
+(el grande, con el triangulo) y **atacar** (el de la estrella). Arriba en medio,
+uno pequeno de **pausa**, que sin tecla Esc no habria forma de salir del tablero.
+
+- Salen solos si el aparato se maneja con el dedo. Se pueden forzar con
+  `?tactil=1` (para probarlos en el ordenador) o apagar con `?tactil=0`.
+- **No son un mando aparte**: le aprietan a `Controles` las mismas acciones que
+  las teclas (`tocar`), asi que el juego no se entera de por donde le llegan. Un
+  mando de verdad o un segundo jugador se anadirian igual.
+- Van **sujetos a la pantalla** como el HUD, y por eso entran en el mismo
+  `planos.fijar`: `setScrollFactor` no se lleva con el zoom.
+- Se piden **tres punteros** (`input.addPointer`): con uno solo no se puede
+  correr y saltar a la vez, que es media partida.
+- La palanca coge **cualquier dedo que baje en su mitad de la pantalla**, no solo
+  el que acierte el circulo: en un telefono no se mira el mando, se tantea.
+  Empujarla hacia arriba tambien salta, de mas, por si alguien no encuentra el
+  boton.
+- Los **carteles de ayuda** del primer tablero cambian de texto ("Joystick para
+  moverte"), y la linea de "Esc pausa / H cajas" no sale: ahi no hay teclas, y
+  ademas ese rincon es justo donde cae el boton de saltar.
+- En la pantalla de **quien juega** sale un **teclado en pantalla** con las
+  letras, la ene incluida, y ESPACIO / BORRAR / LISTO. Sin el, en un telefono no
+  se podria pasar de ahi.
+- De pie, el juego queda en una franja diminuta, asi que sale un cartel de
+  **"gira el telefono"**. Es CSS puro, con `(orientation: portrait) and (pointer:
+  coarse)`, asi que en un ordenador con la ventana alta no aparece.
 
 ## 9. Formato de niveles
 
@@ -1435,3 +1468,30 @@ baja.
   las llantas (y=334 arriba, y=726 abajo). Y la hoja de las canastillas trae en
   la fila de abajo dos poses de la camioneta repetidas: ninguna zona baja de
   y=380.
+- **2026-09-26** — El juego se puede jugar **en un telefono**: joystick abajo a
+  la izquierda, saltar y atacar abajo a la derecha, y pausa arriba en medio. No
+  son un mando aparte, le aprietan a `Controles` las mismas acciones que las
+  teclas, asi que ni el Jugador ni nada del juego se entera de por donde le
+  llegan.
+- **2026-09-26** — Se anadio el **boton de saltar** aunque solo se pidiera el de
+  atacar: en un plataformas, saltar empujando la palanca hacia arriba mientras
+  se corre es incomodisimo. La palanca hacia arriba tambien salta, de mas, por
+  si alguien no encuentra el boton.
+- **2026-09-26** — Hacen falta **tres punteros** (`input.addPointer(3)`): Phaser
+  trae uno solo mas el raton, y con eso no se puede correr y saltar a la vez.
+  Ojo al probarlo: Playwright necesita el navegador con `hasTouch: true`, porque
+  si no Phaser no reparte los dedos entre varios punteros y el segundo dedo se
+  pierde entero. Se perdio un buen rato persiguiendo eso creyendo que era un
+  fallo del juego.
+- **2026-09-26** — Las coordenadas del dedo (`pointer.x`) vienen en pixeles del
+  LIENZO, que es la pantalla del juego multiplicada por la densidad: hay que
+  dividir por ella para pensar en los 640 x 360 de siempre. Es el mismo cuidado
+  que ya piden los planos y el HUD.
+- **2026-09-26** — El relleno de los mandos va **opaco**, y la transparencia la
+  pone `setAlpha`. Poniendola en las dos (0,55 en el color y 0,34 en el objeto)
+  se multiplican, y sobre un fondo claro los mandos se veian casi invisibles.
+- **2026-09-26** — La pantalla de **quien juega** estrena un teclado en
+  pantalla. Sin el, en un telefono el juego era inalcanzable: se teclea el
+  nombre y ahi no hay teclado. Con el puesto, tocar en cualquier sitio ya NO
+  confirma (se llevaria la pantalla por delante al tocar la primera letra): se
+  confirma con LISTO.

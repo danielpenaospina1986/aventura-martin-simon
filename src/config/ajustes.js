@@ -405,6 +405,30 @@ export const PALOMA = {
   caida: { gravedad: 620, tamano: 22 },
 };
 
+// LOS MANDOS TACTILES, para poder jugar en un telefono. Las medidas van en la
+// pantalla de siempre (640 x 360): el joystick abajo a la izquierda y los dos
+// botones abajo a la derecha, donde caen los pulgares con el aparato en
+// horizontal. El de pausa va arriba en medio, que es el hueco que deja el HUD.
+export const TACTIL = {
+  joystick: { x: 84, y: 288, radio: 48, palanca: 23, recorrido: 32, zonaMuerta: 9 },
+  salto: { x: 574, y: 292, radio: 38 },
+  ataque: { x: 492, y: 244, radio: 31 },
+  pausa: { x: 320, y: 24, radio: 16 },
+  // Translucidos, que estan por delante del juego. Se encienden al tocarlos,
+  // para que se note que han cogido el dedo.
+  alpha: 0.6,
+  alphaPulsado: 1,
+  profundidad: 60,
+  // El area que responde es mas ancha que el circulo dibujado: los dedos son
+  // gordos y fallar un boton en pleno salto se paga.
+  margenBoton: 1.35,
+  // Hasta donde llega la mitad de la palanca: cualquier dedo que baje a la
+  // izquierda de esta raya la maneja, acierte o no el circulo.
+  mitadDeLaPalanca: 280,
+  // lo que hay que empujar la palanca hacia arriba para que ademas salte
+  saltoArriba: 0.6,
+};
+
 export const CAMARA = {
   suavizado: 0.12,
   zonaMuertaAncho: 110,

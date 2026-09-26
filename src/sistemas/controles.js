@@ -39,6 +39,9 @@ export class Controles {
     this.pulsacionPendiente = aCero();
     this.sueltaPendiente = aCero();
 
+    // lo que tiene apretado el dedo en los mandos tactiles
+    this.tactil = aCero();
+
     // lo que ve el juego
     this.estado = aCero();
     this.previo = aCero();
@@ -71,7 +74,8 @@ export class Controles {
     this.previo = { ...this.estado };
 
     ACCIONES.forEach((accion) => {
-      const mantenida = this.teclas[accion].some((tecla) => tecla.isDown);
+      const mantenida =
+        this.tactil[accion] || this.teclas[accion].some((tecla) => tecla.isDown);
       const huboPulsacion = this.pulsacionPendiente[accion];
       const huboSuelta = this.sueltaPendiente[accion];
 
@@ -83,6 +87,16 @@ export class Controles {
       this.pulsacionPendiente[accion] = false;
       this.sueltaPendiente[accion] = false;
     });
+  }
+
+  // Por aqui entran los mandos tactiles. Apuntan lo mismo que una tecla, asi
+  // que al juego le da igual de donde venga: un mando de verdad o un segundo
+  // jugador se anadirian igual.
+  tocar(accion, apretado) {
+    if (this.tactil[accion] === apretado) return;
+    this.tactil[accion] = apretado;
+    if (apretado) this.pulsacionPendiente[accion] = true;
+    else this.sueltaPendiente[accion] = true;
   }
 
   activa(accion) {

@@ -10,6 +10,7 @@ import { aEscalaDeJuego, mosaico } from './dibujo.js';
 import { ciudadDe } from '../config/ciudades.js';
 import { Enemigo } from '../entidades/Enemigo.js';
 import { jefeDeCiudad } from '../entidades/jefes/index.js';
+import { hayTactil } from './tactil.js';
 
 export const SIMBOLOS = {
   SOLIDO: '#',
@@ -31,6 +32,13 @@ export const centroX = (col) => col * C + C / 2;
 export const centroY = (fila) => fila * C + C / 2;
 // suelo de una casilla (donde se apoyan las cosas)
 export const baseY = (fila) => (fila + 1) * C;
+
+// Lo que dicen los carteles de ayuda cuando se juega con el dedo.
+const EN_TACTIL = {
+  'Flechas para moverte': 'Joystick para moverte',
+  'Espacio: saltar': 'Botón grande: saltar',
+  'X: atacar': 'Botón de la estrella: atacar',
+};
 
 export function construirNivel(escena, nivel, opciones = {}) {
   // Cada personaje recoge lo suyo: sushi para Martin, bloques para Simon.
@@ -240,10 +248,13 @@ export function construirNivel(escena, nivel, opciones = {}) {
   // Con jefe, la meta empieza apagada: no se puede pasar hasta derrotarlo.
   if (meta && jefe) meta.setAlpha(0.4);
 
-  // carteles de ayuda flotando en el mundo
+  // Carteles de ayuda flotando en el mundo. Los del primer tramo hablan de las
+  // teclas, asi que en un telefono dicen otra cosa: ahi no hay flechas ni
+  // barra espaciadora que valgan.
+  const conMandos = hayTactil() ? EN_TACTIL : {};
   (nivel.pistas || []).forEach((pista) => {
     escena.add
-      .text(centroX(pista.col), centroY(pista.fila), pista.texto, {
+      .text(centroX(pista.col), centroY(pista.fila), conMandos[pista.texto] || pista.texto, {
         fontFamily: FUENTE.familia,
         fontSize: `${FUENTE.pista}px`,
         color: COLORES.textoClaro,

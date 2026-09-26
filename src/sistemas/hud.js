@@ -7,6 +7,7 @@
 
 import { MUNDO, PREMIO, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
+import { hayTactil } from './tactil.js';
 import { aEscalaDeJuego } from './dibujo.js';
 
 const FILA = { ancho: 196, alto: 32, margen: 8, separacion: 6 };
@@ -134,6 +135,10 @@ export class Hud {
         .setDepth(101),
       );
     }
+
+    // En un telefono no hay Esc ni H, y ademas ese rincon es justo donde cae el
+    // boton de saltar: ahi no va nada escrito.
+    if (hayTactil()) return;
 
     this.ayuda = escena.add
       .text(

@@ -21,11 +21,11 @@ function vigilarErrores(page) {
   return errores;
 }
 
-async function abrirJuego(page) {
+async function abrirJuego(page, extra = '') {
   // densidad 1 a proposito: aqui el navegador dibuja por software, sin tarjeta
   // grafica, y con la densidad de verdad se queda en 20 fotogramas por segundo.
   // Lo que se prueba es la logica del juego, no lo nitido que se ve.
-  await page.goto('/?densidad=1');
+  await page.goto(`/?densidad=1${extra}`);
   await page.waitForFunction(() => window.juego && window.juego.isRunning, null, {
     timeout: 20000,
   });
@@ -43,9 +43,22 @@ async function esperarEscena(page, clave) {
   );
 }
 
+// De las coordenadas del juego (640 x 360) a las de la pagina, para tocar con
+// el dedo donde toca.
+async function dondeTocar(page) {
+  const caja = await page.evaluate(() => {
+    const c = document.querySelector('#juego canvas').getBoundingClientRect();
+    return { x: c.x, y: c.y, w: c.width, h: c.height };
+  });
+  return (gx, gy) => ({
+    x: caja.x + (gx / 640) * caja.w,
+    y: caja.y + (gy / 360) * caja.h,
+  });
+}
+
 // titulo -> seleccion -> nivel, con el personaje pedido
-async function entrarAlNivel(page, personaje = 'martin') {
-  await abrirJuego(page);
+async function entrarAlNivel(page, personaje = 'martin', extra = '') {
+  await abrirJuego(page, extra);
   await page.keyboard.press('Enter');
 
   // Entre el titulo y la seleccion se pregunta quien juega.
@@ -1931,4 +1944,143 @@ test('el marcador de victoria cabe en su panel y no pisa el menu', async ({ page
       expect(pantalla.mensajeAbajo).toBeLessThan(pantalla.panelAbajo);
     }
   });
+});
+
+// ---------------------------------------------------------------------------
+// LOS MANDOS TACTILES
+//
+// Van en su propio bloque porque piden un navegador CON pantalla tactil
+// (`hasTouch`): sin eso Phaser no reparte los dedos entre varios punteros y no
+// se puede correr y saltar a la vez, que es justo lo que hay que comprobar.
+// ---------------------------------------------------------------------------
+
+test.describe('con el dedo', () => {
+  test.use({ hasTouch: true });
+
+  test('los mandos tactiles mueven y saltan a la vez', async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await entrarAlNivel(page, 'martin', '&tactil=1');
+
+    const enPantalla = await dondeTocar(page);
+    const cdp = await page.context().newCDPSession(page);
+    const dedos = (tipo, puntos) =>
+      cdp.send('Input.dispatchTouchEvent', { type: tipo, touchPoints: puntos });
+
+    const partida = await page.evaluate(
+      () => window.juego.scene.getScene('nivel').jugadores[0].y,
+    );
+
+    // los dos dedos a la vez: la palanca a la derecha y el boton de saltar
+    const palanca = enPantalla(140, 288);
+    const salto = enPantalla(574, 292);
+    await dedos('touchStart', [{ ...palanca, id: 1 }, { ...salto, id: 2 }]);
+
+    const medida = await page.evaluate(async (partida) => {
+      const j = window.juego.scene.getScene('nivel').jugadores[0];
+      let masAlto = j.y;
+      let vxMax = 0;
+      for (let i = 0; i < 45; i += 1) {
+        masAlto = Math.min(masAlto, j.y);
+        vxMax = Math.max(vxMax, j.body.velocity.x);
+        await new Promise((r) => setTimeout(r, 14));
+      }
+      return { salto: Math.round(partida - masAlto), vxMax: Math.round(vxMax) };
+    }, partida);
+
+    await dedos('touchEnd', []);
+    await page.waitForTimeout(300);
+    const quieto = await page.evaluate(() =>
+      Math.round(window.juego.scene.getScene('nivel').jugadores[0].body.velocity.x),
+    );
+
+    expect(medida.vxMax).toBe(210);          // corre a su velocidad de siempre
+    expect(medida.salto).toBeGreaterThan(95); // y salta lo que salta con el teclado
+    expect(quieto).toBe(0);                   // al soltar, se para
+    expect(errores).toEqual([]);
+  });
+
+  test('el dedo tambien ataca y pausa', async ({ page }) => {
+    await entrarAlNivel(page, 'simon', '&tactil=1');
+    const enPantalla = await dondeTocar(page);
+
+    const antes = await page.evaluate(() =>
+      window.juego.scene.getScene('nivel').proyectilesVivos(),
+    );
+    const ataque = enPantalla(492, 244);
+    await page.touchscreen.tap(ataque.x, ataque.y);
+    await page.waitForTimeout(250);
+    const despues = await page.evaluate(() =>
+      window.juego.scene.getScene('nivel').proyectilesVivos(),
+    );
+    expect(despues).toBe(antes + 1); // Samaon ha lanzado su bloque
+
+    const pausa = enPantalla(320, 24);
+    await page.touchscreen.tap(pausa.x, pausa.y);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.juego.scene.isActive('pausa'))).toBe(true);
+  });
+
+  test('en un telefono el nombre se escribe tocando las letras', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.clear();
+      } catch {
+        /* en incognito no deja, y da igual */
+      }
+    });
+    await abrirJuego(page, '&tactil=1');
+    await page.keyboard.press('Enter');
+    await esperarEscena(page, 'nombre');
+    await page.waitForTimeout(300);
+
+    const enPantalla = await dondeTocar(page);
+    const tocar = async (gx, gy) => {
+      const p = enPantalla(gx, gy);
+      await page.touchscreen.tap(p.x, p.y);
+      await page.waitForTimeout(90);
+    };
+
+    // las filas son ABCDEFGHIJ / KLMNÑOPQRS / TUVWXYZ, de 52 px de paso
+    const letra = (fila, i) => [320 - 4.5 * 52 + i * 52, 186 + fila * 38];
+    await tocar(...letra(1, 2)); // M
+    await tocar(...letra(0, 0)); // A
+    await tocar(...letra(1, 8)); // R
+    expect(await page.evaluate(() => window.juego.scene.getScene('nombre').nombre)).toBe('MAR');
+
+    await tocar(320, 186 + 3 * 38 + 6); // BORRAR
+    expect(await page.evaluate(() => window.juego.scene.getScene('nombre').nombre)).toBe('MA');
+
+    await tocar(500, 186 + 3 * 38 + 6); // LISTO
+    await esperarEscena(page, 'seleccion');
+  });
+});
+
+test.describe('el telefono de pie', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test('de pie sale el cartel de girar el telefono', async ({ page }) => {
+    await abrirJuego(page, '&tactil=1');
+    const cartel = await page.evaluate(
+      () => getComputedStyle(document.querySelector('#gira')).display,
+    );
+    expect(cartel).toBe('flex');
+  });
+});
+
+test('sin pantalla tactil no salen los mandos', async ({ page }) => {
+  await entrarAlNivel(page, 'martin', '&tactil=0');
+  const estado = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return { mandos: Boolean(n.mandos), ayuda: Boolean(n.hud.ayuda) };
+  });
+  // en el ordenador no estorban, y la ayuda de teclado sigue en su sitio
+  expect(estado.mandos).toBe(false);
+  expect(estado.ayuda).toBe(true);
+
+  // y el cartel de girar el telefono tampoco sale, aunque la ventana sea alta:
+  // la consulta pide ademas que el puntero sea gordo
+  const cartel = await page.evaluate(
+    () => getComputedStyle(document.querySelector('#gira')).display,
+  );
+  expect(cartel).toBe('none');
 });
