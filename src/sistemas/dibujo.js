@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { BALA, ENEMIGO, FLOTADOR, JEFE, MATERO, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
+import { BALA, ENEMIGO, FLOTADOR, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
@@ -518,121 +518,6 @@ export function generarTexturas(escena) {
     g.fillStyle(COLORES.jabonBrillo, 0.85);
     g.fillRoundedRect(6, 5, 14, 6, 3);
     brillo(g, 9, 8, 3);
-  });
-
-  // --- Medellin: el Carrotanque ---------------------------------------------
-  //
-  // El camion del agua, con ojos en el parabrisas. Embiste y no hay forma de
-  // pegarle: lo que lo para son los materos que le caen de los balcones.
-  const carrotanque = (modo) => (g) => {
-    const a = JEFE.ancho;
-    const h = JEFE.alto;
-    const cx = a / 2;
-
-    // ruedas, bien gordas
-    [cx - 50, cx + 44].forEach((x) => {
-      tintaCirculo(g, x, h - 26, 24, COLORES.carroRueda, 5);
-      tintaCirculo(g, x, h - 26, 9, COLORES.carroLlanta, 3);
-    });
-
-    // chasis
-    tintaRedonda(g, 8, h - 74, a - 16, 34, 8, COLORES.carroTanque, 5);
-
-    // el tanque del agua, con su gota pintada
-    tintaRedonda(g, 12, h - 136, 100, 70, 30, COLORES.carroTanqueClaro, 6);
-    g.fillStyle(COLORES.carroCabina, 1);
-    g.fillCircle(62, h - 96, 15);
-    g.fillTriangle(62 - 11, h - 100, 62 + 11, h - 100, 62, h - 126);
-    g.lineStyle(3, TINTA, 1);
-    g.strokeCircle(62, h - 96, 15);
-
-    // cabina
-    tintaRedonda(g, 108, h - 128, 56, 62, 12, COLORES.carroCabina, 5);
-    tintaRedonda(g, 116, h - 120, 42, 30, 6, COLORES.carroCristal, 4);
-
-    // la manguera, por delante
-    tintaRedonda(g, 158, h - 62, 12, 10, 3, COLORES.carroRueda, 3);
-
-    // los ojos, detras del parabrisas
-    const ojoY = h - 106;
-    if (modo === 'florido') {
-      g.lineStyle(5, TINTA, 1);
-      [126, 148].forEach((x) => {
-        g.beginPath();
-        g.moveTo(x - 6, ojoY - 6);
-        g.lineTo(x + 6, ojoY + 6);
-        g.moveTo(x + 6, ojoY - 6);
-        g.lineTo(x - 6, ojoY + 6);
-        g.strokePath();
-      });
-    } else {
-      tintaCirculo(g, 126, ojoY, 10, 0xffffff, 3);
-      tintaCirculo(g, 148, ojoY, 10, 0xffffff, 3);
-      g.fillStyle(TINTA, 1);
-      const mira = modo === 'embiste' ? 4 : 1;
-      g.fillCircle(126 + mira, ojoY + 1, 5);
-      g.fillCircle(148 + mira, ojoY + 1, 5);
-      if (modo === 'embiste') {
-        g.lineStyle(4, TINTA, 1);
-        g.beginPath();
-        g.moveTo(118, ojoY - 13);
-        g.lineTo(134, ojoY - 6);
-        g.moveTo(140, ojoY - 6);
-        g.lineTo(156, ojoY - 13);
-        g.strokePath();
-      }
-    }
-
-    // embistiendo: humo por el tubo de escape
-    if (modo === 'embiste') {
-      g.fillStyle(COLORES.espuma, 0.85);
-      [[6, h - 58, 12], [-8, h - 70, 9], [-18, h - 60, 7]].forEach(([x, y, r]) =>
-        g.fillCircle(x, y, r),
-      );
-    }
-
-    // derrotado: cubierto de flores, como una silleta
-    if (modo === 'florido') {
-      const flores = [
-        [30, h - 146, 11, COLORES.florAmarilla], [52, h - 154, 13, COLORES.florRoja],
-        [76, h - 148, 11, COLORES.florBlanca], [98, h - 152, 12, COLORES.florAmarilla],
-        [40, h - 132, 10, COLORES.florRoja], [86, h - 134, 10, COLORES.florBlanca],
-      ];
-      flores.forEach(([x, y, r, color]) => {
-        tintaCirculo(g, x, y, r, COLORES.florHoja, 3);
-        tintaCirculo(g, x, y, r - 4, color, 2);
-      });
-    }
-
-    brillo(g, 34, h - 122, 8);
-  };
-
-  generar(escena, TEXTURAS.jefeCarrotanque, JEFE.ancho, JEFE.alto, carrotanque('normal'));
-  generar(escena, TEXTURAS.jefeCarrotanqueEmbiste, JEFE.ancho, JEFE.alto, carrotanque('embiste'));
-  generar(escena, TEXTURAS.jefeCarrotanqueFlorido, JEFE.ancho, JEFE.alto, carrotanque('florido'));
-
-  // El matero del balcon: barro, tierra y flores. Es lo unico que para al
-  // Carrotanque, asi que tiene que leerse de lejos.
-  generar(escena, TEXTURAS.matero, MATERO.ancho, MATERO.alto, (g) => {
-    const a = MATERO.ancho;
-    const h = MATERO.alto;
-
-    // flores asomando por arriba
-    [
-      [a * 0.26, h * 0.2, 10, COLORES.florRoja],
-      [a * 0.52, h * 0.13, 11, COLORES.florAmarilla],
-      [a * 0.78, h * 0.21, 10, COLORES.florBlanca],
-    ].forEach(([x, y, r, color]) => {
-      tintaCirculo(g, x, y, r, COLORES.florHoja, 3);
-      tintaCirculo(g, x, y, r - 4, color, 2);
-    });
-
-    // la maceta
-    tintaRedonda(g, a * 0.14, h * 0.42, a * 0.72, h * 0.5, 6, COLORES.materoBarro, 4);
-    tintaRedonda(g, a * 0.06, h * 0.34, a * 0.88, h * 0.16, 5, COLORES.materoBarroClaro, 4);
-    g.fillStyle(COLORES.materoTierra, 1);
-    g.fillRect(a * 0.14, h * 0.38, a * 0.72, 5);
-    brillo(g, a * 0.28, h * 0.56, 4);
   });
 
   // --- Miami: el Salvavidas --------------------------------------------------

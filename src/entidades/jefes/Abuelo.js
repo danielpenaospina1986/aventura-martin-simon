@@ -1,18 +1,22 @@
 // ---------------------------------------------------------------------------
-// MEDELLIN: EL CARROTANQUE
+// MEDELLIN: EL ABUELO
 //
-// El camion del agua que sube a repartir bano a domicilio. Es una mole: ronda
-// su arena, avisa, y EMBISTE de lado a lado. Al chocar se queda resoplando unos
-// segundos, y esa es la unica pausa que da.
+// El abuelo baja de la finca en su pickup doble cabina, con el tanque de agua
+// en el platon y la idea muy clara de banar a sus nietos. Sombrero vueltiao y
+// poncho, para que no haya duda de quien es.
+//
+// Es una mole: ronda su arena, avisa acelerando en el sitio, y EMBISTE de lado
+// a lado. Al chocar se queda resoplando unos segundos, y esa es la unica pausa
+// que da.
 //
 // Como se le gana: a el NO se le pega. Los golpes rebotan con un ¡clonc!. Lo
-// que lo para son los MATEROS de los balcones: se les da un golpe desde abajo
-// (con la katana, con un bloque o con un cabezazo en pleno salto) y caen. Si
-// uno le cae encima, se lleva un abollon. Cuatro materos y se vara, cubierto de
-// flores, como una silleta.
+// que lo para son las CANASTILLAS de fruta que cuelgan de los balcones: se les
+// da un golpe desde abajo (con la katana, con un bloque o con un cabezazo en
+// pleno salto) y caen. Si una le cae encima, se lleva un abollon. Cuatro
+// canastillas y se vara, enterrado en fruta.
 //
-// Por eso esta pelea no pide habilidad ninguna: las tres formas de tirar un
-// matero valen igual para Samaon y para Martain.
+// Por eso esta pelea no pide habilidad ninguna: las tres formas de tumbar una
+// canastilla valen igual para Samaon y para Martain.
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
@@ -30,45 +34,61 @@ const TIEMPOS = {
 const VELOCIDAD_RONDA = 52;
 const VELOCIDAD_EMBESTIDA = 250;
 
-export class Carrotanque extends JefeBase {
+// La camioneta es apaisada, asi que no cabe en el cuadrado de los demas jefes:
+// con 172 x 172 saldria nadando en aire por arriba y por abajo. El alto de la
+// CAJA, en cambio, es el de todos (ver JEFE.caja): lo justo para que el nino le
+// llegue al techo de un salto desde el suelo.
+const MEDIDAS = { ancho: 204, alto: 136, caja: { ancho: 170, alto: 104 } };
+
+export class Abuelo extends JefeBase {
   constructor(escena, x, y, direccion = -1) {
     super(escena, x, y, {
-      textura: TEXTURAS.jefeCarrotanque,
-      texturaHerida: TEXTURAS.jefeCarrotanqueFlorido,
-      vidas: 4, // cuatro materos
+      textura: TEXTURAS.abueloRonda,
+      texturaHerida: TEXTURAS.abueloGolpe,
+      ancho: MEDIDAS.ancho,
+      alto: MEDIDAS.alto,
+      caja: MEDIDAS.caja,
+      vidas: 4, // cuatro canastillas
       direccion,
     });
 
+    // La escena la usa al derrotarlo, para que se le vea varado en la fruta.
+    this.texturaDeDerrota = TEXTURAS.abueloDerrotado;
+
     this.estado = 'ronda';
     this.cambio = TIEMPOS.rondaMinMs;
-    this.materos = null;
+    this.canastillas = null;
   }
 
-  // Los materos son suyos: se cuelgan cuando el tablero ya esta montado, que es
-  // cuando la escena sabe donde hay suelo.
+  // Las canastillas son suyas: se cuelgan cuando el tablero ya esta montado,
+  // que es cuando la escena sabe donde hay suelo.
   prepararArena() {
-    if (this.escena.plantarMateros) this.materos = this.escena.plantarMateros(this);
+    if (this.escena.plantarCanastillas) {
+      this.canastillas = this.escena.plantarCanastillas(this);
+    }
   }
 
   // A la chapa no se le hace nada. Solo cuenta lo que le cae de arriba.
   puedeRecibirGolpe() {
-    return this.esperandoElMatero === true;
+    return this.esperandoLaCanastilla === true;
   }
 
-  // El matero que le cae encima: se le permite el golpe solo en ese momento.
-  recibirMatero(desdeX) {
-    this.esperandoElMatero = true;
+  // La canastilla que le cae encima: se le permite el golpe solo en ese momento.
+  recibirCanastilla(desdeX) {
+    this.esperandoLaCanastilla = true;
     const conto = this.recibirGolpe(desdeX);
-    this.esperandoElMatero = false;
+    this.esperandoLaCanastilla = false;
     return conto;
   }
 
   texturaDeAhora() {
-    if (this.estado === 'embiste') return TEXTURAS.jefeCarrotanqueEmbiste;
-    return TEXTURAS.jefeCarrotanque;
+    if (this.estado === 'embiste') return TEXTURAS.abueloEmbiste;
+    if (this.estado === 'avisa') return TEXTURAS.abueloAvisa;
+    if (this.estado === 'resopla') return TEXTURAS.abueloResopla;
+    return TEXTURAS.abueloRonda;
   }
 
-  // Un matero encima le corta la embestida en seco.
+  // Una canastilla encima le corta la embestida en seco.
   alRecibirGolpe() {
     this.aResoplar();
   }
@@ -76,14 +96,14 @@ export class Carrotanque extends JefeBase {
   aRondar() {
     this.estado = 'ronda';
     this.cambio = this.reloj + Phaser.Math.Between(TIEMPOS.rondaMinMs, TIEMPOS.rondaMaxMs);
-    if (!this.esInvulnerable) this.setTexture(TEXTURAS.jefeCarrotanque);
+    if (!this.esInvulnerable) this.setTexture(TEXTURAS.abueloRonda);
   }
 
   aResoplar() {
     this.estado = 'resopla';
     this.cambio = this.reloj + TIEMPOS.resoplaMs;
     this.body.velocity.x = 0;
-    if (!this.esInvulnerable) this.setTexture(TEXTURAS.jefeCarrotanque);
+    if (!this.esInvulnerable) this.setTexture(TEXTURAS.abueloResopla);
   }
 
   actualizar(delta) {
@@ -102,6 +122,7 @@ export class Carrotanque extends JefeBase {
         this.cambio = this.reloj + TIEMPOS.avisoMs;
         this.body.velocity.x = 0;
         this.mirarAlNino();
+        if (!this.esInvulnerable) this.setTexture(TEXTURAS.abueloAvisa);
         this.avisar(TIEMPOS.avisoMs, 0xff8a5c);
       }
       return;
@@ -146,11 +167,11 @@ export class Carrotanque extends JefeBase {
   embestir() {
     this.estado = 'embiste';
     this.cambio = this.reloj + TIEMPOS.embestidaMaxMs;
-    if (!this.esInvulnerable) this.setTexture(TEXTURAS.jefeCarrotanqueEmbiste);
+    if (!this.esInvulnerable) this.setTexture(TEXTURAS.abueloEmbiste);
   }
 
   // Se para en seco: se sacude la arena y se queda resoplando. Es la ventana
-  // para tirarle un matero encima.
+  // para tumbarle una canastilla encima.
   frenazo() {
     this.aResoplar();
     if (this.escena.sacudirArena) this.escena.sacudirArena();
@@ -158,12 +179,12 @@ export class Carrotanque extends JefeBase {
   }
 
   destroy(fromScene) {
-    if (this.materos) {
-      this.materos.forEach((m) => m.active && m.destroy());
-      this.materos = null;
+    if (this.canastillas) {
+      this.canastillas.forEach((c) => c.active && c.destroy());
+      this.canastillas = null;
     }
     super.destroy(fromScene);
   }
 }
 
-export default Carrotanque;
+export default Abuelo;

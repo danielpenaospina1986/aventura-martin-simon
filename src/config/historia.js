@@ -49,9 +49,9 @@ export const JEFES = {
     derrota: '—¡ME VOY POR EL SIFÓN, CARAJO!',
   },
   medellin: {
-    nombre: 'el Carrotanque',
-    saludo: '—¡Agua fría a domicilio, pues!',
-    derrota: '—¡Me varé… y con flores encima!',
+    nombre: 'el Abuelo',
+    saludo: '—¡Súbanse, que los llevo… derechito a la ducha!',
+    derrota: '—¡Me varé, y enterrado en fruta!',
   },
   atlanta: {
     nombre: 'Doña Zully',

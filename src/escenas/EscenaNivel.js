@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, HELADITO, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -85,11 +85,12 @@ export class EscenaNivel extends Phaser.Scene {
 
     // Los trastos de las arenas de los jefes. Se crean aqui, antes de que el
     // jefe prepare lo suyo: si se creasen mas abajo, al plantar las sombrillas
-    // o los materos el grupo todavia no existiria.
+    // o las canastillas el grupo todavia no existiria.
     this.chorros = this.physics.add.group({ allowGravity: false });
     this.sombrillas = this.physics.add.staticGroup();
-    // los materos de los balcones de Medellin: cuelgan quietos hasta que les dan
-    this.materos = this.physics.add.group({ allowGravity: false });
+    // las canastillas de fruta de los balcones de Medellin: cuelgan quietas
+    // hasta que les dan
+    this.canastillas = this.physics.add.group({ allowGravity: false });
     // los flotadores que rueda el Salvavidas de Miami
     this.flotadores = this.physics.add.group();
     // las balas de espuma del Capitan Tapon
@@ -275,31 +276,31 @@ export class EscenaNivel extends Phaser.Scene {
       });
     }
 
-    // Los materos del Carrotanque. Un cabezazo en pleno salto los tira: hay que
+    // Las canastillas del Abuelo. Un cabezazo en pleno salto las tira: hay que
     // ir subiendo, no basta con rozarlos al caer.
     this.jugadores.forEach((jugador) => {
-      this.physics.add.overlap(jugador, this.materos, (a, b) => {
-        const matero = this.materos.contains(a) ? a : b;
+      this.physics.add.overlap(jugador, this.canastillas, (a, b) => {
+        const canastilla = this.canastillas.contains(a) ? a : b;
         if (jugador.body.velocity.y >= 0) return;
-        this.tirarMatero(matero, jugador.x);
+        this.tirarCanastilla(canastilla, jugador.x);
       });
     });
-    this.physics.add.overlap(this.proyectiles, this.materos, (a, b) => {
+    this.physics.add.overlap(this.proyectiles, this.canastillas, (a, b) => {
       // Aqui no se pueden usar todavia los ayudantes de mas abajo: se declaran
       // despues. Y el orden de los dos objetos no se puede dar por hecho.
       const proyectil = this.proyectiles.contains(a) ? a : b;
-      this.tirarMatero(proyectil === a ? b : a, proyectil.x);
+      this.tirarCanastilla(proyectil === a ? b : a, proyectil.x);
       this.romperProyectil(proyectil);
     });
-    this.physics.add.collider(this.materos, solidos, (a, b) => {
-      this.romperMatero(this.materos.contains(a) ? a : b);
+    this.physics.add.collider(this.canastillas, solidos, (a, b) => {
+      this.romperCanastilla(this.canastillas.contains(a) ? a : b);
     });
     if (this.jefe) {
-      this.physics.add.overlap(this.materos, this.jefe, (a, b) => {
-        const matero = this.materos.contains(a) ? a : b;
-        if (!matero.cayendo || !this.jefe || !this.jefe.recibirMatero) return;
-        if (this.jefe.recibirMatero(matero.x)) this.anotarGolpeAlJefe();
-        this.romperMatero(matero);
+      this.physics.add.overlap(this.canastillas, this.jefe, (a, b) => {
+        const canastilla = this.canastillas.contains(a) ? a : b;
+        if (!canastilla.cayendo || !this.jefe || !this.jefe.recibirCanastilla) return;
+        if (this.jefe.recibirCanastilla(canastilla.x)) this.anotarGolpeAlJefe();
+        this.romperCanastilla(canastilla);
       });
     }
 
@@ -917,13 +918,13 @@ export class EscenaNivel extends Phaser.Scene {
     chorro.destroy();
   }
 
-  // --- la arena del Carrotanque ---------------------------------------------
+  // --- la arena del Abuelo --------------------------------------------------
 
-  // Los materos de los balcones. Cuelgan por encima de la cabeza del nino de
-  // pie, pero al alcance de un salto: asi valen las tres formas de tirarlos (la
-  // katana, un bloque o un cabezazo), que es lo que hace que los dos ninos
-  // puedan con el. Se reparten por el ancho de la arena para que siempre haya
-  // uno cerca de donde el camion se para a resoplar.
+  // Las canastillas de fruta de los balcones. Cuelgan por encima de la cabeza
+  // del nino de pie, pero al alcance de un salto: asi valen las tres formas de
+  // tumbarlas (la katana, un bloque o un cabezazo), que es lo que hace que los
+  // dos ninos puedan con el. Se reparten por el ancho de la arena para que
+  // siempre haya una cerca de donde la pickup se para a resoplar.
   // Donde empieza y donde acaba la arena del jefe. Se saca del terreno, no de
   // numeros fijos, para que cada ciudad reparta lo suyo por el sitio que hay de
   // verdad.
@@ -941,95 +942,111 @@ export class EscenaNivel extends Phaser.Scene {
     return { izquierda: bordeDe(-16) + JEFE.margenDeArena, derecha: bordeDe(16) };
   }
 
-  plantarMateros(jefe) {
+  plantarCanastillas(jefe) {
     const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
-    const y = suelo - MATERO.altura;
+    const y = suelo - CANASTILLA.altura;
 
     const bordes = this.bordesDeLaArena(jefe);
-    const izquierda = bordes.izquierda + MATERO.margen;
-    const derecha = bordes.derecha - MATERO.margen;
-    const tramo = Math.max(MATERO.separacionMinima, derecha - izquierda);
+    const izquierda = bordes.izquierda + CANASTILLA.margen;
+    const derecha = bordes.derecha - CANASTILLA.margen;
+    const tramo = Math.max(CANASTILLA.separacionMinima, derecha - izquierda);
     const cuantos = Phaser.Math.Clamp(
-      Math.round(tramo / MATERO.separacionMinima) + 1,
-      MATERO.minimo,
-      MATERO.cuantos,
+      Math.round(tramo / CANASTILLA.separacionMinima) + 1,
+      CANASTILLA.minimo,
+      CANASTILLA.cuantos,
     );
 
     const plantados = [];
     for (let i = 0; i < cuantos; i += 1) {
       const parte = cuantos === 1 ? 0.5 : i / (cuantos - 1);
-      plantados.push(this.colgarMatero(izquierda + tramo * parte, y));
+      plantados.push(this.colgarCanastilla(izquierda + tramo * parte, y));
     }
     return plantados;
   }
 
-  colgarMatero(x, y) {
-    const matero = this.materos.create(x, y, TEXTURAS.matero);
-    matero.setDisplaySize(MATERO.ancho, MATERO.alto).setDepth(7);
-    matero.body.setSize(MATERO.caja.ancho / matero.scaleX, MATERO.caja.alto / matero.scaleY, true);
-    matero.body.setAllowGravity(false);
-    matero.body.setVelocity(0, 0);
-    matero.cayendo = false;
-    matero.sitio = { x, y };
+  colgarCanastilla(x, y) {
+    const canastilla = this.canastillas.create(x, y, TEXTURAS.canastilla);
+    canastilla.setDisplaySize(CANASTILLA.ancho, CANASTILLA.alto).setDepth(7);
+    canastilla.body.setSize(CANASTILLA.caja.ancho / canastilla.scaleX, CANASTILLA.caja.alto / canastilla.scaleY, true);
+    canastilla.body.setAllowGravity(false);
+    canastilla.body.setVelocity(0, 0);
+    canastilla.cayendo = false;
+    canastilla.sitio = { x, y };
     // se mece, para que se lea que cuelga y no que flota
-    matero.vaiven = this.tweens.add({
-      targets: matero,
+    canastilla.vaiven = this.tweens.add({
+      targets: canastilla,
       angle: { from: -5, to: 5 },
       duration: 1700,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
-    return matero;
+    return canastilla;
   }
 
-  // Le dan desde abajo y se viene abajo, recto. La sombra en el suelo dice
-  // donde va a caer, que es lo que deja calcular si le va a dar al camion.
-  tirarMatero(matero, desdeX) {
-    if (!matero || !matero.active || matero.cayendo) return;
-    matero.cayendo = true;
-    if (matero.vaiven) matero.vaiven.stop();
-    matero.setAngle(0);
-    matero.body.setAllowGravity(true);
-    matero.body.setGravityY(MATERO.gravedad - this.physics.world.gravity.y);
-    matero.body.setVelocity(0, 0);
+  // Le dan desde abajo y se viene abajo, recta. La sombra en el suelo dice
+  // donde va a caer, que es lo que deja calcular si le va a dar a la pickup.
+  tirarCanastilla(canastilla, desdeX) {
+    if (!canastilla || !canastilla.active || canastilla.cayendo) return;
+    canastilla.cayendo = true;
+    if (canastilla.vaiven) canastilla.vaiven.stop();
+    canastilla.setAngle(0);
+    canastilla.setTexture(TEXTURAS.canastillaCae);
+    canastilla.body.setAllowGravity(true);
+    canastilla.body.setGravityY(CANASTILLA.gravedad - this.physics.world.gravity.y);
+    canastilla.body.setVelocity(0, 0);
 
     const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
-    matero.sombra = this.add
-      .ellipse(matero.x, suelo - 5, MATERO.ancho, 14, 0x000000, 0.35)
+    canastilla.sombra = this.add
+      .ellipse(canastilla.x, suelo - 5, CANASTILLA.ancho, 14, 0x000000, 0.35)
       .setDepth(3);
-    textoFlotante(this, matero.x, matero.y - 26, '¡Ojo abajo!', COLORES.textoAcento, 900);
+    textoFlotante(this, canastilla.x, canastilla.y - 26, '¡Ojo abajo!', COLORES.textoAcento, 900);
     return desdeX;
   }
 
-  romperMatero(matero) {
-    if (!matero || !matero.active) return;
-    const sitio = matero.sitio || { x: matero.x, y: matero.y };
-    if (matero.sombra) matero.sombra.destroy();
-    if (matero.vaiven) matero.vaiven.stop();
-    estrellitas(this, matero.x, matero.y, 8);
-    polvo(this, matero.x, matero.y + 10);
-    matero.destroy();
+  romperCanastilla(canastilla) {
+    if (!canastilla || !canastilla.active) return;
+    const sitio = canastilla.sitio || { x: canastilla.x, y: canastilla.y };
+    if (canastilla.sombra) canastilla.sombra.destroy();
+    if (canastilla.vaiven) canastilla.vaiven.stop();
+    estrellitas(this, canastilla.x, canastilla.y, 8);
+    polvo(this, canastilla.x, canastilla.y + 10);
 
-    // sale otro en su sitio: quedarse sin materos seria quedarse sin pelea
-    this.time.delayedCall(MATERO.recambioMs, () => {
-      if (this.terminado || !this.jefe || !this.jefe.active || !this.materos) return;
-      const nuevo = this.colgarMatero(sitio.x, sitio.y);
-      if (this.jefe.materos) this.jefe.materos.push(nuevo);
+    // La fruta desparramada se queda un momento donde cayo. El sprite se
+    // destruye enseguida, asi que sin esto el dibujo de la canastilla reventada
+    // no se veria nunca.
+    const restos = this.add
+      .image(canastilla.x, canastilla.y, TEXTURAS.canastillaRota)
+      .setDisplaySize(CANASTILLA.ancho, CANASTILLA.alto)
+      .setDepth(6);
+    this.tweens.add({
+      targets: restos,
+      alpha: { from: 1, to: 0 },
+      duration: CANASTILLA.restosMs,
+      onComplete: () => restos.destroy(),
+    });
+
+    canastilla.destroy();
+
+    // sale otra en su sitio: quedarse sin canastillas seria quedarse sin pelea
+    this.time.delayedCall(CANASTILLA.recambioMs, () => {
+      if (this.terminado || !this.jefe || !this.jefe.active || !this.canastillas) return;
+      const nueva = this.colgarCanastilla(sitio.x, sitio.y);
+      if (this.jefe.canastillas) this.jefe.canastillas.push(nueva);
     });
   }
 
-  // La katana no choca con nada: mira una zona. Esto es lo que le deja tirar un
-  // matero igual que tira a un bicho.
+  // La katana no choca con nada: mira una zona. Esto es lo que le deja tumbar
+  // una canastilla igual que tumba a un bicho.
   golpearColgantes(zona, desdeX) {
-    if (!this.materos) return;
-    this.materos
+    if (!this.canastillas) return;
+    this.canastillas
       .getChildren()
       .slice()
-      .forEach((matero) => {
-        if (!matero.active || matero.cayendo) return;
-        if (Phaser.Geom.Intersects.RectangleToRectangle(zona, matero.getBounds())) {
-          this.tirarMatero(matero, desdeX);
+      .forEach((canastilla) => {
+        if (!canastilla.active || canastilla.cayendo) return;
+        if (Phaser.Geom.Intersects.RectangleToRectangle(zona, canastilla.getBounds())) {
+          this.tirarCanastilla(canastilla, desdeX);
         }
       });
   }

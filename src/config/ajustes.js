@@ -234,19 +234,22 @@ export const VACA = {
   cartelMs: 2400,          // lo que se queda el cartel de aviso en pantalla
 };
 
-// El matero del balcon, en la arena del Carrotanque. Cuelga a la altura justa:
+// El canastilla del balcon, en la arena del Abuelo. Cuelga a la altura justa:
 // por encima de la cabeza del nino de pie, pero al alcance de un salto, para que
 // valgan las tres formas de darle (la katana, un bloque o un cabezazo).
-export const MATERO = {
-  ancho: 58,
-  alto: 66,
-  caja: { ancho: 48, alto: 54 },
+export const CANASTILLA = {
+  // Apaisada, como una canastilla de mercado de verdad: mas ancha que alta. El
+  // matero de antes era al reves.
+  ancho: 68,
+  alto: 60,
+  caja: { ancho: 56, alto: 48 },
   altura: 118,           // lo que cuelga por encima del suelo, a su centro
   separacionMinima: 128, // para que quepan varios sin taparse
   cuantos: 5,
   minimo: 3,
   margen: 40,            // lo mas cerca del borde de la arena que se planta uno
-  recambioMs: 3600,      // lo que tarda en volver a salir uno roto
+  recambioMs: 3600,      // lo que tarda en volver a salir una rota
+  restosMs: 1100,        // lo que se queda la fruta desparramada en el suelo
   gravedad: 1500,
 };
 

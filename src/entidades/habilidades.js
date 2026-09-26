@@ -53,7 +53,7 @@ function katana(jugador, escena) {
       }
     });
 
-  // Lo que cuelgue en la arena de un jefe (los materos del Carrotanque) se
+  // Lo que cuelgue en la arena de un jefe (los canastillas del Abuelo) se
   // lleva el golpe igual: es justo asi como se le gana.
   if (escena.golpearColgantes) escena.golpearColgantes(zona, jugador.x);
 

@@ -144,7 +144,7 @@ empapados son ellos.
 | # | Ciudad | Que es para ellos |
 |---|---|---|
 | 1 | Space Coast | Donde nacieron los dos |
-| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos |
+| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **el Abuelo** |
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia |
 | 5 | Cartagena | El paseo que no se les olvida |
@@ -323,7 +323,7 @@ Reglas para los cinco:
   destruye en cuanto cae, asi que sin eso la pose no se llegaria a ver nunca: la
   escena deja la imagen un momento en su sitio mientras se va.
 - Los que todavia no tienen arte se dibujan **por codigo** con los pinceles de
-  tinta. Papa Inodoro y Dona Zully ya tienen el suyo.
+  tinta. Papa Inodoro, el Abuelo y Dona Zully ya tienen el suyo.
 
 #### 1. Space Coast: Papa Inodoro
 
@@ -349,24 +349,32 @@ Sus dibujos son de verdad (`src/assets/jefes/inodoro/`): ocho poses de el
 —quieto, brinco, escupe, enojado, embiste, aturdido, golpe y derrotado— y tres
 del heladito (volando, dando tumbos y estrellado).
 
-#### 2. Medellin: el Carrotanque
+#### 2. Medellin: el Abuelo
 
-El camion del agua que sube a repartir bano a domicilio. Ronda su arena, avisa,
-y **embiste** de lado a lado; al chocar se queda resoplando unos segundos, que
-es la unica pausa que da. **Aguanta cuatro materos.**
+El abuelo baja de la finca en su **pickup doble cabina gris**, con el tanque de
+agua en el platon y la idea muy clara de banar a sus nietos. Sombrero vueltiao y
+poncho, para que no haya duda de quien es. Ronda su arena, avisa acelerando en
+el sitio, y **embiste** de lado a lado; al chocar se queda resoplando unos
+segundos, que es la unica pausa que da. **Aguanta cuatro canastillas.**
 
 **A el no se le pega**: los golpes rebotan con un ¡clonc!. Lo que lo para son
-los **materos** de los balcones, que cuelgan por encima de la cabeza del nino.
-Se les da desde abajo —con la katana, con un bloque o con un cabezazo en pleno
-salto, las tres valen— y caen rectos, con una **sombra** en el suelo que avisa
-donde. Si uno le cae encima, abollon.
+las **canastillas de fruta** de los balcones —las canastillas de plastico de los
+mercados, rebosando mango, banano y naranja—, que cuelgan por encima de la
+cabeza del nino. Se les da desde abajo —con la katana, con un bloque o con un
+cabezazo en pleno salto, las tres valen— y caen rectas, con una **sombra** en el
+suelo que avisa donde. Si una le cae encima, abollon.
 
-Cuelgan a la altura justa (`MATERO.altura`): por encima del nino de pie, pero al
-alcance de un salto. Por eso la pelea no pide habilidad ninguna. Cuando uno se
-rompe **sale otro en su sitio** a los pocos segundos: quedarse sin materos seria
-quedarse sin pelea.
+Cuelgan a la altura justa (`CANASTILLA.altura`): por encima del nino de pie,
+pero al alcance de un salto. Por eso la pelea no pide habilidad ninguna. Cuando
+una se rompe **sale otra en su sitio** a los pocos segundos: quedarse sin
+canastillas seria quedarse sin pelea.
 
-Al cuarto se vara, cubierto de flores, como una silleta.
+Al cuarto se vara, enterrado en fruta.
+
+Sus dibujos son de verdad (`src/assets/jefes/abuelo/`): seis poses de el
+—ronda, avisa, embiste, resopla, golpe y derrotado— y tres de la canastilla
+(colgando, cayendo y reventada). Es el unico jefe **apaisado**: una camioneta no
+cabe en el cuadrado de los demas, asi que mide 204 x 136 en vez de 172 x 172.
 
 #### 3. Atlanta: Dona Zully
 
@@ -769,10 +777,13 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
   que sustituirla, es cambiar un archivo. Venia con 81 glifos y **sin acentos,
   sin ene y sin signos de apertura**; como todo el juego esta en espanol, se
   completa con `herramientas/completar-fuente.mjs` hasta 105 glifos.
-- **Los jefes con cara de Daniel:** los cinco guardianes van a ser versiones
-  bizarras suyas, generadas con Gemini a partir de una foto que el mismo pasa.
-  Es su propia cara y su propia decision, asi que de licencia no hay nada que
-  mirar; las hojas de partida no se suben al repositorio.
+- **Los jefes con cara de la familia:** los cinco guardianes van a ser versiones
+  bizarras de la familia, generadas con Gemini. Papa Inodoro lleva la cara de
+  Daniel, sacada de una foto suya; el Abuelo se reconoce por el sombrero
+  vueltiao y el poncho. Son sus propias caras y su propia decision, asi que de
+  licencia no hay nada que mirar; las hojas de partida no se suben al
+  repositorio. La pickup del Abuelo trae dibujado el emblema de su marca, que
+  entra en la excepcion de mas arriba.
 - **Caritas de los ninos:** dibujos de Martin y Simon generados con Gemini a peticion
   de Daniel, pidiendo un aire de dibujo animado antiguo. Un estilo de dibujo se puede
   usar libremente, pero el generador colo dos marcas registradas: un emblema en la
@@ -1399,3 +1410,28 @@ baja.
   tablero** a mano. No vale con esperar a que este "apoyado en algo": el
   Salvavidas se pasa la pelea saltando, y pillandolo sobre la plataforma de su
   arena lo que se mide es el salto a la plataforma, no al jefe.
+- **2026-09-26** — Medellin estrena **al Abuelo** y con el se va el Carrotanque,
+  que estaba dibujado por codigo. La pelea es la misma —no se le pega, lo paran
+  las cosas que le caen de los balcones— y lo que cambia es el cuento: ahora es
+  el abuelo en su pickup doble cabina, con sombrero vueltiao y poncho, y lo que
+  le cae encima son **canastillas de fruta** en vez de materos. Se renombra
+  todo: `Carrotanque` pasa a `Abuelo` y `MATERO` a `CANASTILLA`.
+- **2026-09-26** — El Abuelo es el primer jefe **apaisado**: 204 x 136 en vez de
+  172 x 172, porque una camioneta no cabe en un cuadrado sin nadar en aire. El
+  alto de su CAJA es el de todos (104), asi que se le sigue pudiendo pisar
+  igual. La prueba de la coronilla deja de exigir que el dibujo mida 172 y pasa
+  a exigir lo que de verdad importa: que sea mucho mas grande que un nino y que
+  le asome un buen trozo por encima de su propia caja.
+- **2026-09-26** — **`limpiarBolsas` se le comio la camioneta entera.** La chapa
+  es un gris verdoso (128,144,144) que queda a 148 del turquesa del fondo: pasa
+  de sobra el filtro normal (90), pero el de las bolsas encerradas es mucho mas
+  ancho a proposito (tolerancia x 2,2 = 198) y la tomo por fondo. El interior de
+  la camioneta es una mancha cerrada, asi que se fue entera y el jefe salia como
+  una silueta negra con las ventanillas y el abuelo pintados encima. La regla
+  que queda: **`limpiarBolsas` solo si el dibujo no tiene ningun color a menos
+  de dos tolerancias del fondo**. La vaca puede; la camioneta no.
+- **2026-09-26** — La hoja del Abuelo trae DIBUJADA una linea de suelo bajo cada
+  pose, como la de la vaca, asi que las zonas van a mano y cortan a un pixel de
+  las llantas (y=334 arriba, y=726 abajo). Y la hoja de las canastillas trae en
+  la fila de abajo dos poses de la camioneta repetidas: ninguna zona baja de
+  y=380.

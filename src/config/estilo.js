@@ -83,20 +83,8 @@ export const COLORES = {
   jabonCuerpo: 0xeddf9c,
   jabonBrillo: 0xfaf3d2,
 
-  // Medellin: el Carrotanque y los materos de los balcones
-  carroCabina: 0xe8e2d2,
-  carroTanque: 0x3f8f5a,
-  carroTanqueClaro: 0x59b076,
-  carroRueda: 0x2f2a26,
-  carroLlanta: 0xcfc8b8,
+  // el cristal de las cabinas
   carroCristal: 0x9fd8ef,
-  materoBarro: 0xb96a45,
-  materoBarroClaro: 0xd18a63,
-  materoTierra: 0x5c4531,
-  florAmarilla: 0xf2c33c,
-  florRoja: 0xd9534f,
-  florBlanca: 0xf7f1e1,
-  florHoja: 0x3f8f5a,
 
   // Miami: el Salvavidas, su torre y sus flotadores
   salvavidasPiel: 0xe0a86b,
@@ -215,10 +203,16 @@ export const TEXTURAS = {
   helado1: 'tex-helado1',
   helado2: 'tex-helado2',
   heladoSplat: 'tex-helado-splat',
-  jefeCarrotanque: 'tex-jefe-carrotanque',
-  jefeCarrotanqueEmbiste: 'tex-jefe-carrotanque-embiste',
-  jefeCarrotanqueFlorido: 'tex-jefe-carrotanque-florido',
-  matero: 'tex-matero',
+  // Medellin: el Abuelo y su pickup, con sus seis poses dibujadas
+  abueloRonda: 'tex-abuelo-ronda',
+  abueloAvisa: 'tex-abuelo-avisa',
+  abueloEmbiste: 'tex-abuelo-embiste',
+  abueloResopla: 'tex-abuelo-resopla',
+  abueloGolpe: 'tex-abuelo-golpe',
+  abueloDerrotado: 'tex-abuelo-derrotado',
+  canastilla: 'tex-canastilla',
+  canastillaCae: 'tex-canastilla-cae',
+  canastillaRota: 'tex-canastilla-rota',
   jefeSalvavidas: 'tex-jefe-salvavidas',
   jefeSalvavidasTira: 'tex-jefe-salvavidas-tira',
   jefeSalvavidasResbala: 'tex-jefe-salvavidas-resbala',

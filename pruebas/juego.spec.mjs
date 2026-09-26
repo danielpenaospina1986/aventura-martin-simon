@@ -1341,7 +1341,7 @@ async function entrarALaArena(page, indiceNivel) {
   }, indiceNivel);
 }
 
-test('al Carrotanque no se le pega: lo para un matero', async ({ page }) => {
+test('al Abuelo no se le pega: lo para una canastilla', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'simon');
   await entrarALaArena(page, 1);
@@ -1350,7 +1350,7 @@ test('al Carrotanque no se le pega: lo para un matero', async ({ page }) => {
     const n = window.juego.scene.getScene('nivel');
     const jefe = n.jefe;
     const clase = jefe.constructor.name;
-    const materos = n.materos.getChildren().length;
+    const canastillas = n.canastillas.getChildren().length;
 
     // de frente no se le hace nada, por mucho que se insista
     jefe.invulnerableHasta = 0;
@@ -1358,23 +1358,23 @@ test('al Carrotanque no se le pega: lo para un matero', async ({ page }) => {
     n.golpearJefe(jefe.x - 40);
     const trasGolpeDeFrente = jefe.vidas;
 
-    // y ahora un matero encima
+    // y ahora una canastilla encima
     const vidasAntes = jefe.vidas;
     for (let i = 0; i < 400 && jefe.vidas === vidasAntes; i += 1) {
-      const cerca = n.materos
+      const cerca = n.canastillas
         .getChildren()
         .filter((m) => m.active && !m.cayendo)
         .sort((a, b) => Math.abs(a.x - jefe.x) - Math.abs(b.x - jefe.x))[0];
-      if (cerca && Math.abs(cerca.x - jefe.x) < 70) n.tirarMatero(cerca, cerca.x);
+      if (cerca && Math.abs(cerca.x - jefe.x) < 70) n.tirarCanastilla(cerca, cerca.x);
       await new Promise((r) => setTimeout(r, 55));
     }
-    return { clase, materos, antesDeFrente, trasGolpeDeFrente, vidasAntes, vidas: jefe.vidas };
+    return { clase, canastillas, antesDeFrente, trasGolpeDeFrente, vidasAntes, vidas: jefe.vidas };
   });
 
-  expect(resultado.clase).toBe('Carrotanque');
-  expect(resultado.materos).toBeGreaterThanOrEqual(3);
+  expect(resultado.clase).toBe('Abuelo');
+  expect(resultado.canastillas).toBeGreaterThanOrEqual(3);
   expect(resultado.trasGolpeDeFrente).toBe(resultado.antesDeFrente); // de frente, nada
-  expect(resultado.vidas).toBe(resultado.vidasAntes - 1); // el matero si cuenta
+  expect(resultado.vidas).toBe(resultado.vidasAntes - 1); // la canastilla si cuenta
   expect(errores).toEqual([]);
 });
 
@@ -1484,7 +1484,7 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   });
 
   expect(jefes.map((j) => j.clase)).toEqual([
-    'PapaInodoro', 'Carrotanque', 'DonaZully', 'Salvavidas', 'CapitanTapon',
+    'PapaInodoro', 'Abuelo', 'DonaZully', 'Salvavidas', 'CapitanTapon',
   ]);
   // ninguno es el provisional, y todos aguantan mas de un golpe
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
@@ -1511,6 +1511,7 @@ test('desde el suelo se le llega a la coronilla al jefe, en las cinco ciudades',
         techo: suelo - n.jefe.config.caja.alto,
         pies: Math.round(pies),
         alto: Math.round(n.jefe.displayHeight),
+        cajaAlto: n.jefe.config.caja.alto,
       });
     }
     return salida;
@@ -1522,9 +1523,11 @@ test('desde el suelo se le llega a la coronilla al jefe, en las cinco ciudades',
     expect(m.techo).toBeGreaterThan(m.pies);
     // y con margen de sobra para no rozarlo mientras sube
     expect(m.techo - m.pies).toBeGreaterThan(8);
-    // pero el jefe sigue midiendo el doble que un nino: lo que se recorta es la
-    // caja, no el dibujo
-    expect(m.alto).toBe(172);
+    // pero el DIBUJO no se ha encogido para conseguirlo: lo que se recorta es la
+    // caja. El jefe sigue siendo mucho mas grande que un nino (que mide 86) y
+    // le asoma un buen trozo por encima de su propia caja.
+    expect(m.alto).toBeGreaterThan(129);
+    expect(m.alto - m.cajaAlto).toBeGreaterThanOrEqual(30);
   });
 });
 

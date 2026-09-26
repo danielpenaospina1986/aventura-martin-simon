@@ -429,6 +429,81 @@ const PERSONAJES = [
     ],
   },
   {
+    // EL ABUELO, el guardian del bano de Medellin: baja de la finca en su
+    // pickup doble cabina con el tanque de agua en el platon.
+    //
+    // Su hoja viene sobre turquesa liso, asi que se recorta por color exacto.
+    // Las zonas van a mano porque la hoja trae DIBUJADA una linea de suelo bajo
+    // cada pose: las de arriba cortan en y=334 y las de abajo en y=726, justo a
+    // un pixel de las llantas. Sin eso, el jefe saldria con una raya negra
+    // pegada debajo.
+    nombre: 'abuelo',
+    colorExacto: true,
+    // NADA de limpiarBolsas aqui, aunque el fondo sea turquesa liso. La chapa
+    // de la camioneta es un GRIS VERDOSO (128,144,144) que queda a 148 del
+    // fondo: pasa de sobra el filtro normal, pero el de las bolsas encerradas
+    // es mucho mas ancho (tolerancia x 2,2 = 198) y se la comia entera. La
+    // camioneta salia como una silueta negra con las ventanillas y el abuelo
+    // pintados encima. La vaca si puede permitirselo porque no tiene un solo
+    // color cerca del turquesa.
+    limpiarBolsas: false,
+    tolerancia: 90,
+    // Se ve a 204 x 136 y a densidad 3 eso son 612 pixeles de verdad de ancho.
+    // El lienzo es apaisado porque la camioneta lo es: cuadrado, la dejaria
+    // nadando en aire por arriba y por abajo.
+    lienzo: { ancho: 612, alto: 408 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/abuelo',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'abuelo',
+        // SIN porPieza: las seis comparten escala, que es lo que hace que la
+        // camioneta no encoja ni crezca al cambiar de pose.
+        nombres: ['ronda', 'avisa', 'embiste', 'resopla', 'golpe', 'derrotado'],
+        zonas: [
+          { x: 14, y: 78, ancho: 446, alto: 256 },    // rodando tranquilo
+          { x: 464, y: 44, ancho: 448, alto: 290 },   // acelerando, con el puno en alto
+          { x: 914, y: 58, ancho: 437, alto: 276 },   // embistiendo, con su estela
+          { x: 25, y: 475, ancho: 460, alto: 251 },   // resoplando, con el capo humeando
+          { x: 492, y: 399, ancho: 416, alto: 327 },  // la canastilla encima del techo
+          { x: 935, y: 481, ancho: 416, alto: 245 },  // varado y enterrado en fruta
+        ],
+      },
+    ],
+  },
+  {
+    // La canastilla de fruta que le tumban encima al Abuelo. En SU PROPIA
+    // entrada, como el heladito: la altura se reparte por grupos, asi que
+    // metida en la hoja del jefe saldria del tamano de la camioneta.
+    //
+    // De su lamina solo sirve la fila de arriba: la de abajo trae repetidas dos
+    // poses de la camioneta, que ya vienen en su hoja. Por eso ninguna zona
+    // baja de y=380. Y a la canastilla llena se le deja fuera la cuerda: es
+    // larguisima y, como las tres comparten escala, habria encogido a las otras
+    // dos para hacerle sitio.
+    nombre: 'canastilla',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    tolerancia: 90,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/abuelo',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'canastilla',
+        nombres: ['canastilla', 'canastilla-cae', 'canastilla-rota'],
+        zonas: [
+          { x: 88, y: 88, ancho: 332, alto: 290 },   // llena, sin la cuerda
+          { x: 480, y: 36, ancho: 420, alto: 340 },  // volcandose en el aire
+          { x: 925, y: 94, ancho: 424, alto: 286 },  // reventada en el suelo
+        ],
+      },
+    ],
+  },
+  {
     // El heladito de chocolate que escupe Papa Inodoro. Va en SU PROPIA entrada
     // y no como una hoja mas del jefe: la altura se reparte por grupos, asi que
     // metido con el, el heladito saldria del tamano del retrete.
