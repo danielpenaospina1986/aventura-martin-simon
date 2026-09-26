@@ -304,21 +304,38 @@ Reglas para los cinco:
   sola, asi que se derrotaba a si misma en doce segundos, mucho antes de que el
   nino llegara. Quien jugaba encontraba la arena vacia.
 - Cada uno **dice una frase** al empezar (cuando el nino pisa su arena, no
-  antes, que si no nadie la lee) y otra al perder, de `config/historia.js`.
-- Mientras no haya arte, se dibujan **por codigo** con los pinceles de tinta.
+  antes, que si no nadie la lee) y otra al perder, de `config/historia.js`. La
+  frase se **sujeta dentro de la pantalla**: el jefe pelea en el borde derecho
+  de su arena y una frase larga se salia media por la derecha.
+- Un jefe puede traer **dibujo de derrota** (`texturaDeDerrota`). El sprite se
+  destruye en cuanto cae, asi que sin eso la pose no se llegaria a ver nunca: la
+  escena deja la imagen un momento en su sitio mientras se va.
+- Los que todavia no tienen arte se dibujan **por codigo** con los pinceles de
+  tinta. Papa Inodoro y Dona Zully ya tienen el suyo.
 
-#### 1. Space Coast: el Astronauta Burbuja
+#### 1. Space Coast: Papa Inodoro
 
-Un astronauta grandote con el casco lleno de agua jabonosa y un patico de caucho
-flotando dentro. **Aguanta cuatro golpes.**
+Una **cabeza saliendo de un retrete**, con la cara de Daniel. Es el primero de
+los cinco: los guardianes del bano van a ser todos **versiones bizarras del
+papa**, que es lo que le da la gracia al chiste de un juego sobre escaparse del
+bano. **Aguanta cuatro golpes.**
 
-No vale pegarle cuando uno quiera: camina por su arena, avisa, y pega un
-**pisoton lunar** que sacude la pantalla. Despues se queda unos segundos con las
-botas rebosando espuma, y **esa es la ventana** para darle: pisandolo, con la
-katana o con un bloque. Fuera de ella el golpe rebota con un ¡clonc! y no cuenta.
+Hace dos cosas, las dos con aviso:
 
-Con el tercer golpe queda **mareado** y ya no vuelve a andar: da tumbos en el
-sitio esperando el remate, que lo manda flotando al espacio.
+- **Escupe heladitos de chocolate** (si, por lo que parecen). Salen en arco, dan
+  tumbos y se estrellan contra el suelo dejando su mancha. Solo hacen dano en el
+  aire: la mancha ya no toca a nadie.
+- Cuando se harta, **se enoja** —cara roja y vapor por las orejas— y **embiste**
+  de lado a lado.
+
+Al final de la embestida **se estampa y se queda aturdido** unos segundos, y
+**esa es la unica ventana** para darle: pisandolo, con la katana o con un
+bloque. Fuera de ella el golpe rebota con un ¡clonc! y no cuenta. Los golpes
+**no le cortan la ventana**, asi que en una caben dos o tres.
+
+Sus dibujos son de verdad (`src/assets/jefes/inodoro/`): ocho poses de el
+—quieto, brinco, escupe, enojado, embiste, aturdido, golpe y derrotado— y tres
+del heladito (volando, dando tumbos y estrellado).
 
 #### 2. Medellin: el Carrotanque
 
@@ -735,6 +752,10 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
   que sustituirla, es cambiar un archivo. Venia con 81 glifos y **sin acentos,
   sin ene y sin signos de apertura**; como todo el juego esta en espanol, se
   completa con `herramientas/completar-fuente.mjs` hasta 105 glifos.
+- **Los jefes con cara de Daniel:** los cinco guardianes van a ser versiones
+  bizarras suyas, generadas con Gemini a partir de una foto que el mismo pasa.
+  Es su propia cara y su propia decision, asi que de licencia no hay nada que
+  mirar; las hojas de partida no se suben al repositorio.
 - **Caritas de los ninos:** dibujos de Martin y Simon generados con Gemini a peticion
   de Daniel, pidiendo un aire de dibujo animado antiguo. Un estilo de dibujo se puede
   usar libremente, pero el generador colo dos marcas registradas: un emblema en la
@@ -1305,3 +1326,32 @@ baja.
   `historia.js` (estan en el historial de git): dejar texto muerto en el sitio
   que es la unica fuente de la verdad es justo lo que nos colo el "bloques
   recogidos" de Samaon.
+- **2026-09-26** — Space Coast estrena a **Papa Inodoro** y con el se va el
+  Astronauta Burbuja, que era provisional y estaba dibujado por codigo. Los
+  cinco jefes van a ser versiones bizarras del papa: este es una cabeza saliendo
+  de un retrete, con su cara. Escupe heladitos de chocolate, se enoja, embiste y
+  se estampa; la ventana es el aturdimiento. Se borran su archivo, sus tres
+  texturas de codigo y los colores que solo el usaba.
+- **2026-09-26** — La hoja del jefe venia con **el nombre de cada pose escrito
+  debajo**, asi que sus zonas van a mano y todas cortan justo por encima de las
+  letras (y=366 arriba, y=727 abajo). De paso, la pose de escupir deja fuera el
+  heladito que lleva dibujado al lado: en el juego el heladito es un objeto
+  aparte y, dibujado encima, saldria doble.
+- **2026-09-26** — El heladito va en **su propia entrada** de
+  `preparar-sprites.mjs`, como ya paso con el gato: la altura se reparte por
+  grupos, asi que metido en la hoja del jefe habria salido del tamano del
+  retrete.
+- **2026-09-26** — Un jefe puede traer **dibujo de derrota**. Hasta ahora el
+  sprite se destruia en cuanto caia, asi que una pose de "me voy por el sifon"
+  no se habria visto jamas; ahora la escena la deja un momento en su sitio
+  mientras se hunde y se va.
+- **2026-09-26** — La frase del jefe se **sujeta dentro de la pantalla** y se
+  parte a 460 px en vez de a 300. Centrada en el jefe, que pelea en el borde
+  derecho de su arena, "¡NO TAPES EL BANO, BERRIONDO!" se salia media pantalla;
+  y partida en dos lineas se metia debajo de su barra de vida.
+- **2026-09-26** — Ojo al depurar en el navegador del editor: **Phaser pausa el
+  juego cuando la pestana no tiene el foco**, asi que el bucle de fisica no
+  corre y los cuerpos se quedan con la escala sin aplicar (`_sy` en 1). Pareció
+  que la caja del jefe nuevo estaba rota —453 px de alto y hundida en el
+  suelo— y lo que pasaba es que el juego estaba quieto. Medido con Playwright,
+  que si tiene foco, la caja sale de 112 x 150 y apoyada en el suelo.

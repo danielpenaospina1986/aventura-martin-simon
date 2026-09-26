@@ -72,12 +72,9 @@ export const COLORES = {
   frenteOscuro: 0x2b211c,
   frenteHoja: 0x4a3b2c,
 
-  // el Astronauta Burbuja
-  trajeClaro: 0xf2efe6,
-  trajeSombra: 0xcfc8b8,
+  // el agua jabonosa que sale por todas partes
   aguaJabon: 0x9fd8ef,
   espuma: 0xffffff,
-  patico: 0xf2c33c,
   visor: 0x2d4a63,
 
   sombrillaTela: 0xd96b5e,
@@ -196,7 +193,6 @@ export const TEXTURAS = {
   caida: 'tex-caida',
   jefe: 'tex-jefe',
   jefeEnfadado: 'tex-jefe-enfadado',
-  // Space Coast: el Astronauta Burbuja
   // Atlanta: Dona Zully y su arena
   zullyQuieta: 'tex-zully-quieta',
   zullyMirada: 'tex-zully-mirada',
@@ -207,9 +203,18 @@ export const TEXTURAS = {
   sombrilla: 'tex-sombrilla',
   jabon: 'tex-jabon',
 
-  jefeAstronauta: 'tex-jefe-astronauta',
-  jefeAstronautaAtascado: 'tex-jefe-astronauta-atascado',
-  jefeAstronautaMareado: 'tex-jefe-astronauta-mareado',
+  // Space Coast: Papa Inodoro, con sus ocho poses dibujadas
+  inodoroQuieto: 'tex-inodoro-quieto',
+  inodoroBrinco: 'tex-inodoro-brinco',
+  inodoroEscupe: 'tex-inodoro-escupe',
+  inodoroEnojado: 'tex-inodoro-enojado',
+  inodoroEmbiste: 'tex-inodoro-embiste',
+  inodoroAturdido: 'tex-inodoro-aturdido',
+  inodoroGolpe: 'tex-inodoro-golpe',
+  inodoroDerrotado: 'tex-inodoro-derrotado',
+  helado1: 'tex-helado1',
+  helado2: 'tex-helado2',
+  heladoSplat: 'tex-helado-splat',
   jefeCarrotanque: 'tex-jefe-carrotanque',
   jefeCarrotanqueEmbiste: 'tex-jefe-carrotanque-embiste',
   jefeCarrotanqueFlorido: 'tex-jefe-carrotanque-florido',

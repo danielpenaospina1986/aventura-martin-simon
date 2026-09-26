@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, HELADITO, JEFE, JUGADOR, LANZAMIENTO, MATERO, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -94,6 +94,9 @@ export class EscenaNivel extends Phaser.Scene {
     this.flotadores = this.physics.add.group();
     // las balas de espuma del Capitan Tapon
     this.balas = this.physics.add.group({ allowGravity: false });
+    // los heladitos de chocolate de Papa Inodoro: estos SI caen, que su gracia
+    // es que salgan en arco y se estrellen
+    this.heladitos = this.physics.add.group();
     // las torres de vigia son decorado, sin fisica ninguna
     this.torres = [];
 
@@ -307,6 +310,19 @@ export class EscenaNivel extends Phaser.Scene {
         this.herirJugador(jugador);
       });
     });
+
+    // Los heladitos de Papa Inodoro caen en arco y se estrellan donde toquen.
+    this.physics.add.collider(this.heladitos, solidos, (a, b) => {
+      // en un choque de grupo contra grupo, Phaser no garantiza el orden
+      this.estrellarHeladito(this.heladitos.contains(a) ? a : b);
+    });
+    this.jugadores.forEach((jugador) => {
+      this.physics.add.overlap(jugador, this.heladitos, (a, b) => {
+        if (jugador.estaCongelado) return;
+        this.estrellarHeladito(this.heladitos.contains(a) ? a : b);
+        this.herirJugador(jugador);
+      });
+    });
     this.jugadores.forEach((jugador) => {
       this.physics.add.overlap(jugador, this.regalos, (a, b) => {
         this.recogerRegalo(jugador, this.regalos.contains(a) ? a : b);
@@ -471,10 +487,14 @@ export class EscenaNivel extends Phaser.Scene {
       bicho.proximoAtaque = bicho.reloj + respiro;
     });
 
-    // Y se van los vacas que vengan lanzados: reaparecer justo delante de una
-    // embestida no es dificultad, es un callejon sin salida.
+    // Y se van las vacas que vengan lanzadas: reaparecer justo delante de una
+    // embestida no es dificultad, es un callejon sin salida. Con los heladitos
+    // que le queden a Papa Inodoro en el aire, lo mismo.
     this.vacas.getChildren().forEach((vaca) => {
       if (vaca.active) vaca.destroy();
+    });
+    this.heladitos.getChildren().forEach((heladito) => {
+      if (heladito.active) this.estrellarHeladito(heladito);
     });
     this.proximaVaca = Math.max(this.proximaVaca, 3000);
   }
@@ -838,11 +858,26 @@ export class EscenaNivel extends Phaser.Scene {
   }
 
   // Lo que dice el guardian del bano, en su idioma.
+  // La frase se centra en el jefe, y el jefe pelea en el borde derecho de su
+  // arena: con una frase larga se salia media pantalla por la derecha. Se
+  // sujeta dentro de lo visible, igual que su barra de vida.
   hablaElJefe(cual) {
     if (!this.jefe || !this.jefe.active) return;
     const suyo = jefeDelCuento(this.datosNivel.fondo || '');
     if (!suyo || !suyo[cual]) return;
-    textoFlotante(this, this.jefe.x, this.jefe.y - 78, suyo[cual], COLORES.textoAcento, 2200);
+
+    const ancho = 460;
+    const camara = this.cameras.main;
+    const zoom = camara.zoom || 1;
+    const izquierda = camara.scrollX + (camara.width * (1 - 1 / zoom)) / 2;
+    const anchoVisible = camara.width / zoom;
+    const x = Phaser.Math.Clamp(
+      this.jefe.x,
+      izquierda + ancho / 2,
+      izquierda + anchoVisible - ancho / 2,
+    );
+
+    textoFlotante(this, x, this.jefe.y - 64, suyo[cual], COLORES.textoAcento, 2200, ancho);
   }
 
   // El chorro pega en la sombrilla y se vuelve por donde vino.
@@ -1047,6 +1082,61 @@ export class EscenaNivel extends Phaser.Scene {
     bala.destroy();
   }
 
+  // --- la arena de Papa Inodoro ---------------------------------------------
+
+  // Un heladito de chocolate, que sale de la boca en arco y da tumbos.
+  escupirHeladito(jefe) {
+    const dir = jefe.direccion;
+    const heladito = this.heladitos.create(
+      jefe.x + dir * HELADITO.salidaX,
+      jefe.y + HELADITO.salidaY,
+      TEXTURAS.helado1,
+    );
+    heladito.setDisplaySize(HELADITO.ancho, HELADITO.alto).setDepth(8);
+    heladito.setFlipX(dir < 0);
+
+    // La caja va pegada abajo, no centrada: el recorte deja el dibujo apoyado
+    // en la base del lienzo, asi que una caja centrada queda sobre el cono.
+    const escalaX = heladito.scaleX || 1;
+    const escalaY = heladito.scaleY || 1;
+    heladito.body.setSize(HELADITO.caja.ancho / escalaX, HELADITO.caja.alto / escalaY, false);
+    heladito.body.setOffset(
+      (HELADITO.ancho - HELADITO.caja.ancho) / 2 / escalaX,
+      (HELADITO.alto - HELADITO.caja.alto) / escalaY,
+    );
+    heladito.body.setVelocity(dir * HELADITO.velocidad, -HELADITO.impulso);
+
+    // da tumbos: alterna sus dos poses hasta que se estrella
+    heladito.giro = this.time.addEvent({
+      delay: HELADITO.giroMs,
+      loop: true,
+      callback: () => {
+        if (!heladito.active) return;
+        const cae = heladito.texture.key === TEXTURAS.helado1;
+        heladito.setTexture(cae ? TEXTURAS.helado2 : TEXTURAS.helado1);
+      },
+    });
+    return heladito;
+  }
+
+  // Al tocar suelo (o al nino) se despachurra: la mancha se queda un momento y
+  // ya no hace dano, que bastante tiene el nino con esquivarlo en el aire.
+  estrellarHeladito(heladito) {
+    if (!heladito || !heladito.active || heladito.estrellado) return;
+    heladito.estrellado = true;
+    if (heladito.giro) heladito.giro.remove();
+    heladito.giro = null;
+    heladito.setTexture(TEXTURAS.heladoSplat);
+    heladito.body.setVelocity(0, 0);
+    heladito.body.enable = false;
+    this.tweens.add({
+      targets: heladito,
+      alpha: { from: 1, to: 0 },
+      duration: HELADITO.manchaMs,
+      onComplete: () => heladito.active && heladito.destroy(),
+    });
+  }
+
   // Lo que pasa cuando a un jefe le cuenta un golpe, venga de donde venga.
   anotarGolpeAlJefe() {
     if (!this.jefe || !this.jefe.active) return;
@@ -1081,6 +1171,26 @@ export class EscenaNivel extends Phaser.Scene {
     // el empapado es el, que para eso es un guardian del bano
     this.salpicarDesde(this.jefe);
     this.hablaElJefe('derrota');
+
+    // Si el jefe trae dibujo de derrota, se queda un momento en su sitio
+    // mientras se va: el sprite se destruye enseguida, asi que sin esto la pose
+    // no se llega a ver nunca.
+    if (this.jefe.texturaDeDerrota) {
+      const adios = this.add
+        .image(x, y, this.jefe.texturaDeDerrota)
+        .setDisplaySize(this.jefe.displayWidth, this.jefe.displayHeight)
+        .setFlipX(this.jefe.flipX)
+        .setDepth(9);
+      this.tweens.add({
+        targets: adios,
+        y: y + 30,
+        alpha: { from: 1, to: 0 },
+        duration: 1100,
+        ease: 'Quad.easeIn',
+        onComplete: () => adios.destroy(),
+      });
+    }
+
     this.jefe.destroy();
     this.jefe = null;
 

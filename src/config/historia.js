@@ -44,9 +44,9 @@ export const CIUDADES = {
 // texto, y asi el cuento se lee entero desde aqui.
 export const JEFES = {
   'space-coast': {
-    nombre: 'el Astronauta Burbuja',
-    saludo: '—Houston, tenemos dos niños sucios.',
-    derrota: '—¡Me voy… a la órbita del enjuague!',
+    nombre: 'Papá Inodoro',
+    saludo: '—¡NO TAPES EL BAÑO, BERRIONDO!',
+    derrota: '—¡ME VOY POR EL SIFÓN, CARAJO!',
   },
   medellin: {
     nombre: 'el Carrotanque',

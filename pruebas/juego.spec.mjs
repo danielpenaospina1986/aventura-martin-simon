@@ -89,8 +89,8 @@ async function entrarAlNivel(page, personaje = 'martin') {
 }
 
 // Deja pasar el tiempo hasta que el jefe esta en su momento vulnerable, sea
-// cual sea su truco. El Astronauta Burbuja, por ejemplo, solo se deja dar
-// cuando se queda atascado tras su pisoton.
+// cual sea su truco. Papa Inodoro, por ejemplo, solo se deja dar cuando se
+// estampa al final de su embestida y se queda aturdido.
 async function esperarJefeExpuesto(page, msMaximo = 12000) {
   // Primero se le pone el nino delante: los jefes no atacan mientras no haya
   // nadie en su arena, asi que en la otra punta del tablero no se expondrian
@@ -457,15 +457,15 @@ test('al jefe se le gana saltándole encima cuando está expuesto', async ({ pag
   expect(errores).toEqual([]);
 });
 
-test('al Astronauta Burbuja no se le puede dar mientras camina', async ({ page }) => {
+test('a Papá Inodoro no se le puede dar mientras ronda', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
   const resultado = await page.evaluate(async () => {
     const n = window.juego.scene.getScene('nivel');
     const jefe = n.jefe;
 
-    // se espera a pillarlo andando, que es cuando NO se deja
-    for (let i = 0; i < 160 && jefe.estado !== 'anda'; i += 1) {
+    // se espera a pillarlo rondando, que es cuando NO se deja
+    for (let i = 0; i < 160 && jefe.estado !== 'ronda'; i += 1) {
       await new Promise((r) => setTimeout(r, 55));
     }
     const antes = jefe.vidas;
@@ -476,9 +476,93 @@ test('al Astronauta Burbuja no se le puede dar mientras camina', async ({ page }
     return { estado: jefe.estado, expuesto: jefe.puedeRecibirGolpe(), antes, despues: jefe.vidas };
   });
 
-  expect(resultado.estado).toBe('anda');
+  expect(resultado.estado).toBe('ronda');
   expect(resultado.expuesto).toBe(false);
   expect(resultado.despues).toBe(resultado.antes); // el golpe rebota
+});
+
+test('Papá Inodoro escupe heladitos, embiste y se estampa', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+    const j = n.jugadores[0];
+
+    // El jefe no hace nada mientras no haya nadie en su arena, asi que primero
+    // se le pone el nino delante. Se le deja invulnerable: lo que se mide es lo
+    // que hace EL, y si el nino pierde los corazones vuelve al checkpoint, se
+    // sale de la arena y el jefe se calla.
+    j.setPosition(jefe.x - 220, jefe.y);
+    j.body.setVelocity(0, 0);
+
+    const estados = new Set();
+    let heladitosVistos = 0;
+    let expuestoSinAturdir = false;
+
+    // Se espera al SUCESO (que se estampe) y no a un numero de vueltas: entre
+    // que escupe dos heladitos, se enoja y cruza la arena pasan varios segundos.
+    for (let i = 0; i < 260; i += 1) {
+      j.invulnerableHasta = n.time.now + 4000;
+      estados.add(jefe.estado);
+      heladitosVistos = Math.max(heladitosVistos, n.heladitos.getChildren().length);
+      if (jefe.puedeRecibirGolpe() && jefe.estado !== 'aturdido') expuestoSinAturdir = true;
+      if (jefe.estado === 'aturdido') break;
+      await new Promise((r) => setTimeout(r, 55));
+    }
+
+    // y aturdido SI se deja dar
+    const antes = jefe.vidas;
+    jefe.invulnerableHasta = 0;
+    n.golpearJefe(jefe.x - 40);
+
+    return {
+      estados: [...estados],
+      heladitosVistos,
+      expuestoSinAturdir,
+      leContoElGolpe: jefe.vidas === antes - 1,
+      // el golpe no le corta la ventana: puede caerle otro
+      sigueAturdido: jefe.estado === 'aturdido',
+    };
+  });
+
+  expect(resultado.estados).toContain('ronda');
+  expect(resultado.estados).toContain('escupe');
+  expect(resultado.estados).toContain('enojado');
+  expect(resultado.estados).toContain('embiste');
+  expect(resultado.estados).toContain('aturdido');
+  expect(resultado.heladitosVistos).toBeGreaterThan(0);
+  expect(resultado.expuestoSinAturdir).toBe(false);
+  expect(resultado.leContoElGolpe).toBe(true);
+  expect(resultado.sigueAturdido).toBe(true);
+  expect(errores).toEqual([]);
+});
+
+test('el heladito se estrella al tocar el suelo y deja de hacer daño', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const heladito = n.escupirHeladito(n.jefe);
+    const alSalir = { textura: heladito.texture.key, cuerpo: heladito.body.enable };
+
+    for (let i = 0; i < 80 && !heladito.estrellado; i += 1) {
+      await new Promise((r) => setTimeout(r, 55));
+    }
+    return {
+      alSalir,
+      estrellado: heladito.estrellado === true,
+      textura: heladito.texture.key,
+      cuerpo: heladito.body.enable,
+    };
+  });
+
+  expect(resultado.alSalir.textura).toBe('tex-helado1');
+  expect(resultado.alSalir.cuerpo).toBe(true);
+  expect(resultado.estrellado).toBe(true);
+  expect(resultado.textura).toBe('tex-helado-splat');
+  expect(resultado.cuerpo).toBe(false); // ya no puede tocar a nadie
 });
 
 test('la katana de Martín también hace daño al jefe', async ({ page }) => {
@@ -1400,7 +1484,7 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   });
 
   expect(jefes.map((j) => j.clase)).toEqual([
-    'AstronautaBurbuja', 'Carrotanque', 'DonaZully', 'Salvavidas', 'CapitanTapon',
+    'PapaInodoro', 'Carrotanque', 'DonaZully', 'Salvavidas', 'CapitanTapon',
   ]);
   // ninguno es el provisional, y todos aguantan mas de un golpe
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));

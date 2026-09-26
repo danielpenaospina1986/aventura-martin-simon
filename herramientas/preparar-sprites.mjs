@@ -382,6 +382,81 @@ const PERSONAJES = [
     ],
   },
   {
+    // PAPA INODORO, el guardian del bano de Space Coast: una cabeza saliendo de
+    // un retrete, con la cara de Daniel.
+    //
+    // Su hoja viene sobre turquesa liso, asi que se recorta por color exacto, y
+    // la tolerancia va alta (100) por lo mismo que en la vaca: la pose del
+    // brinco lleva una SOMBRA ovalada debajo que es el mismo turquesa mas
+    // oscuro, y con la tolerancia de casa se quedaba pegada como un pegote gris
+    // bajo la taza. Lo que de verdad tiene el jefe (porcelana blanca, piel,
+    // pelo castano, agua azul clara) esta a mas de 200 de distancia del fondo.
+    //
+    // Las zonas van a mano porque la hoja trae ESCRITO el nombre de cada pose
+    // debajo del dibujo: todas las de arriba cortan en y=366 y las de abajo en
+    // y=727, justo por encima de las letras. De paso, la pose de escupir deja
+    // fuera el heladito que lleva dibujado al lado (en el juego el heladito es
+    // un objeto aparte, y dibujado encima saldria doble).
+    nombre: 'papa-inodoro',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 60,
+    tolerancia: 100,
+    // Se ve a 172 px y a densidad 3 eso son 516 pixeles de verdad: con el
+    // lienzo de casa (260) saldria dentado, como le paso a la chiva.
+    lienzo: { ancho: 520, alto: 520 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/inodoro',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'papa-inodoro',
+        // SIN porPieza: las ocho comparten escala, que es lo que hace que el
+        // jefe no encoja ni crezca al cambiar de pose.
+        nombres: ['quieto', 'brinco', 'escupe', 'enojado', 'embiste', 'aturdido', 'golpe', 'derrotado'],
+        zonas: [
+          { x: 40, y: 46, ancho: 248, alto: 320 },    // quieto, cara de sobrado
+          { x: 366, y: 26, ancho: 262, alto: 340 },   // el brinco, con su chapoteo
+          { x: 694, y: 46, ancho: 262, alto: 320 },   // escupiendo (sin el heladito)
+          { x: 1032, y: 46, ancho: 308, alto: 320 },  // enojado, con el vapor
+          { x: 14, y: 425, ancho: 338, alto: 302 },   // embistiendo, con su estela
+          { x: 392, y: 403, ancho: 300, alto: 324 },  // aturdido, con las estrellas
+          { x: 732, y: 440, ancho: 272, alto: 287 },  // encajando el golpe
+          { x: 1060, y: 440, ancho: 246, alto: 287 }, // derrotado, por el sifon
+        ],
+      },
+    ],
+  },
+  {
+    // El heladito de chocolate que escupe Papa Inodoro. Va en SU PROPIA entrada
+    // y no como una hoja mas del jefe: la altura se reparte por grupos, asi que
+    // metido con el, el heladito saldria del tamano del retrete.
+    //
+    // Los tres comparten escala (sin porPieza): son el mismo cono visto de dos
+    // maneras y luego estrellado, y si cada uno se escalara por su cuenta, el
+    // helado creceria al girar.
+    nombre: 'heladito',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 60,
+    tolerancia: 100,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/inodoro',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'heladito',
+        nombres: ['helado1', 'helado2', 'helado-splat'],
+        zonas: [
+          { x: 60, y: 296, ancho: 402, alto: 172 },  // de punta, volando
+          { x: 526, y: 212, ancho: 296, alto: 312 }, // dando tumbos
+          { x: 904, y: 258, ancho: 414, alto: 310 }, // estrellado en el suelo
+        ],
+      },
+    ],
+  },
+  {
     // Dona Zully, la mama, con su gorro de bano y su cepillo. Las mangueras van
     // sueltas en la misma hoja: son el chorro que dispara.
     nombre: 'zully',

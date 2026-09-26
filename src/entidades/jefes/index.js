@@ -8,7 +8,7 @@
 // por si algun dia se anade una ciudad antes que su jefe.
 // ---------------------------------------------------------------------------
 
-import { AstronautaBurbuja } from './AstronautaBurbuja.js';
+import { PapaInodoro } from './PapaInodoro.js';
 import { Carrotanque } from './Carrotanque.js';
 import { DonaZully } from './DonaZully.js';
 import { Salvavidas } from './Salvavidas.js';
@@ -16,7 +16,7 @@ import { CapitanTapon } from './CapitanTapon.js';
 import { Provisional } from './Provisional.js';
 
 const POR_CIUDAD = {
-  'space-coast': AstronautaBurbuja,
+  'space-coast': PapaInodoro,
   medellin: Carrotanque,
   atlanta: DonaZully,
   miami: Salvavidas,

@@ -268,6 +268,24 @@ export const FLOTADOR = {
   duracionMs: 5200,
 };
 
+// El heladito de chocolate que escupe Papa Inodoro, el jefe de Space Coast.
+// Sale en arco y se estrella contra el suelo, dejando su mancha.
+//
+// La caja va pegada al borde de abajo del dibujo, como en la vaca: el recorte
+// deja al muneco apoyado en la base del lienzo, asi que centrarla la habria
+// dejado flotando por encima del cono.
+export const HELADITO = {
+  ancho: 48,
+  alto: 48,
+  caja: { ancho: 28, alto: 17 },
+  velocidad: 175,
+  impulso: 210,        // lo que sube al salir, para que haga arco
+  salidaX: 52,         // por donde sale, contado desde el centro del jefe
+  salidaY: -38,        // a la altura de la boca, no de la taza
+  giroMs: 130,         // cada cuanto cambia de pose mientras da tumbos
+  manchaMs: 900,       // lo que se queda la mancha en el suelo
+};
+
 // La bala de espuma del Capitan Tapon.
 export const BALA = {
   ancho: 46,

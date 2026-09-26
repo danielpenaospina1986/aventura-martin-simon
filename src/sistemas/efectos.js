@@ -95,7 +95,17 @@ export function brilloMoneda(escena, x, y, textura = TEXTURAS.moneda) {
 // Texto que sube y se desvanece.
 // Un texto que sube y se desvanece. La duracion se puede alargar para lo que
 // haya que leer de verdad, como las frases de los jefes.
-export function textoFlotante(escena, x, y, texto, color = COLORES.textoAcento, duracion = 700) {
+// `ancho` es donde se parte la frase. Las de los jefes piden mas sitio: partidas
+// en dos lineas se metian debajo de su barra de vida.
+export function textoFlotante(
+  escena,
+  x,
+  y,
+  texto,
+  color = COLORES.textoAcento,
+  duracion = 700,
+  ancho = 300,
+) {
   const largo = duracion > 1200;
   const etiqueta = escena.add
     .text(x, y, texto, {
@@ -105,7 +115,7 @@ export function textoFlotante(escena, x, y, texto, color = COLORES.textoAcento, 
       stroke: '#16202c',
       strokeThickness: 4,
       align: 'center',
-      wordWrap: { width: 300 },
+      wordWrap: { width: ancho },
     })
     .setOrigin(0.5)
     .setDepth(45);
