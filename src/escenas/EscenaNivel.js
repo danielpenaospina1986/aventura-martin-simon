@@ -225,7 +225,19 @@ export class EscenaNivel extends Phaser.Scene {
         this.tocarPaloma(jugador, this.palomas.contains(a) ? a : b);
       });
     });
-    this.physics.add.collider(this.palomas, solidos);
+    // Una paloma que vuela no choca con el terreno: va por el aire. El choque
+    // solo cuenta cuando ya la han derribado, que es cuando tiene que caer y
+    // quedarse en el suelo. Sin esto, cualquier bloque alto le hace de presa y
+    // se van amontonando contra el.
+    this.physics.add.collider(
+      this.palomas,
+      solidos,
+      null,
+      (a, b) => {
+        const paloma = this.palomas.contains(a) ? a : b;
+        return paloma.estado === 'cae' || paloma.estado === 'suelo';
+      },
+    );
     this.physics.add.collider(this.regalos, solidos);
 
     // El vaca corre por el suelo y por las plataformas, y se le pisa igual que
@@ -731,9 +743,17 @@ export class EscenaNivel extends Phaser.Scene {
       jugador.body.velocity.y = -JEFE.reboteJugador;
       jugador.saltoRecortado = false;
       this.golpearJefe(jugador.x);
-    } else {
-      this.herirJugador(jugador);
+      return;
     }
+
+    // Subiendo y con los pies por encima de su cabeza: le esta SALTANDO POR
+    // ENCIMA, y eso no castiga. Sin esto, un jefe del doble de alto no se puede
+    // pisar: el nino entra en su caja mientras sube, se lleva el golpe antes de
+    // llegar arriba y no hay salto que valga. Con esto, la carrerilla buena da
+    // una ventana de unos 77 px para despegar, parecida a la de un bicho.
+    if (!cayendo && porEncima) return;
+
+    this.herirJugador(jugador);
   }
 
   // --- la arena de Dona Zully -----------------------------------------------

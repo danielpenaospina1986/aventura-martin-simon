@@ -313,11 +313,20 @@ export const JEFE = {
   parpadeoMs: 110,
   reboteJugador: 470,   // impulso del jugador al saltarle encima
   empujonAlHerir: 90,   // cuanto retrocede el jefe al recibir un golpe
-  // El jefe mide el doble que un nino. No se le puede saltar encima desde el
-  // suelo: hay que subir a la plataforma de su arena y dejarse caer.
+  // El jefe mide el doble que un nino, y asi se queda: es lo que le da empaque.
+  // Lo que se le recorta es la CAJA, que va bastante por dentro del dibujo,
+  // igual que en la banera.
+  //
+  // El salto sube 114,6 px, asi que desde el suelo los pies del nino llegan
+  // como mucho a y=173. Con la caja midiendo lo que el dibujo, su techo estaba
+  // en 138: el nino nunca lo pasaba, y lo unico que conseguia saltando era
+  // chocar de lado y mojarse. Ahora el techo queda en 184, once pixeles por
+  // debajo de donde llega el salto, asi que se le puede caer encima con una
+  // carrerilla; la plataforma de la arena sigue estando, pero ya no es la unica
+  // manera.
   ancho: 172,
   alto: 172,
-  caja: { ancho: 148, alto: 158 },
+  caja: { ancho: 148, alto: 104 },
 };
 
 export const ENEMIGO = {

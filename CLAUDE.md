@@ -229,6 +229,10 @@ justo por encima del nino **suelta lo que suelta**, y si le cae encima cuenta
 como un golpe. Aparece cada cierto tiempo al azar, y mas a menudo segun avanza
 la partida.
 
+Volando **no choca con el terreno**: va por el aire. El choque solo cuenta
+cuando ya la han derribado, que es cuando tiene que caer y quedarse en el suelo.
+Con el choque siempre puesto, cualquier bloque alto le hacia de presa.
+
 **Se le puede saltar encima** y aguanta dos: al primero se queda aturdida, va
 mas despacio y da tumbos; al segundo se cae, rueda por el aire, se estampa
 contra el suelo, titila y desaparece, dejando su premio donde cayo. Tocarla de
@@ -278,6 +282,14 @@ los bichos: asi lo que cuenta enemigos en pantalla sigue contando baneras.
 Al final de cada tablero espera un **guardian del bano**: mide **172 x 172**, el
 doble que un nino, y mientras viva **la meta esta cerrada** y se dibuja apagada.
 Hay un **checkpoint justo antes de su arena**, asi que pelear no castiga.
+
+**Se le puede pisar desde el suelo.** El dibujo mide el doble, pero su caja no:
+va por dentro, de 104 px de alto, igual que la banera. El salto sube 114 px, asi
+que con una **carrerilla** el nino le pasa por encima de la cabeza y se le deja
+caer; la plataforma de la arena sigue estando, pero ya no es la unica manera.
+Ademas, **pasarle por encima subiendo no castiga**: solo cuenta lo que pase
+bajando. Sin eso, el nino se metia en su caja mientras subia, se llevaba el
+golpe antes de llegar arriba y no habia salto que valiera.
 
 Su arena es **la pantalla entera**, las 20 ultimas columnas del tablero, con el
 suelo seguido y sin huecos (ver la seccion 9). Todo lo que el jefe necesite
@@ -591,11 +603,16 @@ no puede seguir avanzando: la pelea se ve de un vistazo y completa, como el
 escenario de un teatro, y ni el jefe ni el nino se salen nunca de cuadro.
 
 - Suelo **seguido, sin un solo hueco**: nadie se cae peleando.
+- **Nada cierra el tablero por detras.** Hubo una pared de seis casillas en la
+  ultima columna, para que el jefe no se escapara; se quito, porque el jefe ya
+  se sujeta a los bordes de su arena y la pared hacia de presa: las palomas que
+  cruzan a la altura del segundo piso y las vacas que vienen corriendo chocaban
+  con ella y se iban amontonando detras de la puerta.
 - Delante va un **porche** de cuatro casillas con el ultimo checkpoint, asi que
   se entra descansado y reaparecer no cuesta el camino de vuelta.
-- Dentro: una **plataforma** para dejarse caer sobre el jefe (mide el doble que
-  un nino y desde el suelo el salto no llega a su coronilla), el **jefe** a dos
-  tercios de la pantalla y la **meta** al fondo.
+- Dentro: una **plataforma** desde la que dejarse caer sobre el jefe, el **jefe**
+  a dos tercios de la pantalla y la **meta** al fondo. Ya no es obligatoria: con
+  carrerilla se le pisa desde el suelo (ver la seccion 4).
 - Lo que cada jefe planta en su arena (las sombrillas de Dona Zully, por
   ejemplo) lo reparte el mismo, en `prepararArena()`.
 
@@ -1355,3 +1372,30 @@ baja.
   que la caja del jefe nuevo estaba rota —453 px de alto y hundida en el
   suelo— y lo que pasaba es que el juego estaba quieto. Medido con Playwright,
   que si tiene foco, la caja sale de 112 x 150 y apoyada en el suelo.
+- **2026-09-26** — **Fuera la pared del final del tablero**, en los cinco. Era
+  una columna de seis casillas detras de la puerta, puesta para que el jefe no
+  se escapara por la derecha; eso ya lo hacen los bordes de la arena. Lo que
+  hacia de verdad era de **presa**: las palomas que cruzan a la altura del
+  segundo piso y las vacas que vienen corriendo se estampaban contra ella y,
+  como solo se borran al salirse del mundo, se iban amontonando ahi. Es el unico
+  sitio del tablero del que no se puede salir.
+- **2026-09-26** — Una paloma **volando ya no choca con el terreno**: el choque
+  solo cuenta cuando la han derribado y tiene que caer. Va por el aire; que un
+  bloque alto la pare es lo que la dejaba clavada. Va con un `processCallback`
+  en el collider, no quitandolo: derribada si tiene que aterrizar.
+- **2026-09-26** — **A los jefes se les puede pisar desde el suelo.** Median el
+  doble que un nino y el salto no les llegaba a la coronilla, asi que hacia
+  falta la plataforma de la arena. El dibujo **no se toca** —la escala es lo que
+  les da empaque— y lo que se recorta es la **caja**, de 158 a 104 px de alto,
+  como ya se hacia con la banera: el techo queda en y=184 y los pies del nino
+  llegan a 173.
+- **2026-09-26** — Con eso solo no bastaba: el nino entraba en la caja del jefe
+  **mientras subia**, se llevaba el golpe antes de llegar arriba y el salto no
+  servia de nada. Ahora **pasarle por encima subiendo no castiga**; solo cuenta
+  lo que pase bajando. Entre las dos cosas, la ventana para despegar pasa de 26
+  a unos 77 px, parecida a la de un bicho. Hay una prueba que lo hace de verdad,
+  con las teclas, en las cinco ciudades.
+- **2026-09-26** — Para medir eso hay que **plantar al jefe en el suelo del
+  tablero** a mano. No vale con esperar a que este "apoyado en algo": el
+  Salvavidas se pasa la pelea saltando, y pillandolo sobre la plataforma de su
+  arena lo que se mide es el salto a la plataforma, no al jefe.

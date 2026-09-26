@@ -1490,6 +1490,151 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
 });
 
+test('desde el suelo se le llega a la coronilla al jefe, en las cinco ciudades', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const medidas = await page.evaluate(async () => {
+    const { ALCANCE, MUNDO } = await import('/src/config/ajustes.js');
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    // hasta donde llegan los pies del nino con un salto desde el suelo
+    const pies = suelo - ALCANCE.alturaSaltoPx;
+
+    const salida = [];
+    for (let i = 0; i < 5; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      await new Promise((r) => setTimeout(r, 1300));
+      const n = window.juego.scene.getScene('nivel');
+      // El techo de su caja, contado desde el suelo: asi da igual donde ande el
+      // jefe en ese momento (el Salvavidas, por ejemplo, se sube a sus torres).
+      salida.push({
+        ciudad: n.datosNivel.fondo,
+        techo: suelo - n.jefe.config.caja.alto,
+        pies: Math.round(pies),
+        alto: Math.round(n.jefe.displayHeight),
+      });
+    }
+    return salida;
+  });
+
+  medidas.forEach((m) => {
+    // el techo de su caja queda POR DEBAJO de donde llegan los pies: saltando
+    // desde el suelo se le puede caer encima, sin usar la plataforma
+    expect(m.techo).toBeGreaterThan(m.pies);
+    // y con margen de sobra para no rozarlo mientras sube
+    expect(m.techo - m.pies).toBeGreaterThan(8);
+    // pero el jefe sigue midiendo el doble que un nino: lo que se recorta es la
+    // caja, no el dibujo
+    expect(m.alto).toBe(172);
+  });
+});
+
+test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ page }) => {
+  // La de arriba comprueba la geometria; esta lo hace de verdad, con las
+  // teclas: carrerilla, salto sin soltar y a ver si le cae encima.
+  await entrarAlNivel(page, 'martin');
+
+  const resultado = [];
+  for (const indice of [0, 1, 2, 3, 4]) {
+    await page.evaluate(async (indice) => {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: indice });
+      await new Promise((r) => setTimeout(r, 1400));
+      const n = window.juego.scene.getScene('nivel');
+      // Se le deja quieto y expuesto: lo que se mide es el salto, no su truco.
+      // Primero se espera a pillarlo EN EL SUELO DEL TABLERO y ahi se le quita
+      // la gravedad, para que la medida se repita. No vale con "esta apoyado en
+      // algo": el Salvavidas se pasa la pelea saltando, y pillandolo sobre la
+      // plataforma de su arena el nino no salta al jefe, salta a la plataforma.
+      const { MUNDO } = await import('/src/config/ajustes.js');
+      const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+      n.jefe.puedeRecibirGolpe = () => true;
+      n.jefe.actualizar = () => {};
+      n.jefe.body.setAllowGravity(false);
+      n.jefe.body.setVelocity(0, 0);
+      // Se le planta en el suelo del tablero: el Salvavidas se pasa la pelea
+      // saltando de torre en torre, y congelado ahi arriba lo que se mediria es
+      // otra cosa.
+      n.jefe.setPosition(n.jefe.x, suelo - n.jefe.displayHeight / 2);
+      await new Promise((r) => setTimeout(r, 120));
+      n.proximaVaca = Number.MAX_SAFE_INTEGER;
+      n.proximaPaloma = Number.MAX_SAFE_INTEGER;
+    }, indice);
+
+    let pisotones = 0;
+    for (const salida of [125, 140, 155, 170, 185]) {
+      await page.evaluate((salida) => {
+        const n = window.juego.scene.getScene('nivel');
+        const j = n.jugadores[0];
+        n.jefe.vidas = 9;
+        n.jefe.invulnerableHasta = 0;
+        n.jefe.body.setVelocity(0, 0);
+        // Se despeja lo que el jefe haya dejado por el suelo: un flotador del
+        // Salvavidas rodando por la carrerilla congela al nino a media zancada
+        // y se pierde el salto.
+        [n.flotadores, n.balas, n.heladitos, n.chorros, n.peligros].forEach((g) => {
+          g.getChildren().slice().forEach((cosa) => cosa.active && cosa.destroy());
+        });
+        j.setPosition(n.jefe.x - salida, n.jefe.body.bottom - 30);
+        j.body.setVelocity(0, 0);
+        j.invulnerableHasta = 0;
+      }, salida);
+      await page.waitForTimeout(260);
+
+      await page.keyboard.down('ArrowRight');
+      await page.waitForTimeout(40);
+      // sin soltar el salto: soltandolo antes el salto es mas corto y no llega
+      await page.keyboard.down('Space');
+      await page.waitForTimeout(420);
+      await page.keyboard.up('Space');
+      await page.waitForTimeout(420);
+      await page.keyboard.up('ArrowRight');
+
+      const vidas = await page.evaluate(() => window.juego.scene.getScene('nivel').jefe.vidas);
+      if (vidas < 9) pisotones += 1;
+    }
+    const ciudad = await page.evaluate(() => window.juego.scene.getScene('nivel').datosNivel.fondo);
+    resultado.push({ ciudad, pisotones });
+  }
+
+  // en las cinco, con la carrerilla buena, se le cae encima
+  const flojas = resultado.filter((r) => r.pisotones === 0).map((r) => r.ciudad);
+  expect(flojas).toEqual([]);
+});
+
+test('ni las palomas ni las vacas se represan al final del tablero', async ({ page }) => {
+  await entrarAlNivel(page, 'simon');
+
+  const resultado = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const { Paloma } = await import('/src/entidades/Paloma.js');
+    const { Vaca } = await import('/src/entidades/Vaca.js');
+    const { MUNDO, VACA } = await import('/src/config/ajustes.js');
+    const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
+    const fin = n.nivel.ancho;
+
+    // una paloma a la altura del segundo piso y una vaca por el suelo, las dos
+    // camino del final del tablero, que es donde estaba la pared
+    const paloma = new Paloma(n, fin - 300, 5 * MUNDO.casilla, 1);
+    n.palomas.add(paloma);
+    const vaca = new Vaca(n, fin - 300, suelo - VACA.alto / 2, 1);
+    n.vacas.add(vaca);
+
+    let xPaloma = paloma.x;
+    let xVaca = vaca.x;
+    for (let i = 0; i < 160 && (paloma.active || vaca.active); i += 1) {
+      if (paloma.active) xPaloma = paloma.x;
+      if (vaca.active) xVaca = vaca.x;
+      await new Promise((r) => setTimeout(r, 55));
+    }
+    return { palomaViva: paloma.active, vacaViva: vaca.active, xPaloma, xVaca, fin };
+  });
+
+  // las dos salen del tablero y se van; no se quedan clavadas contra nada
+  expect(resultado.palomaViva).toBe(false);
+  expect(resultado.vacaViva).toBe(false);
+  expect(resultado.xPaloma).toBeGreaterThan(resultado.fin - 40);
+  expect(resultado.xVaca).toBeGreaterThan(resultado.fin - 40);
+});
+
 test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'simon');

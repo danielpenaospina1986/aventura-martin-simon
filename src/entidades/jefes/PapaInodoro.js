@@ -21,6 +21,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
+import { JEFE } from '../../config/ajustes.js';
 import { TEXTURAS } from '../../config/estilo.js';
 import { JefeBase } from '../JefeBase.js';
 
@@ -39,8 +40,9 @@ const TIEMPOS = {
 
 // Su caja es mas estrecha que la de los jefes dibujados por codigo: el retrete
 // ocupa unos dos tercios del ancho de su lienzo, y con la caja de casa (148) se
-// comia un palmo de aire a cada lado.
-const CAJA = { ancho: 112, alto: 150 };
+// comia un palmo de aire a cada lado. El alto es el de todos (ver JEFE.caja):
+// lo justo para que el nino le llegue a la coronilla de un salto.
+const CAJA = { ancho: 112, alto: JEFE.caja.alto };
 
 export class PapaInodoro extends JefeBase {
   constructor(escena, x, y, direccion = -1) {

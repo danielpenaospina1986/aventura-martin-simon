@@ -77,11 +77,6 @@ function arco(mapa, colInicio, ancho, filaBase) {
   }
 }
 
-// pared que cierra el tablero por la derecha, para que el jefe no se escape
-function cerrar(mapa, columnas) {
-  for (let f = ALTO; f < FILAS; f += 1) mapa[f][columnas - 1] = '#';
-}
-
 // --- motivos -----------------------------------------------------------------
 //
 // Trozos de tablero que se repiten. Cada uno se pinta sobre un tramo de suelo
@@ -211,12 +206,19 @@ function arenaDelJefe(t) {
   poner(t.m, SOBRE_SUELO, a + 18, 'M');
 }
 
-// Cierra el tablero: pinta el suelo de todos los tramos, levanta la pared del
-// fondo y recorta el lienzo a lo que se haya usado.
+// Cierra el tablero: pinta el suelo de todos los tramos y recorta el lienzo a lo
+// que se haya usado.
+//
+// Antes levantaba ademas una PARED de seis casillas en la ultima columna, para
+// que el jefe no se escapara por la derecha. Ya no hace falta —el jefe se
+// sujeta a los bordes de su arena, que se sacan del suelo— y ademas hacia de
+// presa: las palomas que cruzan a la altura del segundo piso y las vacas que
+// vienen corriendo chocaban con ella, se quedaban clavadas y se iban
+// amontonando detras de la puerta, que es el unico sitio del tablero del que no
+// se puede salir.
 function cerrarTablero(t) {
   const columnas = t.cursor;
   t.tramos.forEach(([desde, hasta]) => suelo(t.m, desde, hasta));
-  cerrar(t.m, columnas);
   return t.m.map((fila) => fila.slice(0, columnas));
 }
 
