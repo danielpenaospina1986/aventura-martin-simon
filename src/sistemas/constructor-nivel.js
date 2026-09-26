@@ -35,7 +35,7 @@ export const baseY = (fila) => (fila + 1) * C;
 
 // Lo que dicen los carteles de ayuda cuando se juega con el dedo.
 const EN_TACTIL = {
-  'Flechas para moverte': 'Joystick para moverte',
+  'Flechas para moverte': 'Botones para moverte',
   'Espacio: saltar': 'Botón grande: saltar',
   'X: atacar': 'Botón de la estrella: atacar',
 };

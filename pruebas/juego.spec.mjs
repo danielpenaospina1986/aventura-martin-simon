@@ -46,14 +46,28 @@ async function esperarEscena(page, clave) {
 // De las coordenadas del juego (640 x 360) a las de la pagina, para tocar con
 // el dedo donde toca.
 async function dondeTocar(page) {
-  const caja = await page.evaluate(() => {
+  // Ojo con el ancho: en un telefono la pantalla del juego es mas ancha de 640,
+  // asi que se le pregunta al juego en vez de darlo por hecho.
+  const caja = await page.evaluate(async () => {
+    const { MUNDO } = await import('/src/config/ajustes.js');
     const c = document.querySelector('#juego canvas').getBoundingClientRect();
-    return { x: c.x, y: c.y, w: c.width, h: c.height };
+    return { x: c.x, y: c.y, w: c.width, h: c.height, ancho: MUNDO.ancho, alto: MUNDO.alto };
   });
   return (gx, gy) => ({
-    x: caja.x + (gx / 640) * caja.w,
-    y: caja.y + (gy / 360) * caja.h,
+    x: caja.x + (gx / caja.ancho) * caja.w,
+    y: caja.y + (gy / caja.alto) * caja.h,
   });
+}
+
+// Donde esta cada boton tactil, preguntandoselo al juego: sus sitios dependen
+// del ancho de la pantalla.
+async function sitiosTactiles(page) {
+  const sitios = await page.evaluate(async () => {
+    const { sitiosDeLosBotones } = await import('/src/sistemas/tactil.js');
+    const { MUNDO } = await import('/src/config/ajustes.js');
+    return sitiosDeLosBotones(MUNDO.ancho);
+  });
+  return Object.fromEntries(sitios.map((s) => [s.nombre, s]));
 }
 
 // titulo -> seleccion -> nivel, con el personaje pedido
@@ -1987,10 +2001,11 @@ test.describe('con el dedo', () => {
       () => window.juego.scene.getScene('nivel').jugadores[0].y,
     );
 
-    // los dos dedos a la vez: la palanca a la derecha y el boton de saltar
-    const palanca = enPantalla(140, 288);
-    const salto = enPantalla(574, 292);
-    await dedos('touchStart', [{ ...palanca, id: 1 }, { ...salto, id: 2 }]);
+    // los dos dedos a la vez: el boton de andar a la derecha y el de saltar
+    const sitios = await sitiosTactiles(page);
+    const andar = enPantalla(sitios.derecha.x, sitios.derecha.y);
+    const salto = enPantalla(sitios.salto.x, sitios.salto.y);
+    await dedos('touchStart', [{ ...andar, id: 1 }, { ...salto, id: 2 }]);
 
     const medida = await page.evaluate(async (partida) => {
       const j = window.juego.scene.getScene('nivel').jugadores[0];
@@ -2016,6 +2031,41 @@ test.describe('con el dedo', () => {
     expect(errores).toEqual([]);
   });
 
+  test('deslizar el pulgar de un boton de andar al otro cambia de lado', async ({ page }) => {
+    await entrarAlNivel(page, 'martin', '&tactil=1');
+    const enPantalla = await dondeTocar(page);
+    const sitios = await sitiosTactiles(page);
+    const cdp = await page.context().newCDPSession(page);
+    const dedos = (tipo, puntos) =>
+      cdp.send('Input.dispatchTouchEvent', { type: tipo, touchPoints: puntos });
+
+    const derecha = enPantalla(sitios.derecha.x, sitios.derecha.y);
+    const izquierda = enPantalla(sitios.izquierda.x, sitios.izquierda.y);
+
+    await dedos('touchStart', [{ ...derecha, id: 1 }]);
+    await page.waitForTimeout(300);
+    const haciaLaDerecha = await page.evaluate(() =>
+      Math.round(window.juego.scene.getScene('nivel').jugadores[0].body.velocity.x),
+    );
+
+    // sin levantar el dedo: los ninos no lo levantan, lo deslizan
+    await dedos('touchMove', [{ ...izquierda, id: 1 }]);
+    await page.waitForTimeout(300);
+    const haciaLaIzquierda = await page.evaluate(() =>
+      Math.round(window.juego.scene.getScene('nivel').jugadores[0].body.velocity.x),
+    );
+
+    await dedos('touchEnd', [])
+    await page.waitForTimeout(250);
+    const quieto = await page.evaluate(() =>
+      Math.round(window.juego.scene.getScene('nivel').jugadores[0].body.velocity.x),
+    );
+
+    expect(haciaLaDerecha).toBe(210);
+    expect(haciaLaIzquierda).toBe(-210);
+    expect(quieto).toBe(0);
+  });
+
   test('el dedo tambien ataca y pausa', async ({ page }) => {
     await entrarAlNivel(page, 'simon', '&tactil=1');
     const enPantalla = await dondeTocar(page);
@@ -2023,7 +2073,8 @@ test.describe('con el dedo', () => {
     const antes = await page.evaluate(() =>
       window.juego.scene.getScene('nivel').proyectilesVivos(),
     );
-    const ataque = enPantalla(492, 244);
+    const sitios = await sitiosTactiles(page);
+    const ataque = enPantalla(sitios.ataque.x, sitios.ataque.y);
     await page.touchscreen.tap(ataque.x, ataque.y);
     await page.waitForTimeout(250);
     const despues = await page.evaluate(() =>
@@ -2031,7 +2082,7 @@ test.describe('con el dedo', () => {
     );
     expect(despues).toBe(antes + 1); // Samaon ha lanzado su bloque
 
-    const pausa = enPantalla(320, 24);
+    const pausa = enPantalla(sitios.pausa.x, sitios.pausa.y);
     await page.touchscreen.tap(pausa.x, pausa.y);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => window.juego.scene.isActive('pausa'))).toBe(true);
@@ -2138,6 +2189,45 @@ test.describe('con el dedo', () => {
   });
 });
 
+test.describe('un iphone acostado', () => {
+  // 844 x 390 es un iPhone de los de ahora: 2,16 a 1, mucho mas alargado que
+  // los 16 a 9 del juego.
+  test.use({ viewport: { width: 844, height: 390 }, hasTouch: true });
+
+  test('el juego llena la pantalla, sin franjas negras a los lados', async ({ page }) => {
+    await abrirJuego(page, '&tactil=1');
+    const medidas = await page.evaluate(async () => {
+      const { MUNDO } = await import('/src/config/ajustes.js');
+      const c = document.querySelector('#juego canvas').getBoundingClientRect();
+      return {
+        ancho: MUNDO.ancho,
+        alto: MUNDO.alto,
+        lienzo: { x: Math.round(c.x), ancho: Math.round(c.width), alto: Math.round(c.height) },
+      };
+    });
+
+    // el alto y la casilla no se tocan: lo que cambia es cuanto mundo se ve
+    expect(medidas.alto).toBe(360);
+    expect(medidas.ancho).toBe(780);
+    // y el lienzo llega de borde a borde
+    expect(medidas.lienzo.x).toBe(0);
+    expect(medidas.lienzo.ancho).toBe(844);
+    expect(medidas.lienzo.alto).toBe(390);
+  });
+
+  test('los botones de la derecha van pegados a SU borde', async ({ page }) => {
+    await entrarAlNivel(page, 'martin', '&tactil=1');
+    const sitios = await sitiosTactiles(page);
+    // los de andar, contra el borde izquierdo; los otros, contra el derecho
+    expect(sitios.izquierda.x).toBeLessThan(100);
+    expect(780 - sitios.salto.x).toBeLessThan(100);
+    expect(sitios.pausa.x).toBe(390);
+    // y las areas de los dos de andar no se pisan, que si no una se come a la otra
+    const separacion = sitios.derecha.x - sitios.izquierda.x;
+    expect(separacion).toBeGreaterThanOrEqual(sitios.izquierda.radio * 2 * 1.3);
+  });
+});
+
 test.describe('el telefono de pie', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -2159,6 +2249,13 @@ test('sin pantalla tactil no salen los mandos', async ({ page }) => {
   // en el ordenador no estorban, y la ayuda de teclado sigue en su sitio
   expect(estado.mandos).toBe(false);
   expect(estado.ayuda).toBe(true);
+
+  // y la pantalla se queda en los 640 de siempre: en el ordenador no cambia nada
+  const ancho = await page.evaluate(async () => {
+    const { MUNDO } = await import('/src/config/ajustes.js');
+    return MUNDO.ancho;
+  });
+  expect(ancho).toBe(640);
 
   // y el cartel de girar el telefono tampoco sale, aunque la ventana sea alta:
   // la consulta pide ademas que el puntero sea gordo

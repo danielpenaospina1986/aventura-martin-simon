@@ -1,10 +1,18 @@
 // ---------------------------------------------------------------------------
 // LOS MANDOS TACTILES
 //
-// Para poder jugar en un telefono: un joystick abajo a la izquierda, y abajo a
-// la derecha los botones de SALTAR y ATACAR. Arriba en medio, uno pequeno de
-// pausa, que en un telefono no hay tecla Esc y si no no habria forma de salir
-// del tablero.
+// Para poder jugar en un telefono. Cuatro botones y uno de pausa:
+//
+//   abajo a la izquierda   ANDAR a la izquierda y a la derecha
+//   abajo a la derecha     SALTAR (el grande) y ATACAR (el de la estrella)
+//   arriba en medio        PAUSA, que en un telefono no hay tecla Esc
+//
+// Se busca que estorben lo menos posible: son pequenos, translucidos, y el area
+// que responde es mas ancha que el circulo dibujado, asi que se puede fallar el
+// dibujo sin fallar el boton.
+//
+// Antes habia un joystick, pero se comia un cuarto de la pantalla para hacer lo
+// que hacen dos botones: en este juego solo se anda a izquierda y derecha.
 //
 // No son un mando aparte: lo que hacen es apretarle a `Controles` las mismas
 // acciones que las teclas (`tocar`), asi que el juego no se entera de por donde
@@ -15,35 +23,71 @@
 // son vectores, asi que salen nitidos a cualquier densidad y no hay que
 // generarles nada.
 //
-// Ojo con dos cosas:
+// Ojo con tres cosas:
 //
 //   - Van SUJETOS A LA PANTALLA, como el HUD, y eso aqui se hace a mano con
 //     `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
 //   - Las coordenadas del dedo (`pointer.x`) vienen en pixeles del lienzo, que
 //     es la pantalla del juego multiplicada por la densidad. Hay que dividir
-//     por ella para pensar en los 640 x 360 de siempre.
+//     por ella para pensar en la pantalla del juego.
+//   - Los de la derecha se colocan CONTRA EL BORDE DERECHO, no en una x fija:
+//     en un telefono la pantalla del juego es mas ancha de 640.
 // ---------------------------------------------------------------------------
 
-import Phaser from 'phaser';
-import { RENDER, TACTIL } from '../config/ajustes.js';
+import { esTactil, MUNDO, RENDER, TACTIL } from '../config/ajustes.js';
 import { COLORES } from '../config/estilo.js';
 
-// Si el aparato se maneja con el dedo. Se puede forzar desde la barra de
-// direcciones con ?tactil=1 (para probarlo en el ordenador) o apagar con
-// ?tactil=0.
-export function hayTactil() {
-  if (typeof window === 'undefined') return false;
-  const pedido = new URLSearchParams(window.location.search).get('tactil');
-  if (pedido === '1') return true;
-  if (pedido === '0') return false;
-  const dedo = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-  return Boolean(dedo || navigator.maxTouchPoints > 0);
-}
+// Si el aparato se maneja con el dedo. Vive en ajustes.js porque de eso depende
+// tambien el ancho de la pantalla, y ajustes no puede importar de aqui sin que
+// los dos se hagan un nudo.
+export { esTactil as hayTactil };
 
 // El mismo aviso, dicho para el mando que se este usando. En un telefono no hay
 // Enter, ni Esc, ni flechas, y decirle al nino que las pulse solo despista.
 export function segunElMando(conTeclado, conDedo) {
-  return hayTactil() ? conDedo : conTeclado;
+  return esTactil() ? conDedo : conTeclado;
+}
+
+// Donde cae cada boton en la pantalla del juego. Los de la derecha se miden
+// contra el borde derecho, que es lo que los deja en su sitio aunque la
+// pantalla sea mas ancha de 640.
+export function sitiosDeLosBotones(ancho = MUNDO.ancho) {
+  const { margen, separacion, alto, radio, radioSalto, radioAtaque } = TACTIL;
+  return [
+    { nombre: 'izquierda', accion: 'izquierda', figura: 'izquierda', x: margen, y: alto, radio },
+    {
+      nombre: 'derecha',
+      accion: 'derecha',
+      figura: 'derecha',
+      x: margen + separacion,
+      y: alto,
+      radio,
+    },
+    {
+      nombre: 'ataque',
+      accion: 'habilidad',
+      figura: 'estrella',
+      x: ancho - margen - TACTIL.ataqueDentro,
+      y: alto - TACTIL.ataqueArriba,
+      radio: radioAtaque,
+    },
+    {
+      nombre: 'salto',
+      accion: 'saltar',
+      figura: 'arriba',
+      x: ancho - margen,
+      y: alto,
+      radio: radioSalto,
+    },
+    {
+      nombre: 'pausa',
+      accion: null,
+      figura: 'pausa',
+      x: ancho / 2,
+      y: TACTIL.pausa.y,
+      radio: TACTIL.pausa.radio,
+    },
+  ];
 }
 
 export class MandosTactiles {
@@ -53,17 +97,16 @@ export class MandosTactiles {
     this.alPausar = opciones.alPausar || null;
 
     // Con un solo puntero no se puede correr y saltar a la vez, que es la mitad
-    // del juego. Se piden tres: la palanca y los dos botones.
+    // del juego. Se piden varios: los dos pulgares y alguno de mas.
     escena.input.addPointer(3);
 
     this.piezas = [];
     this.botones = [];
-    this.dedoDeLaPalanca = null;
 
-    this.montarJoystick();
-    this.botonSaltar = this.montarBoton(TACTIL.salto, 'saltar', 'triangulo');
-    this.botonAtacar = this.montarBoton(TACTIL.ataque, 'habilidad', 'estrella');
-    if (this.alPausar) this.botonPausa = this.montarBoton(TACTIL.pausa, null, 'pausa');
+    sitiosDeLosBotones(MUNDO.ancho).forEach((sitio) => {
+      if (sitio.nombre === 'pausa' && !this.alPausar) return;
+      this.montarBoton(sitio);
+    });
 
     this.escuchar();
   }
@@ -76,44 +119,35 @@ export class MandosTactiles {
     return objeto;
   }
 
-  montarJoystick() {
-    const { x, y, radio, palanca } = TACTIL.joystick;
-    this.base = this.anadir(
-      this.escena.add.circle(x, y, radio, COLORES.decoFondo)
-        .setStrokeStyle(4, COLORES.decoMarco, 0.95),
-    );
-    this.palanca = this.anadir(
-      this.escena.add.circle(x, y, palanca, COLORES.decoMarco)
-        .setStrokeStyle(3, COLORES.decoMarcoOscuro, 0.95),
-    );
-  }
-
   // Un boton es su circulo y el dibujito de dentro. Los dos se encienden a la
   // vez, asi que viajan juntos.
-  montarBoton(sitio, accion, figura) {
-    const { x, y, radio } = sitio;
+  montarBoton(sitio) {
+    const { x, y, radio, figura } = sitio;
     const circulo = this.anadir(
-      this.escena.add.circle(x, y, radio, COLORES.decoFondo)
+      this.escena.add
+        .circle(x, y, radio, COLORES.decoFondo)
         .setStrokeStyle(4, COLORES.decoMarco, 0.95),
     );
 
     const dentro = [];
-    if (figura === 'triangulo') {
-      const r = radio * 0.5;
-      dentro.push(
-        this.escena.add.triangle(x, y, 0, r, r, -r, r * 2, r, COLORES.decoMarco).setOrigin(0.5),
-      );
+    const r = radio * 0.46;
+    if (figura === 'arriba') {
+      dentro.push(this.escena.add.triangle(x, y, 0, r, r, -r, r * 2, r, COLORES.decoMarco));
+    } else if (figura === 'izquierda') {
+      dentro.push(this.escena.add.triangle(x, y, 0, r, r * 2, 0, r * 2, r * 2, COLORES.decoMarco));
+    } else if (figura === 'derecha') {
+      dentro.push(this.escena.add.triangle(x, y, 0, 0, r * 2, r, 0, r * 2, COLORES.decoMarco));
     } else if (figura === 'estrella') {
       dentro.push(this.escena.add.star(x, y, 4, radio * 0.22, radio * 0.58, COLORES.decoMarco));
     } else {
       // pausa: las dos barritas de siempre
-      const b = radio * 0.22;
+      const b = radio * 0.24;
       dentro.push(this.escena.add.rectangle(x - b, y, b * 0.8, radio, COLORES.decoMarco));
       dentro.push(this.escena.add.rectangle(x + b, y, b * 0.8, radio, COLORES.decoMarco));
     }
     dentro.forEach((pieza) => this.anadir(pieza));
 
-    const boton = { sitio, accion, circulo, dentro, dedo: null };
+    const boton = { ...sitio, circulo, dentro, dedo: null };
     this.botones.push(boton);
     return boton;
   }
@@ -127,7 +161,7 @@ export class MandosTactiles {
 
   // --- el dedo --------------------------------------------------------------
 
-  // De pixeles del lienzo a los 640 x 360 en los que piensa el juego.
+  // De pixeles del lienzo a la pantalla en la que piensa el juego.
   enPantalla(puntero) {
     const d = RENDER.densidad || 1;
     return { x: puntero.x / d, y: puntero.y / d };
@@ -135,47 +169,51 @@ export class MandosTactiles {
 
   botonBajoElDedo(punto) {
     return this.botones.find((boton) => {
-      const dx = punto.x - boton.sitio.x;
-      const dy = punto.y - boton.sitio.y;
+      const dx = punto.x - boton.x;
+      const dy = punto.y - boton.y;
       // el area que responde es mas ancha que el circulo: los dedos son gordos
-      const r = boton.sitio.radio * TACTIL.margenBoton;
+      const r = boton.radio * TACTIL.margenBoton;
       return dx * dx + dy * dy <= r * r;
     });
   }
 
+  apretar(boton, dedo) {
+    boton.dedo = dedo;
+    this.encender(boton, true);
+    if (boton.accion) this.controles.tocar(boton.accion, true);
+    else if (this.alPausar) this.alPausar();
+  }
+
+  soltar(boton) {
+    boton.dedo = null;
+    this.encender(boton, false);
+    if (boton.accion) this.controles.tocar(boton.accion, false);
+  }
+
   escuchar() {
     this.alBajar = (puntero) => {
-      const punto = this.enPantalla(puntero);
-      const boton = this.botonBajoElDedo(punto);
-      if (boton) {
-        boton.dedo = puntero.id;
-        this.encender(boton, true);
-        if (boton.accion) this.controles.tocar(boton.accion, true);
-        else if (this.alPausar) this.alPausar();
-        return;
-      }
-      // La palanca coge cualquier dedo que baje en su mitad de la pantalla, no
-      // solo el que acierte el circulo: en un telefono no se mira, se tantea.
-      if (this.dedoDeLaPalanca === null && punto.x < TACTIL.mitadDeLaPalanca) {
-        this.dedoDeLaPalanca = puntero.id;
-        this.moverPalanca(punto);
-      }
+      const boton = this.botonBajoElDedo(this.enPantalla(puntero));
+      if (boton && boton.dedo === null) this.apretar(boton, puntero.id);
     };
 
+    // Arrastrar el pulgar de un boton al de al lado cambia de boton. Sin esto,
+    // pasar de andar a la izquierda a andar a la derecha obligaba a levantar el
+    // dedo, y los ninos no lo levantan: lo deslizan.
     this.alMover = (puntero) => {
-      if (puntero.id !== this.dedoDeLaPalanca) return;
-      this.moverPalanca(this.enPantalla(puntero));
+      const mio = this.botones.find((b) => b.dedo === puntero.id);
+      const ahora = this.botonBajoElDedo(this.enPantalla(puntero));
+      if (mio === ahora) return;
+      if (mio) this.soltar(mio);
+      // el de pausa no se dispara al arrastrar: se toca a proposito o nada
+      if (ahora && ahora.dedo === null && ahora.accion) this.apretar(ahora, puntero.id);
     };
 
     this.alSubir = (puntero) => {
       const boton = this.botones.find((b) => b.dedo === puntero.id);
-      if (boton) {
-        boton.dedo = null;
-        this.encender(boton, false);
-        if (boton.accion) this.controles.tocar(boton.accion, false);
-      }
-      if (puntero.id === this.dedoDeLaPalanca) this.soltarPalanca();
+      if (boton) this.soltar(boton);
     };
+
+    this.alSalir = () => this.soltarTodo();
 
     const entrada = this.escena.input;
     entrada.on('pointerdown', this.alBajar);
@@ -184,43 +222,11 @@ export class MandosTactiles {
     entrada.on('pointerupoutside', this.alSubir);
     // si el dedo se sale del lienzo, se sueltan todos: si no, el nino se queda
     // corriendo solo hacia un lado
-    entrada.on('gameout', () => this.soltarTodo());
-  }
-
-  moverPalanca(punto) {
-    const { x, y, recorrido, zonaMuerta } = TACTIL.joystick;
-    const dx = Phaser.Math.Clamp(punto.x - x, -recorrido, recorrido);
-    const dy = Phaser.Math.Clamp(punto.y - y, -recorrido, recorrido);
-    this.palanca.setPosition(x + dx, y + dy);
-    this.palanca.setAlpha(TACTIL.alphaPulsado);
-    this.base.setAlpha(TACTIL.alphaPulsado);
-
-    this.controles.tocar('izquierda', dx < -zonaMuerta);
-    this.controles.tocar('derecha', dx > zonaMuerta);
-    // Arriba tambien salta, como la flecha del teclado. Es de mas, porque para
-    // eso esta su boton, pero quien no lo encuentre no se queda sin saltar.
-    this.controles.tocar('saltar', dy < -recorrido * TACTIL.saltoArriba);
-  }
-
-  soltarPalanca() {
-    const { x, y } = TACTIL.joystick;
-    this.dedoDeLaPalanca = null;
-    this.palanca.setPosition(x, y);
-    this.palanca.setAlpha(TACTIL.alpha);
-    this.base.setAlpha(TACTIL.alpha);
-    this.controles.tocar('izquierda', false);
-    this.controles.tocar('derecha', false);
-    this.controles.tocar('saltar', false);
+    entrada.on('gameout', this.alSalir);
   }
 
   soltarTodo() {
-    this.soltarPalanca();
-    this.botones.forEach((boton) => {
-      if (boton.dedo === null) return;
-      boton.dedo = null;
-      this.encender(boton, false);
-      if (boton.accion) this.controles.tocar(boton.accion, false);
-    });
+    this.botones.forEach((boton) => boton.dedo !== null && this.soltar(boton));
   }
 
   destruir() {
@@ -230,6 +236,7 @@ export class MandosTactiles {
       entrada.off('pointermove', this.alMover);
       entrada.off('pointerup', this.alSubir);
       entrada.off('pointerupoutside', this.alSubir);
+      entrada.off('gameout', this.alSalir);
     }
     this.piezas.forEach((pieza) => pieza.destroy());
     this.piezas = [];

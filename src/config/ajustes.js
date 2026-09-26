@@ -43,11 +43,49 @@ export const RENDER = {
   densidad: densidadQueTocaria(),
 };
 
+// Si el aparato se maneja con el dedo. Vive aqui, y no en sistemas/tactil.js,
+// porque de esto depende tambien el ancho de la pantalla, unas lineas mas
+// abajo, y si ajustes importara de tactil los dos se harian un nudo.
+//
+// Se puede forzar desde la barra de direcciones con ?tactil=1 (para probarlo en
+// el ordenador) o apagar con ?tactil=0.
+export function esTactil() {
+  if (typeof window === 'undefined') return false;
+  const pedido = new URLSearchParams(window.location.search).get('tactil');
+  if (pedido === '1') return true;
+  if (pedido === '0') return false;
+  const dedo = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  return Boolean(dedo || navigator.maxTouchPoints > 0);
+}
+
+// El ANCHO de la pantalla del juego. Son 640 de toda la vida, y en el ordenador
+// no se toca.
+//
+// En un telefono no: un iPhone acostado mide 844 x 390, o sea 2,16 a 1, y un
+// juego de 16 a 9 le deja dos franjas negras a los lados que se comen un quinto
+// de la pantalla. Para llenarla sin deformar nada ni recortar nada por arriba
+// (ahi esta el HUD) solo queda una salida: ver MAS mundo a lo ancho.
+//
+// El alto se queda en 360 y la casilla en 32, asi que la fisica, los mapas y el
+// validador no se enteran. Lo unico que cambia es cuanto tablero cabe de un
+// vistazo. Se mide con el lado largo contra el corto para que el numero sea el
+// mismo este el telefono de pie o acostado, y se topa en 800: mas seria ver
+// media arena del jefe antes de llegar.
+function anchoQueTocaria() {
+  if (typeof window === 'undefined') return 640;
+  if (!esTactil()) return 640;
+  const largo = Math.max(window.innerWidth, window.innerHeight);
+  const corto = Math.min(window.innerWidth, window.innerHeight);
+  if (!largo || !corto) return 640;
+  const cabe = Math.round((360 * largo) / corto / 2) * 2;
+  return Math.max(640, Math.min(800, cabe));
+}
+
 export const MUNDO = {
   // Resolucion interna. Es pequena a proposito: al escalarse a la ventana, todo
   // se ve al doble de tamano que antes, que es lo que pide un dibujo animado.
   // La casilla y la fisica no cambian: solo se ve menos mundo, mas grande.
-  ancho: 640,
+  ancho: anchoQueTocaria(),
   alto: 360,
   casilla: 32,     // grilla de 32x32
 
@@ -405,28 +443,32 @@ export const PALOMA = {
   caida: { gravedad: 620, tamano: 22 },
 };
 
-// LOS MANDOS TACTILES, para poder jugar en un telefono. Las medidas van en la
-// pantalla de siempre (640 x 360): el joystick abajo a la izquierda y los dos
-// botones abajo a la derecha, donde caen los pulgares con el aparato en
-// horizontal. El de pausa va arriba en medio, que es el hueco que deja el HUD.
+// LOS MANDOS TACTILES, para poder jugar en un telefono. Dos botones de andar
+// abajo a la izquierda y, abajo a la derecha, los de saltar y atacar, donde
+// caen los pulgares con el aparato acostado. El de pausa va arriba en medio,
+// que es el hueco que deja el HUD.
+//
+// Los de la derecha y el de pausa se miden CONTRA SU BORDE, no en una x fija:
+// en un telefono la pantalla del juego es mas ancha de 640.
 export const TACTIL = {
-  joystick: { x: 84, y: 288, radio: 48, palanca: 23, recorrido: 32, zonaMuerta: 9 },
-  salto: { x: 574, y: 292, radio: 38 },
-  ataque: { x: 492, y: 244, radio: 31 },
-  pausa: { x: 320, y: 24, radio: 16 },
-  // Translucidos, que estan por delante del juego. Se encienden al tocarlos,
-  // para que se note que han cogido el dedo.
-  alpha: 0.6,
-  alphaPulsado: 1,
+  alto: 306,          // la linea de los cuatro botones de abajo
+  margen: 46,         // lo que se separan del borde, a su centro
+  separacion: 80,     // entre los dos de andar
+  radio: 27,
+  radioSalto: 30,
+  radioAtaque: 25,
+  ataqueDentro: 66,   // lo que se mete el de atacar hacia dentro
+  ataqueArriba: 46,   // y lo que sube, para que no se estorben los pulgares
+  pausa: { y: 18, radio: 13 },
+  // Pequenos y translucidos: tienen que estorbar lo menos posible. Se encienden
+  // al tocarlos, para que se note que han cogido el dedo.
+  alpha: 0.45,
+  alphaPulsado: 0.88,
   profundidad: 60,
   // El area que responde es mas ancha que el circulo dibujado: los dedos son
-  // gordos y fallar un boton en pleno salto se paga.
-  margenBoton: 1.35,
-  // Hasta donde llega la mitad de la palanca: cualquier dedo que baje a la
-  // izquierda de esta raya la maneja, acierte o no el circulo.
-  mitadDeLaPalanca: 280,
-  // lo que hay que empujar la palanca hacia arriba para que ademas salte
-  saltoArriba: 0.6,
+  // gordos y fallar un boton en pleno salto se paga. Ojo con subirlo: si las
+  // areas de los dos de andar se solapan, el de la izquierda se come al otro.
+  margenBoton: 1.3,
 };
 
 export const CAMARA = {
