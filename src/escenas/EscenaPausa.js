@@ -7,6 +7,7 @@ import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
 import { Menu } from '../sistemas/menu.js';
+import { segunElMando } from '../sistemas/tactil.js';
 
 export class EscenaPausa extends Phaser.Scene {
   constructor() {
@@ -52,7 +53,7 @@ export class EscenaPausa extends Phaser.Scene {
     );
 
     this.add
-      .text(ancho / 2, alto / 2 + 86, 'Esc  seguir jugando', {
+      .text(ancho / 2, alto / 2 + 86, segunElMando('Esc  seguir jugando', 'Toca una opción'), {
         fontFamily: FUENTE.familia,
         fontSize: '11px',
         color: COLORES.textoSuave,

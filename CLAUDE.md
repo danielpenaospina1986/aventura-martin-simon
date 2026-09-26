@@ -547,9 +547,16 @@ uno pequeno de **pausa**, que sin tecla Esc no habria forma de salir del tablero
   el que acierte el circulo: en un telefono no se mira el mando, se tantea.
   Empujarla hacia arriba tambien salta, de mas, por si alguien no encuentra el
   boton.
-- Los **carteles de ayuda** del primer tablero cambian de texto ("Joystick para
-  moverte"), y la linea de "Esc pausa / H cajas" no sale: ahi no hay teclas, y
-  ademas ese rincon es justo donde cae el boton de saltar.
+- **Ningun texto habla de teclas.** Todo lo que decia "pulsa Enter", "Esc
+  volver" o "Flechas para moverte" dice otra cosa con el dedo ("Toca para
+  empezar", "Toca al que quieras"), y la linea de "Esc pausa / H cajas" no sale:
+  ademas de sobrar, ese rincon es justo donde cae el boton de saltar. Lo reparte
+  `segunElMando(conTeclado, conDedo)`, en `tactil.js`. **En el ordenador no
+  cambia nada**: se sigue jugando y leyendo igual que siempre.
+- En la **seleccion de personaje** se toca la TARJETA ENTERA, no el nombre de
+  abajo: apuntarle con el dedo a una linea de 18 px no hay quien lo haga, y lo
+  natural es tocar al nino que uno quiere. Con el raton hace lo de siempre:
+  pasar por encima lo resalta y el clic lo elige.
 - En la pantalla de **quien juega** sale un **teclado en pantalla** con las
   letras, la ene incluida, y ESPACIO / BORRAR / LISTO. Sin el, en un telefono no
   se podria pasar de ahi.
@@ -1495,3 +1502,16 @@ baja.
   nombre y ahi no hay teclado. Con el puesto, tocar en cualquier sitio ya NO
   confirma (se llevaria la pantalla por delante al tocar la primera letra): se
   confirma con LISTO.
+- **2026-09-26** — En el telefono **no se podia elegir personaje**: lo unico que
+  se podia tocar era el nombre de abajo, una linea de 18 px. Ahora se toca la
+  tarjeta entera. Con el raton no cambia nada, solo gana sitio donde hacer clic.
+- **2026-09-26** — **Ningun texto habla de teclas cuando se juega con el dedo.**
+  En un telefono no hay Enter, ni Esc, ni flechas, y decirselo al nino solo
+  despista. Lo reparte `segunElMando`, un ayudante de dos lineas: el mismo aviso
+  dicho para el mando que se este usando. En el ordenador todo sigue igual.
+- **2026-09-26** — Dos pruebas de jefes esperaban **tiempo de reloj** (600 ms
+  para que llegara un bloque, 1,6 s para que se montara un tablero) y empezaron
+  a fallar **solo con la suite entera por delante**: sueltas pasaban siempre.
+  Con mas pruebas por delante el navegador va mas lento y esos margenes se
+  quedaron cortos. Se esperan sucesos, que es la regla de casa desde hace
+  tiempo; si una prueba falla en la suite y pasa sola, es esto.

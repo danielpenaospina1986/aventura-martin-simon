@@ -14,6 +14,7 @@ import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
 import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
+import { segunElMando } from '../sistemas/tactil.js';
 
 export class EscenaRelato extends Phaser.Scene {
   constructor() {
@@ -112,8 +113,16 @@ export class EscenaRelato extends Phaser.Scene {
     this.tweens.add({ targets: this.texto, alpha: 1, duration: 240 });
     // Con una sola resena, Enter y Esc llevan al mismo sitio: anunciar "saltar"
     // seria ofrecer algo que no existe.
-    if (this.vinetas.length === 1) this.pie.setText('Enter o clic para empezar');
-    else this.pie.setText(esUltima ? 'Enter para empezar      Esc saltar' : 'Enter para seguir      Esc saltar');
+    if (this.vinetas.length === 1) {
+      this.pie.setText(segunElMando('Enter o clic para empezar', 'Toca para empezar'));
+    } else {
+      this.pie.setText(
+        segunElMando(
+          esUltima ? 'Enter para empezar      Esc saltar' : 'Enter para seguir      Esc saltar',
+          esUltima ? 'Toca para empezar' : 'Toca para seguir',
+        ),
+      );
+    }
   }
 
   avanzar() {

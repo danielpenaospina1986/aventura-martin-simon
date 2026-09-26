@@ -611,13 +611,17 @@ test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   });
   await page.waitForTimeout(150);
   await page.keyboard.press('KeyX');
-  await page.waitForTimeout(600);
 
-  // el jefe pierde una vida pero sigue en pie: lo que se rompe es el bloque
-  const despues = await page.evaluate(() => {
+  // Se espera al SUCESO (que le baje una vida) y no un tiempo de reloj: el
+  // bloque tarda lo que tarda en cruzar, y con la suite entera por delante el
+  // navegador va mas lento y 600 ms se quedaban cortos.
+  const despues = await page.evaluate(async (antes) => {
     const n = window.juego.scene.getScene('nivel');
+    for (let i = 0; i < 40 && n.jefe && n.jefe.vidas === antes; i += 1) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
     return { existe: !!n.jefe, activo: n.jefe ? n.jefe.active : false, vidas: n.jefe ? n.jefe.vidas : 0 };
-  });
+  }, antes);
   expect(despues.existe).toBe(true);
   expect(despues.activo).toBe(true);
   expect(despues.vidas).toBe(antes - 1);
@@ -633,7 +637,12 @@ test('ningún jefe se derrota solo mientras el niño no llega', async ({ page })
   const resultado = await page.evaluate(async () => {
     const n = window.juego.scene.getScene('nivel');
     n.scene.restart({ indiceNivel: 2, personajeId: 'simon', acumulado: {} });
-    await new Promise((r) => setTimeout(r, 1700));
+    // el tablero montado, no un tiempo de reloj (ver la prueba de la sombrilla)
+    for (let i = 0; i < 80; i += 1) {
+      const e = window.juego.scene.getScene('nivel');
+      if (e && e.jefe && e.jefe.active) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
 
     const esc = window.juego.scene.getScene('nivel');
     const vidasAlEmpezar = esc.jefe ? esc.jefe.vidas : 0;
@@ -663,7 +672,15 @@ test('a Doña Zully se le gana escondiéndose tras una sombrilla', async ({ page
     const n = window.juego.scene.getScene('nivel');
     // se salta a Atlanta, que es su ciudad
     n.scene.restart({ indiceNivel: 2, personajeId: 'simon', acumulado: {} });
-    await new Promise((r) => setTimeout(r, 1600));
+    // Se espera a que el tablero ESTE MONTADO, no un tiempo de reloj: con la
+    // suite entera por delante el navegador va mas lento y 1,6 s se quedaban
+    // cortos, asi que la escena todavia no tenia jefe y la prueba fallaba sin
+    // que el juego estuviese mal.
+    for (let i = 0; i < 80; i += 1) {
+      const e = window.juego.scene.getScene('nivel');
+      if (e && e.jefe && e.jefe.sombrillas) break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
 
     const esc = window.juego.scene.getScene('nivel');
     const jefe = esc.jefe;
@@ -2020,6 +2037,72 @@ test.describe('con el dedo', () => {
     expect(await page.evaluate(() => window.juego.scene.isActive('pausa'))).toBe(true);
   });
 
+  test('se elige personaje tocando su tarjeta', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('aventura-jugador', 'PRUEBA');
+      } catch {
+        /* en incognito no deja, y da igual */
+      }
+    });
+    await abrirJuego(page, '&tactil=1');
+    const enPantalla = await dondeTocar(page);
+    const tocar = async (gx, gy) => {
+      const p = enPantalla(gx, gy);
+      await page.touchscreen.tap(p.x, p.y);
+      await page.waitForTimeout(220);
+    };
+
+    await tocar(320, 200); // el titulo
+    await esperarEscena(page, 'nombre');
+    await tocar(500, 186 + 3 * 38 + 6); // LISTO, con el nombre ya guardado
+    await esperarEscena(page, 'seleccion');
+
+    // La tarjeta de la DERECHA es Martain (el orden es Samaon primero). Se toca
+    // el dibujo, no la linea de abajo: apuntarle a 18 px con el dedo no hay
+    // quien lo haga.
+    await tocar(420, 188);
+    await esperarEscena(page, 'relato');
+    await tocar(320, 200);
+    await esperarEscena(page, 'nivel');
+    const quien = await page.evaluate(() => window.juego.scene.getScene('nivel').personajeId);
+    expect(quien).toBe('martin');
+  });
+
+  test('en el telefono no se habla de teclas', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        window.localStorage.setItem('aventura-jugador', 'PRUEBA');
+      } catch {
+        /* en incognito no deja, y da igual */
+      }
+    });
+    await abrirJuego(page, '&tactil=1');
+    const textos = () =>
+      page.evaluate(() => {
+        const dichos = [];
+        window.juego.scene.getScenes(true).forEach((escena) => {
+          escena.children.list.forEach((o) => {
+            if (o.type === 'Text' && o.text) dichos.push(o.text);
+          });
+        });
+        return dichos.join(' | ');
+      });
+
+    const enTitulo = await textos();
+    expect(enTitulo).toContain('Toca para empezar');
+    expect(enTitulo).not.toMatch(/Enter|Esc|Espacio|Flechas/);
+
+    await page.keyboard.press('Enter');
+    await esperarEscena(page, 'nombre');
+    await page.keyboard.press('Enter'); // por si ya hay nombre guardado
+    await esperarEscena(page, 'seleccion');
+    await page.waitForTimeout(200);
+    const enSeleccion = await textos();
+    expect(enSeleccion).toContain('Toca al que quieras');
+    expect(enSeleccion).not.toMatch(/Enter|Esc|Flechas/);
+  });
+
   test('en un telefono el nombre se escribe tocando las letras', async ({ page }) => {
     await page.addInitScript(() => {
       try {
@@ -2083,4 +2166,30 @@ test('sin pantalla tactil no salen los mandos', async ({ page }) => {
     () => getComputedStyle(document.querySelector('#gira')).display,
   );
   expect(cartel).toBe('none');
+});
+
+test('en el ordenador se siguen diciendo las teclas', async ({ page }) => {
+  await abrirJuego(page, '&tactil=0');
+  const enTitulo = await page.evaluate(() =>
+    window.juego.scene
+      .getScenes(true)
+      .flatMap((e) => e.children.list.filter((o) => o.type === 'Text' && o.text).map((o) => o.text))
+      .join(' | '),
+  );
+  expect(enTitulo).toContain('Pulsa Enter para empezar');
+
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.waitForTimeout(200);
+  const enSeleccion = await page.evaluate(() =>
+    window.juego.scene
+      .getScenes(true)
+      .flatMap((e) => e.children.list.filter((o) => o.type === 'Text' && o.text).map((o) => o.text))
+      .join(' | '),
+  );
+  expect(enSeleccion).toContain('Flechas');
+  expect(enSeleccion).toContain('Enter o clic');
 });

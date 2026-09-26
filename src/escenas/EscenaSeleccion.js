@@ -10,6 +10,7 @@ import { PERSONAJES, ORDEN_PERSONAJES } from '../config/personajes.js';
 import { pintarFondoDeMenu } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
 import { empezarPartida } from '../sistemas/cuento.js';
+import { segunElMando } from '../sistemas/tactil.js';
 
 export class EscenaSeleccion extends Phaser.Scene {
   constructor() {
@@ -57,9 +58,21 @@ export class EscenaSeleccion extends Phaser.Scene {
       const x = ancho / 2 + (i - (ORDEN_PERSONAJES.length - 1) / 2) * 200;
       const y = 188;
 
+      // La TARJETA ENTERA se toca, no solo el nombre de abajo. En un telefono,
+      // apuntarle a una linea de 18 px es imposible, y ademas lo natural es
+      // tocar al nino que uno quiere. Con el raton hace lo mismo de siempre:
+      // pasar por encima lo resalta y el clic lo elige.
       const marco = this.add
         .rectangle(x, y, 178, 212, COLORES.panel, 0.55)
-        .setStrokeStyle(3, COLORES.panelBorde, 0.9);
+        .setStrokeStyle(3, COLORES.panelBorde, 0.9)
+        .setInteractive({ useHandCursor: true });
+
+      marco.on('pointerover', () => this.menu && this.menu.mover(i));
+      marco.on('pointerdown', () => {
+        if (!this.menu) return;
+        this.menu.mover(i);
+        this.menu.confirmar();
+      });
 
       // La carita del nino, sobre un disco claro para que destaque
       const disco = this.add.circle(x, y - 52, 50, 0xfdf3e0, 0.95);
@@ -132,11 +145,19 @@ export class EscenaSeleccion extends Phaser.Scene {
     this.resaltar(0);
 
     this.add
-      .text(ancho / 2, 344, 'Flechas  elegir        Enter o clic  empezar        Esc  volver', {
-        fontFamily: FUENTE.familia,
-        fontSize: '11px',
-        color: COLORES.textoSuave,
-      })
+      .text(
+        ancho / 2,
+        344,
+        segunElMando(
+          'Flechas  elegir        Enter o clic  empezar        Esc  volver',
+          'Toca al que quieras para empezar',
+        ),
+        {
+          fontFamily: FUENTE.familia,
+          fontSize: '11px',
+          color: COLORES.textoSuave,
+        },
+      )
       .setOrigin(0.5)
       .setAlpha(0.8);
 

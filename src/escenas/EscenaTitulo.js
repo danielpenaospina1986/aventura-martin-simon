@@ -12,6 +12,7 @@ import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { panelDeco } from '../sistemas/dibujo.js';
 import { mejoresPuntajes } from '../sistemas/puntajes.js';
+import { segunElMando } from '../sistemas/tactil.js';
 
 // Donde cae el cartel del titulo dentro de la ilustracion, en tanto por uno.
 // Se mide sobre el dibujo y no en pixeles de pantalla para que siga cuadrando
@@ -63,7 +64,7 @@ export class EscenaTitulo extends Phaser.Scene {
     panelDeco(this, centroX, centroY, anchoCaja, altoCaja, { alpha: 0.62 });
 
     const empezar = this.add
-      .text(centroX, centroY, 'Pulsa Enter para empezar', {
+      .text(centroX, centroY, segunElMando('Pulsa Enter para empezar', 'Toca para empezar'), {
         fontFamily: FUENTE.familia,
         fontSize: '15px',
         color: COLORES.textoAcento,

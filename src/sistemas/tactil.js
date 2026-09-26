@@ -40,6 +40,12 @@ export function hayTactil() {
   return Boolean(dedo || navigator.maxTouchPoints > 0);
 }
 
+// El mismo aviso, dicho para el mando que se este usando. En un telefono no hay
+// Enter, ni Esc, ni flechas, y decirle al nino que las pulse solo despista.
+export function segunElMando(conTeclado, conDedo) {
+  return hayTactil() ? conDedo : conTeclado;
+}
+
 export class MandosTactiles {
   constructor(escena, controles, opciones = {}) {
     this.escena = escena;
