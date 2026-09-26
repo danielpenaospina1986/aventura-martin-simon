@@ -77,7 +77,7 @@ aventura-martin-simon/
       jefes/            uno por ciudad, cada cual con su forma de caer
     sistemas/
       controles.js      mapeo de teclas por jugador (preparado para 2 jugadores)
-      tactil.js         el joystick y los botones, para jugar en un telefono
+      tactil.js         los botones en pantalla, para jugar en un telefono
       constructor-nivel.js  convierte el mapa de texto en objetos del mundo
       planos.js         el plano de delante de la camara multiplanar
       hud.js            monedas, corazones, vidas y nombre del personaje
@@ -529,10 +529,15 @@ que agregar un segundo jugador simultaneo sea anadir un perfil, no reescribir na
 
 ### Con el dedo
 
-En un telefono salen **mandos en pantalla** (`src/sistemas/tactil.js`): un
-**joystick** abajo a la izquierda, y abajo a la derecha los botones de **saltar**
-(el grande, con el triangulo) y **atacar** (el de la estrella). Arriba en medio,
-uno pequeno de **pausa**, que sin tecla Esc no habria forma de salir del tablero.
+En un telefono salen **mandos en pantalla** (`src/sistemas/tactil.js`): abajo a
+la izquierda, los dos botones de **andar** (izquierda y derecha); abajo a la
+derecha, **saltar** (el grande, con el triangulo) y **atacar** (el de la
+estrella). Arriba en medio, uno pequeno de **pausa**, que sin tecla Esc no
+habria forma de salir del tablero.
+
+Son pequenos y translucidos a proposito: tienen que estorbar lo menos posible.
+Hubo un joystick al principio, pero se comia un cuarto de la pantalla para hacer
+lo que hacen dos botones, que en este juego solo se anda a izquierda y derecha.
 
 - Salen solos si el aparato se maneja con el dedo. Se pueden forzar con
   `?tactil=1` (para probarlos en el ordenador) o apagar con `?tactil=0`.
@@ -543,10 +548,15 @@ uno pequeno de **pausa**, que sin tecla Esc no habria forma de salir del tablero
   `planos.fijar`: `setScrollFactor` no se lleva con el zoom.
 - Se piden **tres punteros** (`input.addPointer`): con uno solo no se puede
   correr y saltar a la vez, que es media partida.
-- La palanca coge **cualquier dedo que baje en su mitad de la pantalla**, no solo
-  el que acierte el circulo: en un telefono no se mira el mando, se tantea.
-  Empujarla hacia arriba tambien salta, de mas, por si alguien no encuentra el
-  boton.
+- El area que responde es **mas ancha que el circulo dibujado**
+  (`TACTIL.margenBoton`): los dedos son gordos y fallar un boton en pleno salto
+  se paga. Ojo con subirlo: si las areas de los dos de andar se solapan, el de
+  la izquierda se come al otro.
+- **Deslizar el pulgar de un boton al de al lado cambia de boton**, sin levantar
+  el dedo. Los ninos no levantan el dedo: lo arrastran.
+- Los de la derecha y el de pausa se colocan **contra su borde**, no en una x
+  fija: en un telefono la pantalla del juego es mas ancha de 640 (ver la
+  seccion 8bis).
 - **Ningun texto habla de teclas.** Todo lo que decia "pulsa Enter", "Esc
   volver" o "Flechas para moverte" dice otra cosa con el dedo ("Toca para
   empezar", "Toca al que quieras"), y la linea de "Esc pausa / H cajas" no sale:
@@ -681,6 +691,30 @@ va con ese mismo zoom, asi que las coordenadas siguen siendo las de siempre.
 falta para que cada punto caiga en un pixel de verdad, y ni uno mas. En una
 ventana de 1280 x 720 sale 2; a pantalla completa en 1920 x 1080, 3. Se puede
 forzar desde la barra de direcciones con `?densidad=1`.
+
+### El ancho, en un telefono
+
+El alto son **360 siempre**, y la casilla 32: la fisica, los mapas y el
+validador no se enteran de nada de esto. El ANCHO, en cambio, se adapta.
+
+En el ordenador son los **640** de toda la vida. En un telefono no: un iPhone
+acostado mide 844 x 390, o sea 2,16 a 1, y un juego de 16 a 9 le deja dos
+franjas negras a los lados que se comen un quinto de la pantalla. Para llenarla
+sin deformar nada y sin recortar por arriba (ahi esta el HUD) solo queda una
+salida: **ver mas mundo a lo ancho**. `MUNDO.ancho` sale de la forma de la
+pantalla, topado en 800, y en un iPhone da 780.
+
+Lo que eso obliga a tener en cuenta:
+
+- Nada puede dar por hecho que la pantalla mide 640. Las ilustraciones ya se
+  pintaban **a cubrir** (`Math.max(ancho/w, alto/h)`), asi que se adaptan solas;
+  el cartel de la portada se mide sobre el dibujo, asi que tambien. Lo que si
+  hubo que cambiar son los mandos tactiles, que se colocan contra sus bordes.
+- La **arena del jefe** sigue siendo las 20 ultimas columnas (640 px), asi que
+  en un telefono se ve la arena entera **y un trozo del porche** de antes. El
+  jefe y la meta siguen en cuadro, que es lo que importaba.
+- **En el ordenador no cambia absolutamente nada**: solo se ensancha si el
+  aparato se maneja con el dedo.
 
 Tres cosas que hay que tener en cuenta al tocar codigo:
 
@@ -1515,3 +1549,18 @@ baja.
   Con mas pruebas por delante el navegador va mas lento y esos margenes se
   quedaron cortos. Se esperan sucesos, que es la regla de casa desde hace
   tiempo; si una prueba falla en la suite y pasa sola, es esto.
+- **2026-09-26** — **Fuera el joystick**, y en su sitio dos botones de andar. Se
+  comia un cuarto de la pantalla para hacer lo que hacen dos botones: aqui solo
+  se anda a izquierda y derecha. De paso, todos los mandos se achican y se
+  vuelven mas translucidos. Deslizar el pulgar de un boton al de al lado cambia
+  de boton sin levantar el dedo, que es como se mueven los ninos de verdad.
+- **2026-09-26** — **La pantalla del juego se ensancha en un telefono**, de 640
+  a lo que pida el aparato (780 en un iPhone), topado en 800. Era la unica forma
+  de quitar las franjas negras de los lados sin deformar el dibujo ni recortar
+  por arriba, que es donde vive el HUD. El alto sigue en 360 y la casilla en 32,
+  asi que la fisica, los mapas y el validador no se enteran: lo unico que cambia
+  es cuanto tablero se ve de un vistazo. En el ordenador se queda en 640.
+- **2026-09-26** — `esTactil()` se muda de `sistemas/tactil.js` a
+  `config/ajustes.js`: de ella depende ahora el ancho de la pantalla, y ajustes
+  no puede importar de tactil sin que los dos se hagan un nudo. `tactil.js` la
+  reexporta como `hayTactil`, asi que quien ya la usaba no se entera.
