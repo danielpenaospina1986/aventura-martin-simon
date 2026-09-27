@@ -429,6 +429,64 @@ const PERSONAJES = [
     ],
   },
   {
+    // JEAN LUKE, el jefe final: el nino maton de la camiseta de rayas celestes
+    // que tira globos de agua.
+    //
+    // Su hoja trae ESCRITO el nombre de cada pose debajo, asi que las zonas van
+    // a mano: las de arriba cortan en y=387 y las de abajo en y=734, en el
+    // hueco que queda entre el dibujo y las letras. La de GOLPE ademas empieza
+    // en y=412 y no antes, porque por encima pasa el letrero de "APUNTA".
+    //
+    // NADA de limpiarBolsas: el celeste de la camiseta queda a 200 del fondo y
+    // el filtro de las bolsas encerradas corta en 198. Por dos pixeles no se la
+    // come, y no vale la pena jugarsela.
+    nombre: 'jean-luke',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    lienzo: { ancho: 520, alto: 520 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/jeanluke',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'jean-luke',
+        nombres: ['marcha', 'apunta', 'tira', 'recarga', 'golpe', 'derrotado'],
+        zonas: [
+          { x: 57, y: 12, ancho: 263, alto: 375 },    // marchando con su balde
+          { x: 392, y: 33, ancho: 348, alto: 354 },   // apuntando con el globo
+          { x: 829, y: 29, ancho: 362, alto: 358 },   // tirandolo (sin el globo)
+          { x: 93, y: 458, ancho: 317, alto: 276 },   // de espaldas, en el balde
+          { x: 530, y: 412, ancho: 357, alto: 322 },  // encajando el golpe
+          { x: 969, y: 435, ancho: 383, alto: 299 },  // sentado, llorando
+        ],
+      },
+    ],
+  },
+  {
+    // El globo de agua que tira Jean Luke. En SU PROPIA entrada, como los demas
+    // proyectiles: la altura se reparte por grupos.
+    nombre: 'globo',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/jeanluke',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'globo',
+        nombres: ['globo', 'globo-vuela', 'globo-revienta'],
+        zonas: [
+          { x: 64, y: 167, ancho: 310, alto: 367 },  // gordo y lleno
+          { x: 486, y: 142, ancho: 385, alto: 347 }, // volando, estirado
+          { x: 882, y: 148, ancho: 380, alto: 386 }, // reventado, con su corona
+        ],
+      },
+    ],
+  },
+  {
     // MARTIN MALVADO, el guardian del bano de Miami: la version mala de
     // Martain, metido en un disfraz de oso de peluche roto por el que se le
     // sale el relleno amarillo.

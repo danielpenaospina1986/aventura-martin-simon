@@ -91,16 +91,6 @@ export const COLORES = {
   torreTecho: 0x7fc4c0,
   torreFranja: 0xf7f1e1,
 
-  // Cartagena: el Capitan Tapon
-  capitanCasaca: 0x7a4a7f,
-  capitanCasacaClara: 0x9c6aa1,
-  capitanCamisa: 0xf7f1e1,
-  capitanSombrero: 0x2f2a26,
-  capitanPiel: 0xe8c9a0,
-  taponCuerpo: 0x2f2a26,
-  taponBrillo: 0x6b6259,
-  cadena: 0xcfc8b8,
-
   corazon: 0xd94f4f,
   corazonBrillo: 0xf0857f,
   corazonApagado: 0x5a4a4a,
@@ -219,10 +209,16 @@ export const TEXTURAS = {
   rellenoGira: 'tex-relleno-gira',
   rellenoSplat: 'tex-relleno-splat',
   torreVigia: 'tex-torre-vigia',
-  jefeCapitan: 'tex-jefe-capitan',
-  jefeCapitanEspalda: 'tex-jefe-capitan-espalda',
-  jefeCapitanSinTapon: 'tex-jefe-capitan-sin-tapon',
-  balaEspuma: 'tex-bala-espuma',
+  // Cartagena: Jean Luke, con sus seis poses dibujadas
+  jeanLukeMarcha: 'tex-jeanluke-marcha',
+  jeanLukeApunta: 'tex-jeanluke-apunta',
+  jeanLukeTira: 'tex-jeanluke-tira',
+  jeanLukeRecarga: 'tex-jeanluke-recarga',
+  jeanLukeGolpe: 'tex-jeanluke-golpe',
+  jeanLukeDerrotado: 'tex-jeanluke-derrotado',
+  globo: 'tex-globo',
+  globoVuela: 'tex-globo-vuela',
+  globoRevienta: 'tex-globo-revienta',
   // la vaca berrionda, con sus seis poses dibujadas
   vacaAnda1: 'tex-vaca-anda1',
   vacaAnda2: 'tex-vaca-anda2',

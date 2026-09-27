@@ -64,9 +64,9 @@ export const JEFES = {
     derrota: '—¡Se me salió todo el relleno!',
   },
   cartagena: {
-    nombre: 'el Capitán Tapón',
-    saludo: '—¡Al abordaje, grumetes! Aquí se baña hasta el loro.',
-    derrota: '—¡Me quitaron el tapón! ¡Se me va el agua!',
+    nombre: 'Jean Luke',
+    saludo: '—¡De aquí no pasa nadie, mocosos!',
+    derrota: '—¡Buaaa! ¡Le voy a decir a mi mamá!',
   },
 };
 

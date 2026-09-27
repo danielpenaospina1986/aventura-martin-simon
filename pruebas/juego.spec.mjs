@@ -1467,7 +1467,7 @@ test('a Martín Malvado solo se le da cuando baja de la torre', async ({ page })
   expect(errores).toEqual([]);
 });
 
-test('al Capitán Tapón se le gana quitándole el tapón', async ({ page }) => {
+test('a Jean Luke solo se le da mientras rebusca en su balde', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'simon');
   await entrarALaArena(page, 4);
@@ -1489,7 +1489,7 @@ test('al Capitán Tapón se le gana quitándole el tapón', async ({ page }) => 
       await new Promise((r) => setTimeout(r, 55));
     }
 
-    // de espaldas, recargando, si
+    // de espaldas, agachado sobre el balde, si
     const vidasAntes = jefe.vidas;
     for (let i = 0; i < 400 && jefe.vidas === vidasAntes; i += 1) {
       const j = n.jugadores[0];
@@ -1501,7 +1501,7 @@ test('al Capitán Tapón se le gana quitándole el tapón', async ({ page }) => 
     return { clase, deCara, contaronDeCara, vidasAntes, vidas: jefe.vidas };
   });
 
-  expect(resultado.clase).toBe('CapitanTapon');
+  expect(resultado.clase).toBe('JeanLuke');
   expect(resultado.deCara).toBeGreaterThan(0);
   expect(resultado.contaronDeCara).toBe(0);
   expect(resultado.vidas).toBe(resultado.vidasAntes - 1);
@@ -1528,7 +1528,7 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   });
 
   expect(jefes.map((j) => j.clase)).toEqual([
-    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'CapitanTapon',
+    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'JeanLuke',
   ]);
   // ninguno es el provisional, y todos aguantan mas de un golpe
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
@@ -1617,7 +1617,7 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
         // Se despeja lo que el jefe haya dejado por el suelo: un pegote de
         // relleno rodando por la carrerilla congela al nino a media zancada
         // y se pierde el salto.
-        [n.rellenos, n.balas, n.heladitos, n.chorros, n.peligros].forEach((g) => {
+        [n.rellenos, n.globos, n.heladitos, n.chorros, n.peligros].forEach((g) => {
           g.getChildren().slice().forEach((cosa) => cosa.active && cosa.destroy());
         });
         j.setPosition(n.jefe.x - salida, n.jefe.body.bottom - 30);

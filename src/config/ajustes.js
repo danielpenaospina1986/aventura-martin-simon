@@ -331,14 +331,20 @@ export const HELADITO = {
   manchaMs: 900,       // lo que se queda la mancha en el suelo
 };
 
-// La bala de espuma del Capitan Tapon.
-export const BALA = {
-  ancho: 46,
-  alto: 34,
-  caja: { ancho: 34, alto: 24 },
+
+// El globo de agua que tira Jean Luke, el jefe final. Sale recto y lento: se le
+// ve venir, que es lo que hace justa la pelea.
+export const GLOBO = {
+  ancho: 42,
+  alto: 42,
+  caja: { ancho: 30, alto: 30 },
   velocidad: 220,
   duracionMs: 3600,
-  salidaY: -8,
+  salidaY: -18,       // sale de la mano, no de la barriga
+  estiraMs: 90,       // lo que tarda en ponerse la pose de volar
+  anchoCharco: 58,
+  altoCharco: 58,
+  charcoMs: 800,      // lo que se queda el charco en el suelo
 };
 
 export const JEFE = {

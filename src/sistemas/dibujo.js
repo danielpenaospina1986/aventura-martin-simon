@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { BALA, ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
+import { GLOBO, ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
@@ -538,112 +538,6 @@ export function generarTexturas(escena) {
     g.fillStyle(COLORES.torreFranja, 1);
     g.fillRect(6, h * 0.1, a - 12, 4);
     brillo(g, 14, h * 0.24, 5);
-  });
-
-  // --- Cartagena: el Capitan Tapon -------------------------------------------
-  //
-  // El ultimo guardian del bano, con su bañera de galeon y el tapon a la
-  // espalda. A el no se le pega: lo que se le hace es QUITARLE EL TAPON.
-  const capitan = (modo) => (g) => {
-    const a = JEFE.ancho;
-    const h = JEFE.alto;
-    const cx = a / 2;
-    const vencido = modo === 'sinTapon';
-
-    // botas
-    tintaRedonda(g, cx - 42, h - 30, 36, 26, 9, COLORES.capitanSombrero, 5);
-    tintaRedonda(g, cx + 8, h - 30, 36, 26, 9, COLORES.capitanSombrero, 5);
-
-    // el tapon, a la espalda (a su izquierda, que mira a la derecha)
-    if (!vencido) {
-      const taponX = cx - 62;
-      const taponY = h - 92;
-      g.lineStyle(5, COLORES.cadena, 1);
-      g.beginPath();
-      g.moveTo(taponX + 12, taponY - 18);
-      g.lineTo(cx - 30, taponY - 40);
-      g.strokePath();
-      tintaRedonda(g, taponX - 12, taponY - 14, 34, 40, 10, COLORES.taponCuerpo, 5);
-      tintaRedonda(g, taponX - 17, taponY - 22, 44, 14, 6, COLORES.taponBrillo, 4);
-      if (modo === 'espalda') brillo(g, taponX - 2, taponY - 4, 7);
-    }
-
-    // casaca
-    tintaRedonda(g, cx - 46, h - 114, 92, 88, 22, COLORES.capitanCasaca, 6);
-    g.fillStyle(COLORES.capitanCamisa, 1);
-    g.fillRect(cx - 12, h - 112, 24, 60);
-    g.fillStyle(COLORES.doradoViejo, 1);
-    g.fillRect(cx - 46, h - 68, 92, 12);
-    g.fillCircle(cx - 20, h - 62, 4);
-    g.fillCircle(cx + 20, h - 62, 4);
-
-    // cabeza
-    const cabezaY = h - 134;
-    tintaCirculo(g, cx, cabezaY, 28, COLORES.capitanPiel, 6);
-    // barba
-    g.fillStyle(COLORES.capitanCamisa, 1);
-    g.fillCircle(cx + 2, cabezaY + 18, 16);
-    g.lineStyle(3, TINTA, 1);
-    g.strokeCircle(cx + 2, cabezaY + 18, 16);
-    // sombrero de pico
-    tintaRedonda(g, cx - 40, cabezaY - 40, 80, 20, 9, COLORES.capitanSombrero, 5);
-    g.fillStyle(COLORES.capitanSombrero, 1);
-    g.fillTriangle(cx - 34, cabezaY - 30, cx + 34, cabezaY - 30, cx, cabezaY - 58);
-    g.lineStyle(4, TINTA, 1);
-    g.strokeTriangle(cx - 34, cabezaY - 30, cx + 34, cabezaY - 30, cx, cabezaY - 58);
-    tintaCirculo(g, cx, cabezaY - 40, 7, COLORES.capitanCamisa, 3);
-
-    // cara
-    if (vencido) {
-      g.lineStyle(5, TINTA, 1);
-      [[cx - 11, cabezaY - 2], [cx + 13, cabezaY - 2]].forEach(([x, y]) => {
-        g.beginPath();
-        g.moveTo(x - 6, y - 6);
-        g.lineTo(x + 6, y + 6);
-        g.moveTo(x + 6, y - 6);
-        g.lineTo(x - 6, y + 6);
-        g.strokePath();
-      });
-    } else if (modo === 'espalda') {
-      // de espaldas: se le ve la nuca y el tapon brillando
-      g.fillStyle(COLORES.capitanSombrero, 1);
-      g.fillCircle(cx, cabezaY + 2, 20);
-    } else {
-      // parche en un ojo y el otro bien abierto
-      tintaCirculo(g, cx + 13, cabezaY - 2, 10, 0xffffff, 3);
-      g.fillStyle(TINTA, 1);
-      g.fillCircle(cx + 16, cabezaY - 1, 5);
-      g.fillStyle(COLORES.capitanSombrero, 1);
-      g.fillCircle(cx - 11, cabezaY - 2, 10);
-      g.lineStyle(4, COLORES.capitanSombrero, 1);
-      g.beginPath();
-      g.moveTo(cx - 24, cabezaY - 14);
-      g.lineTo(cx + 22, cabezaY - 20);
-      g.strokePath();
-    }
-
-    // vencido: se le escapa el agua por donde estaba el tapon
-    if (vencido) {
-      g.fillStyle(COLORES.aguaJabon, 0.9);
-      [[cx - 58, h - 50, 14], [cx - 74, h - 34, 11], [cx - 44, h - 34, 9]].forEach(([x, y, r]) =>
-        g.fillCircle(x, y, r),
-      );
-    }
-
-    brillo(g, cx - 18, cabezaY - 14, 7);
-  };
-
-  generar(escena, TEXTURAS.jefeCapitan, JEFE.ancho, JEFE.alto, capitan('normal'));
-  generar(escena, TEXTURAS.jefeCapitanEspalda, JEFE.ancho, JEFE.alto, capitan('espalda'));
-  generar(escena, TEXTURAS.jefeCapitanSinTapon, JEFE.ancho, JEFE.alto, capitan('sinTapon'));
-
-  // La bala de espuma que dispara el Capitan.
-  generar(escena, TEXTURAS.balaEspuma, BALA.ancho, BALA.alto, (g) => {
-    tintaCirculo(g, BALA.ancho * 0.36, BALA.alto * 0.5, BALA.alto * 0.42, COLORES.espuma, 4);
-    tintaCirculo(g, BALA.ancho * 0.7, BALA.alto * 0.42, BALA.alto * 0.3, COLORES.espuma, 4);
-    g.fillStyle(COLORES.aguaJabon, 0.8);
-    g.fillCircle(BALA.ancho * 0.3, BALA.alto * 0.58, BALA.alto * 0.16);
-    brillo(g, BALA.ancho * 0.26, BALA.alto * 0.34, 4);
   });
 
   generar(escena, TEXTURAS.jefe, JEFE.ancho, JEFE.alto, jefe(COLORES.jefe));

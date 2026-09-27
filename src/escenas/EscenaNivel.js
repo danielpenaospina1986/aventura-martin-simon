@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { AGUA, GLOBO, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -94,8 +94,8 @@ export class EscenaNivel extends Phaser.Scene {
     this.canastillas = this.physics.add.group({ allowGravity: false });
     // los pegotes de relleno que tira Martin Malvado, en Miami
     this.rellenos = this.physics.add.group();
-    // las balas de espuma del Capitan Tapon
-    this.balas = this.physics.add.group({ allowGravity: false });
+    // los globos de agua que tira Jean Luke, el jefe final
+    this.globos = this.physics.add.group({ allowGravity: false });
     // los heladitos de chocolate de Papa Inodoro: estos SI caen, que su gracia
     // es que salgan en arco y se estrellen
     this.heladitos = this.physics.add.group();
@@ -328,11 +328,11 @@ export class EscenaNivel extends Phaser.Scene {
       });
     });
 
-    // Las balas de espuma del Capitan.
+    // Los globos de agua de Jean Luke.
     this.jugadores.forEach((jugador) => {
-      this.physics.add.overlap(jugador, this.balas, (a, b) => {
+      this.physics.add.overlap(jugador, this.globos, (a, b) => {
         if (jugador.estaCongelado) return;
-        this.romperBala(this.balas.contains(a) ? a : b);
+        this.romperGlobo(this.globos.contains(a) ? a : b);
         this.herirJugador(jugador);
       });
     });
@@ -1140,25 +1140,45 @@ export class EscenaNivel extends Phaser.Scene {
     relleno.destroy();
   }
 
-  // --- la arena del Capitan Tapon -------------------------------------------
+  // --- la arena de Jean Luke ------------------------------------------------
 
-  // Una bala de espuma, recta y lenta: se la ve venir.
-  lanzarBala(jefe) {
+  // Un globo de agua, recto y lento: se le ve venir.
+  lanzarGlobo(jefe) {
     const dir = jefe.direccion;
-    const bala = this.balas.create(jefe.x + dir * 60, jefe.y + BALA.salidaY, TEXTURAS.balaEspuma);
-    bala.setDisplaySize(BALA.ancho, BALA.alto).setDepth(8);
-    bala.setFlipX(dir < 0);
-    bala.body.setSize(BALA.caja.ancho / bala.scaleX, BALA.caja.alto / bala.scaleY, true);
-    bala.body.setAllowGravity(false);
-    bala.body.setVelocityX(dir * BALA.velocidad);
-    this.time.delayedCall(BALA.duracionMs, () => bala.active && this.romperBala(bala));
-    return bala;
+    const globo = this.globos.create(jefe.x + dir * 60, jefe.y + GLOBO.salidaY, TEXTURAS.globo);
+    globo.setDisplaySize(GLOBO.ancho, GLOBO.alto).setDepth(8);
+    globo.setFlipX(dir < 0);
+    globo.body.setSize(GLOBO.caja.ancho / globo.scaleX, GLOBO.caja.alto / globo.scaleY, true);
+    globo.body.setAllowGravity(false);
+    globo.body.setVelocityX(dir * GLOBO.velocidad);
+
+    // en cuanto sale se estira: la pose de volar es la que lleva las rayas
+    this.time.delayedCall(GLOBO.estiraMs, () => {
+      if (globo.active) globo.setTexture(TEXTURAS.globoVuela);
+    });
+
+    this.time.delayedCall(GLOBO.duracionMs, () => globo.active && this.romperGlobo(globo));
+    return globo;
   }
 
-  romperBala(bala) {
-    if (!bala || !bala.active) return;
-    burbujas(this, bala.x, bala.y, 4);
-    bala.destroy();
+  romperGlobo(globo) {
+    if (!globo || !globo.active) return;
+    burbujas(this, globo.x, globo.y, 4);
+
+    // El charco se queda un momento donde reviento. El sprite se destruye
+    // enseguida, asi que sin esto el dibujo del globo reventado no se veria.
+    const charco = this.add
+      .image(globo.x, globo.y, TEXTURAS.globoRevienta)
+      .setDisplaySize(GLOBO.anchoCharco, GLOBO.altoCharco)
+      .setDepth(6);
+    this.tweens.add({
+      targets: charco,
+      alpha: { from: 1, to: 0 },
+      duration: GLOBO.charcoMs,
+      onComplete: () => charco.destroy(),
+    });
+
+    globo.destroy();
   }
 
   // --- la arena de Papa Inodoro ---------------------------------------------

@@ -12,7 +12,7 @@ import { PapaInodoro } from './PapaInodoro.js';
 import { Abuelo } from './Abuelo.js';
 import { DonaZully } from './DonaZully.js';
 import { MartinMalvado } from './MartinMalvado.js';
-import { CapitanTapon } from './CapitanTapon.js';
+import { JeanLuke } from './JeanLuke.js';
 import { Provisional } from './Provisional.js';
 
 const POR_CIUDAD = {
@@ -20,7 +20,7 @@ const POR_CIUDAD = {
   medellin: Abuelo,
   atlanta: DonaZully,
   miami: MartinMalvado,
-  cartagena: CapitanTapon,
+  cartagena: JeanLuke,
 };
 
 export function jefeDeCiudad(ciudad) {

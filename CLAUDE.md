@@ -148,7 +148,7 @@ empapados son ellos.
 | 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **el Abuelo** |
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia. Aqui les sale al paso **Martin Malvado** |
-| 5 | Cartagena | El paseo que no se les olvida |
+| 5 | Cartagena | El paseo que no se les olvida. Aqui les sale al paso **Jean Luke**, el jefe final |
 
 ### Como se cuenta
 
@@ -324,7 +324,7 @@ Reglas para los cinco:
   destruye en cuanto cae, asi que sin eso la pose no se llegaria a ver nunca: la
   escena deja la imagen un momento en su sitio mientras se va.
 - Los que todavia no tienen arte se dibujan **por codigo** con los pinceles de
-  tinta. Solo el Capitan Tapon sigue sin arte propio.
+  tinta. Ya no queda ninguno: los cinco tienen dibujos de verdad.
 
 #### 1. Space Coast: Papa Inodoro
 
@@ -428,19 +428,24 @@ saltar, que es lo que hace la pelea legible. Al subirse se pone **claramente**
 mas alto que en el suelo: mide 172 px y, con poca diferencia, "esta arriba, no
 le llego" y "ha bajado, dale" se veian igual.
 
-#### 5. Cartagena: el Capitan Tapon
+#### 5. Cartagena: Jean Luke
 
-El ultimo guardian, y el mas terco: un capitan de banera con su casaca, su
-sombrero de pico y, colgado a la espalda con su cadena, un **tapon** enorme.
-Todo el agua de la partida esta ahi dentro. **Aguanta cinco tirones.**
+El jefe final: el **nino maton** de la playa. Gordo, colorado y fanfarron, con
+su camiseta de rayas celestes y un balde lleno de **globos de agua**. **Aguanta
+cinco.**
 
-Marcha por su arena y dispara **balas de espuma**; cuando se le acaban, se da la
-vuelta a **recargar** y ahi se le ve el tapon. Un golpe al tapon en ese momento
-—pisandolo, con la katana o con un bloque— y se le sale un poco. El tiron no le
-corta la recarga, asi que en una ventana caben dos.
+Marcha por su arena y **tira globos**; cuando se le acaban, se agacha **de
+espaldas sobre el balde** a buscar mas, y ahi se queda desprevenido. Un golpe en
+ese momento —pisandolo, con la katana o con un bloque— y se lleva el susto. El
+golpe no le corta la recarga, asi que en una ventana caben dos. Cada golpe lo
+pone mas nervioso: al volver a la marcha tarda menos en apuntar.
 
-Es el final y tiene su gracia: al jefe final de un juego que se llama "La gran
-fuga del bano" se le gana **quitandole el tapon**.
+Es el final y tiene su gracia: al ultimo se sienta en el suelo **a llorar y a
+llamar a su mama**, empapado con sus propios globos.
+
+Sus dibujos son de verdad (`src/assets/jefes/jeanluke/`): seis poses de el
+—marcha, apunta, tira, recarga, golpe y derrotado— y tres del globo (entero,
+volando y reventado).
 
 ## 5. Sensacion de movimiento
 
@@ -863,7 +868,9 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
   bizarras de la familia, generadas con Gemini. Papa Inodoro lleva la cara de
   Daniel, sacada de una foto suya; el Abuelo se reconoce por el sombrero
   vueltiao y el poncho; Martin Malvado es el propio Martain con un disfraz de
-  oso roto. Son sus propias caras y su propia decision, asi que de
+  oso roto; y Jean Luke es un nino maton inventado, con camiseta de rayas
+  celestes. Se pidio **caricaturesco y comico, nunca cruel**: en este juego los
+  jefes dan risa, no miedo. Son sus propias caras y su propia decision, asi que de
   licencia no hay nada que mirar; las hojas de partida no se suben al
   repositorio. La pickup del Abuelo trae dibujado el emblema de su marca, que
   entra en la excepcion de mas arriba.
@@ -1588,3 +1595,21 @@ baja.
   encerradas es mucho mas ancho que el normal (198), asi que se lo habria
   comido. Es la tercera vez que aparece la misma trampa; la regla esta escrita
   en la entrada del Abuelo.
+- **2026-09-27** — A Martin Malvado se le rehacen los fotogramas: en el juego
+  salia **demasiado rubio** y no se parecia a Martain. La hoja nueva viene con
+  el mismo encuadre exacto que la vieja, asi que las zonas del recorte no se
+  tocan.
+- **2026-09-27** — Cartagena estrena a **Jean Luke** y con el se va el Capitan
+  Tapon, que estaba dibujado por codigo. La pelea es la misma —no se le pega de
+  frente, hay que esperar a que se de la vuelta— y lo que cambia es quien es: el
+  nino maton de la camiseta de rayas celestes, que tira **globos de agua** desde
+  su balde. Se pierde el chiste del tapon, pero se gana el del maton al que se
+  le acaba la gracia y se sienta a llamar a su mama. Se renombra todo:
+  `CapitanTapon` pasa a `JeanLuke` y `BALA` a `GLOBO`.
+- **2026-09-27** — Su hoja trae ESCRITO el nombre de cada pose debajo, asi que
+  las zonas van a mano. La de GOLPE ademas empieza mas abajo que las demas,
+  porque por encima pasa el letrero de "APUNTA" y un rectangulo no puede
+  separarlos de otra forma.
+- **2026-09-27** — Con Jean Luke, **los cinco jefes tienen ya dibujos de
+  verdad**: no queda ninguno pintado por codigo. De sus arenas solo sobreviven
+  al codigo las sombrillas de Dona Zully y las torres de Miami.
