@@ -59,6 +59,13 @@ async function dondeTocar(page) {
   });
 }
 
+// Donde cae la tarjeta de un mundo, en coordenadas del juego. Las cinco van
+// centradas, con 122 px de paso.
+function sitioDelMundo(i, ancho = 640) {
+  const paso = 112 + 10;
+  return ancho / 2 - (4 * paso) / 2 + i * paso;
+}
+
 // Donde esta cada boton tactil, preguntandoselo al juego: sus sitios dependen
 // del ancho de la pantalla.
 async function sitiosTactiles(page) {
@@ -97,7 +104,12 @@ async function entrarAlNivel(page, personaje = 'martin', extra = '') {
 
   await page.keyboard.press('Enter');
 
-  // Entre la seleccion y el tablero va el cuento; Esc lo salta entero.
+  // Entre el personaje y el tablero se elige mundo. Aqui se entra siempre al
+  // primero, que es el que viene marcado.
+  await esperarEscena(page, 'mundos');
+  await page.keyboard.press('Enter');
+
+  // Y entre la eleccion y el tablero va la resena; Esc la salta.
   await esperarEscena(page, 'relato');
   await page.keyboard.press('Escape');
   await esperarEscena(page, 'nivel');
@@ -183,14 +195,19 @@ test('las pantallas se ven bien y no hay errores en la consola', async ({ page }
   await page.screenshot({ path: `${CAPTURAS}/03-seleccion.png` });
 
   await page.keyboard.press('Enter');
+  await esperarEscena(page, 'mundos');
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${CAPTURAS}/04-mundos.png` });
+
+  await page.keyboard.press('Enter');
   await esperarEscena(page, 'relato');
   await page.waitForTimeout(500);
-  await page.screenshot({ path: `${CAPTURAS}/04-relato.png` });
+  await page.screenshot({ path: `${CAPTURAS}/05-relato.png` });
 
   await page.keyboard.press('Escape');
   await esperarEscena(page, 'nivel');
   await page.waitForTimeout(800);
-  await page.screenshot({ path: `${CAPTURAS}/05-nivel.png` });
+  await page.screenshot({ path: `${CAPTURAS}/06-nivel.png` });
 
   expect(errores).toEqual([]);
 });
@@ -1043,7 +1060,9 @@ test('la partida nueva entra derecho por la reseña de la primera ciudad', async
   await esperarEscena(page, 'seleccion');
   await page.keyboard.press('Enter');
 
-  // Ya no hay vinetas de apertura: lo primero que se ve es Space Coast.
+  // Ya no hay vinetas de apertura, pero si una pantalla para elegir mundo.
+  await esperarEscena(page, 'mundos');
+  await page.keyboard.press('Enter');
   await esperarEscena(page, 'relato');
   const tarjeta = await page.evaluate(() => {
     const e = window.juego.scene.getScene('relato');
@@ -1084,6 +1103,8 @@ test('Esc se salta la reseña y deja jugando', async ({ page }) => {
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'seleccion');
   await page.keyboard.press('Enter');
+  await esperarEscena(page, 'mundos');
+  await page.keyboard.press('Enter');
 
   await esperarEscena(page, 'relato');
   await page.keyboard.press('Escape');
@@ -1122,7 +1143,7 @@ test('el marcador nunca baja de cero', async ({ page }) => {
   expect(resultado.golpes).toBe(1);
 });
 
-test('derrotar al jefe da diez monedas', async ({ page }) => {
+test('derrotar al jefe da el premio de su mundo', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
   // Se mide el SALTO de monedas al derrotarlo, no un total: de camino a la
@@ -1149,15 +1170,25 @@ test('derrotar al jefe da diez monedas', async ({ page }) => {
     await page.waitForTimeout(120);
   }
 
-  const resultado = await page.evaluate(() => {
+  const resultado = await page.evaluate(async () => {
+    const { premioDeJefe } = await import('/src/config/ajustes.js');
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
-    return { monedas: j.monedas, jefes: j.jefesDerrotados, jefe: !!n.jefe };
+    return {
+      monedas: j.monedas,
+      jefes: j.jefesDerrotados,
+      deJefes: j.puntosDeJefes,
+      jefe: !!n.jefe,
+      premio: premioDeJefe(n.indiceNivel),
+    };
   });
 
   expect(resultado.jefe).toBe(false);
   expect(resultado.jefes).toBe(1);
-  expect(resultado.monedas).toBe(monedasAntes + 10); // el golpe final da diez
+  // el de Space Coast paga 100, que es el premio gordo de la partida
+  expect(resultado.premio).toBe(100);
+  expect(resultado.monedas).toBe(monedasAntes + resultado.premio);
+  expect(resultado.deJefes).toBe(resultado.premio);
 });
 
 test('los cinco niveles cargan con su jefe y sus tres checkpoints', async ({ page }) => {
@@ -1283,7 +1314,7 @@ test('llegar a la meta lleva a la pantalla de victoria', async ({ page }) => {
 
   await esperarEscena(page, 'victoria');
   await page.waitForTimeout(600);
-  await page.screenshot({ path: `${CAPTURAS}/06-victoria.png` });
+  await page.screenshot({ path: `${CAPTURAS}/07-victoria.png` });
   expect(errores).toEqual([]);
 });
 
@@ -1645,6 +1676,75 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
   // en las cinco, con la carrerilla buena, se le cae encima
   const flojas = resultado.filter((r) => r.pisotones === 0).map((r) => r.ciudad);
   expect(flojas).toEqual([]);
+});
+
+test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'mundos');
+
+  // los cinco estan abiertos desde el principio
+  const cuantos = await page.evaluate(
+    () => window.juego.scene.getScene('mundos').tarjetas.length,
+  );
+  expect(cuantos).toBe(5);
+
+  // tres a la derecha: Miami
+  for (let i = 0; i < 3; i += 1) {
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(100);
+  }
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nivel');
+
+  const donde = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return { ciudad: n.datosNivel.fondo, indice: n.indiceNivel };
+  });
+  expect(donde.indice).toBe(3);
+  expect(donde.ciudad).toBe('miami');
+});
+
+test('cada jefe paga segun lo dificil que sea su mundo', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  const premios = await page.evaluate(async () => {
+    const { premioDeJefe } = await import('/src/config/ajustes.js');
+    return [0, 1, 2, 3, 4].map((i) => premioDeJefe(i));
+  });
+  // 100 el primero, y 20 mas por cada mundo mas dificil
+  expect(premios).toEqual([100, 120, 140, 160, 180]);
+
+  // y lo que suma al marcador es eso, no un numero fijo
+  const cobrado = await page.evaluate(async () => {
+    const salida = [];
+    for (const i of [0, 4]) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      await new Promise((r) => setTimeout(r, 1400));
+      const n = window.juego.scene.getScene('nivel');
+      const j = n.jugadores[0];
+      const antes = j.monedas;
+      n.jefe.vidas = 1;
+      n.jefe.invulnerableHasta = 0;
+      n.jefe.puedeRecibirGolpe = () => true;
+      n.golpearJefe(n.jefe.x - 40);
+      await new Promise((r) => setTimeout(r, 200));
+      salida.push({ indice: i, gano: j.monedas - antes, deJefes: j.puntosDeJefes });
+    }
+    return salida;
+  });
+
+  expect(cobrado[0].gano).toBe(100);
+  expect(cobrado[1].gano).toBe(180);
+  // y se guarda aparte, para que el marcador final no tenga que multiplicar
+  expect(cobrado[1].deJefes).toBe(180);
 });
 
 test('ni las palomas ni las vacas se represan al final del tablero', async ({ page }) => {
@@ -2113,6 +2213,9 @@ test.describe('con el dedo', () => {
     // el dibujo, no la linea de abajo: apuntarle a 18 px con el dedo no hay
     // quien lo haga.
     await tocar(420, 188);
+    await esperarEscena(page, 'mundos');
+    // y de ahi, tocando la primera tarjeta de mundo
+    await tocar(sitioDelMundo(0), 168);
     await esperarEscena(page, 'relato');
     await tocar(320, 200);
     await esperarEscena(page, 'nivel');
@@ -2152,6 +2255,13 @@ test.describe('con el dedo', () => {
     const enSeleccion = await textos();
     expect(enSeleccion).toContain('Toca al que quieras');
     expect(enSeleccion).not.toMatch(/Enter|Esc|Flechas/);
+
+    await page.keyboard.press('Enter');
+    await esperarEscena(page, 'mundos');
+    await page.waitForTimeout(200);
+    const enMundos = await textos();
+    expect(enMundos).toContain('Toca el mundo');
+    expect(enMundos).not.toMatch(/Enter|Esc|Flechas/);
   });
 
   test('en un telefono el nombre se escribe tocando las letras', async ({ page }) => {

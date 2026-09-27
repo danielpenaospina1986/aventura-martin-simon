@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, GLOBO, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { premioDeJefe, AGUA, GLOBO, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -45,6 +45,7 @@ export class EscenaNivel extends Phaser.Scene {
       recogidas: d.recogidas || 0,
       golpes: d.golpes || 0,
       jefesDerrotados: d.jefesDerrotados || 0,
+      puntosDeJefes: d.puntosDeJefes || 0,
       enemigosVencidos: d.enemigosVencidos || 0,
     };
 
@@ -193,6 +194,7 @@ export class EscenaNivel extends Phaser.Scene {
     jugador.recogidas = this.acumulado.recogidas;
     jugador.golpes = this.acumulado.golpes;
     jugador.jefesDerrotados = this.acumulado.jefesDerrotados;
+    jugador.puntosDeJefes = this.acumulado.puntosDeJefes;
     jugador.enemigosVencidos = this.acumulado.enemigosVencidos;
     jugador.corazones = VIDA.corazonesPorNivel;
 
@@ -580,6 +582,7 @@ export class EscenaNivel extends Phaser.Scene {
         recogidas: jugador.recogidas,
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
+        puntosDeJefes: jugador.puntosDeJefes,
         enemigosVencidos: jugador.enemigosVencidos,
       });
     });
@@ -735,6 +738,7 @@ export class EscenaNivel extends Phaser.Scene {
         recogidas: jugador.recogidas,
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
+        puntosDeJefes: jugador.puntosDeJefes,
         enemigosVencidos: jugador.enemigosVencidos,
         vidas: this.vidas,
       };
@@ -1294,11 +1298,14 @@ export class EscenaNivel extends Phaser.Scene {
     this.jefe = null;
 
     const jugador = this.jugadores[0];
-    jugador.monedas += PUNTOS.porJefe;
+    // Cada mundo paga lo suyo: el primero 100 y cada uno mas dificil, 20 mas.
+    const premio = premioDeJefe(this.indiceNivel);
+    jugador.monedas += premio;
     jugador.jefesDerrotados += 1;
+    jugador.puntosDeJefes += premio;
 
     textoFlotante(this, x, y - 40, '¡Jefe derrotado!', COLORES.textoAcento);
-    textoFlotante(this, x, y - 8, `+${PUNTOS.porJefe}`, COLORES.textoAcento);
+    textoFlotante(this, x, y - 8, `+${premio}`, COLORES.textoAcento);
     this.hud.animarCara(jugador);
     this.abrirMeta();
   }

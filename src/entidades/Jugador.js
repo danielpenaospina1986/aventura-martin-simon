@@ -72,6 +72,9 @@ export class Jugador extends Phaser.Physics.Arcade.Sprite {
     this.recogidas = 0;
     this.golpes = 0;
     this.jefesDerrotados = 0;
+    // Lo que han pagado los jefes. Se guarda aparte porque cada mundo paga lo
+    // suyo, asi que el marcador final no puede sacarlo multiplicando.
+    this.puntosDeJefes = 0;
     this.enemigosVencidos = 0;
   }
 

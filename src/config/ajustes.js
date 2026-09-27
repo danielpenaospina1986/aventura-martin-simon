@@ -161,9 +161,21 @@ export const PUNTOS = {
   porMoneda: 1,
   porGolpe: -3,   // te toca un enemigo o te caes a un hueco
   porEnemigo: 2,  // vencer a un bicho pequeno
-  porJefe: 10,
+  // Un jefe da MUCHO mas que todo lo demas, porque cuesta mucho mas: el premio
+  // gordo de la partida es ganarle a uno.
+  porJefe: 100,
+  // Y cada mundo es mas dificil que el anterior, asi que su jefe paga mas. El
+  // de Space Coast da 100, el de Medellin 120, y asi hasta los 180 de Jean
+  // Luke. Ahora que se puede elegir mundo, esto es lo que hace que valga la
+  // pena meterse en los dificiles.
+  porJefeExtra: 20,
   minimo: 0,      // el marcador nunca baja de aqui
 };
+
+// Lo que paga el jefe de un mundo, segun lo dificil que sea.
+export function premioDeJefe(indiceNivel) {
+  return PUNTOS.porJefe + PUNTOS.porJefeExtra * Math.max(0, indiceNivel);
+}
 
 // Corazones y vidas.
 //

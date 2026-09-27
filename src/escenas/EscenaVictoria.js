@@ -32,6 +32,7 @@ export class EscenaVictoria extends Phaser.Scene {
     this.recogidas = d.recogidas || 0;
     this.golpes = d.golpes || 0;
     this.jefesDerrotados = d.jefesDerrotados || 0;
+    this.puntosDeJefes = d.puntosDeJefes || 0;
     this.enemigosVencidos = d.enemigosVencidos || 0;
     this.indiceNivel = d.indiceNivel || 0;
     this.nombreNivel = d.nombreNivel || '';
@@ -113,6 +114,7 @@ export class EscenaVictoria extends Phaser.Scene {
       recogidas: this.recogidas,
       golpes: this.golpes,
       jefesDerrotados: this.jefesDerrotados,
+      puntosDeJefes: this.puntosDeJefes,
       enemigosVencidos: this.enemigosVencidos,
     };
 
@@ -123,12 +125,16 @@ export class EscenaVictoria extends Phaser.Scene {
         alElegir: () => empezarNivel(this, { ...partida, indiceNivel: this.indiceNivel + 1 }),
       });
     }
+    // Se salta a cualquier mundo SIN perder lo sumado: es lo que deja seguir
+    // jugando despues de pasarse los cinco, y de paso sirve para repetir este
+    // mismo, asi que la opcion de "repetir" sobraba.
     opciones.push({
-      etiqueta: this.hayOtroNivel ? 'Repetir este nivel' : 'Jugar otra vez',
+      etiqueta: 'Elegir otro mundo',
       alElegir: () =>
-        empezarNivel(this, {
+        this.scene.start('mundos', {
           personajeId: this.personajeId,
-          indiceNivel: this.hayOtroNivel ? this.indiceNivel : 0,
+          partida,
+          indiceNivel: this.indiceNivel,
         }),
     });
     opciones.push({ etiqueta: 'Cambiar personaje', alElegir: () => this.scene.start('seleccion') });
@@ -181,7 +187,9 @@ export class EscenaVictoria extends Phaser.Scene {
       .setOrigin(0.5);
 
     const perdido = this.golpes * Math.abs(PUNTOS.porGolpe);
-    const bonus = this.jefesDerrotados * PUNTOS.porJefe;
+    // Lo que pagaron los jefes va guardado, no multiplicado: cada mundo paga
+    // lo suyo segun lo dificil que sea.
+    const bonus = this.puntosDeJefes;
 
     linea(cy - 42, `${datos.nombreMoneda} recogidos`, `+${this.recogidas}`, COLORES.textoClaro);
     linea(

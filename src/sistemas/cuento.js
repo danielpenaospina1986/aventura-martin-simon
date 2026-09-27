@@ -33,9 +33,10 @@ export function empezarNivel(escena, datos = {}) {
   });
 }
 
-// Partida nueva: derecho a la primera ciudad, con su resena.
+// A jugar el mundo que se haya elegido, con su resena. Antes siempre empezaba
+// por el primero; desde que se puede elegir mundo, el indice viene de fuera.
 export function empezarPartida(escena, datos = {}) {
-  empezarNivel(escena, { ...datos, indiceNivel: 0 });
+  empezarNivel(escena, { ...datos, indiceNivel: datos.indiceNivel || 0 });
 }
 
 // Se acabo la ultima ciudad: al marcador de siempre. Ya no hay vineta de

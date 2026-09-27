@@ -9,7 +9,6 @@ import { COLORES, FUENTE } from '../config/estilo.js';
 import { PERSONAJES, ORDEN_PERSONAJES } from '../config/personajes.js';
 import { pintarFondoDeMenu } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
-import { empezarPartida } from '../sistemas/cuento.js';
 import { segunElMando } from '../sistemas/tactil.js';
 
 export class EscenaSeleccion extends Phaser.Scene {
@@ -137,7 +136,8 @@ export class EscenaSeleccion extends Phaser.Scene {
       this,
       ORDEN_PERSONAJES.map((id) => ({
         etiqueta: PERSONAJES[id].nombre,
-        alElegir: () => empezarPartida(this, { personajeId: id }),
+        // Del personaje se pasa a elegir mundo, no directo a jugar.
+        alElegir: () => this.scene.start('mundos', { personajeId: id }),
       })),
       { x: ancho / 2, y: 316, horizontal: true, separacion: 200, tamano: 18 },
     );

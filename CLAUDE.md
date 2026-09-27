@@ -64,6 +64,7 @@ aventura-martin-simon/
     escenas/
       EscenaTitulo.js
       EscenaSeleccion.js
+      EscenaMundos.js   a que mundo de los cinco se va
       EscenaNivel.js
       EscenaVictoria.js
       EscenaPausa.js
@@ -464,7 +465,23 @@ Valores en `src/config/ajustes.js`:
 | Recoger un premio | **+1** |
 | Vencer a un bicho pequeno | **+2** |
 | Que te toque un enemigo o caerte a un hueco | **-3** |
-| Derrotar a un jefe | **+10** |
+| Derrotar a un jefe | **+100, y 20 mas por cada mundo mas dificil** |
+
+Un jefe paga **muchisimo mas** que todo lo demas, porque cuesta muchisimo mas:
+el premio gordo de una partida es ganarle a uno. Y como no cuestan lo mismo,
+tampoco pagan lo mismo:
+
+| Mundo | Jefe | Paga |
+|---|---|---|
+| 1 Space Coast | Papa Inodoro | +100 |
+| 2 Medellin | el Abuelo | +120 |
+| 3 Atlanta | Dona Zully | +140 |
+| 4 Miami | Martin Malvado | +160 |
+| 5 Cartagena | Jean Luke | +180 |
+
+Lo calcula `premioDeJefe(indice)`, en `ajustes.js`. Lo que han pagado los jefes
+se guarda aparte (`jugador.puntosDeJefes`), porque desde que cada uno paga lo
+suyo el marcador final ya no puede sacarlo multiplicando.
 
 El marcador nunca baja de cero. Se arrastra de un nivel al siguiente, asi que al
 final refleja la partida entera: lo que ganaste menos lo que costo llegar.
@@ -503,11 +520,28 @@ Filosofia: juego **generoso y sin castigos fuertes**.
 ## 7. Pantallas
 
 ```
-titulo -> quien juega -> seleccion de personaje -> nivel -> victoria
-                                                     |        |-> jugar otra vez
-                                                     |        |-> cambiar personaje
-                                                     |-> sin vidas -> fin de partida
+titulo -> quien juega -> personaje -> MUNDO -> nivel -> victoria
+                                                 |        |-> siguiente nivel
+                                                 |        |-> elegir otro mundo
+                                                 |        |-> cambiar personaje
+                                                 |-> sin vidas -> fin de partida
 ```
+
+### Elegir mundo
+
+Los **cinco mundos estan abiertos desde el principio**: la gracia no es
+desbloquearlos, es poder volver al que mas guste y seguir sumando. Se elige
+despues del personaje, y tambien desde la pantalla de victoria ("Elegir otro
+mundo"), que **se lleva el marcador**: asi se puede seguir jugando despues de
+pasarse los cinco.
+
+Cada tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
+en medio, con el nombre encima y **lo que paga su jefe** debajo, que es lo que
+invita a meterse en los dificiles.
+
+Ojo: el recorte se hace con **`setCrop`, no con una mascara**. En Phaser 4
+`setMask` no funciona con WebGL: avisa por consola y dibuja la lamina entera,
+que se sale por toda la pantalla.
 
 En **quien juega** se teclea el nombre (hasta 10 letras), que hace de
 identificador de la sesion: es lo que se apunta en el tablero de mejores
@@ -1613,3 +1647,20 @@ baja.
 - **2026-09-27** — Con Jean Luke, **los cinco jefes tienen ya dibujos de
   verdad**: no queda ninguno pintado por codigo. De sus arenas solo sobreviven
   al codigo las sombrillas de Dona Zully y las torres de Miami.
+- **2026-09-27** — Se puede **elegir a que mundo ir**, no solo con que
+  personaje. Los cinco estan abiertos desde el principio y la eleccion tambien
+  esta en la pantalla de victoria, llevandose el marcador: lo que se buscaba es
+  poder seguir jugando despues de pasarse los cinco, volver al que mas guste y
+  seguir sumando puntos.
+- **2026-09-27** — Un jefe pasa de dar **10 monedas a dar 100**, y 20 mas por
+  cada mundo mas dificil (hasta los 180 de Jean Luke). Con los mundos abiertos,
+  esto es lo que hace que valga la pena meterse en los dificiles en vez de
+  repetir el primero. Lo que han pagado se guarda en `jugador.puntosDeJefes`,
+  porque el marcador final ya no puede sacarlo multiplicando.
+- **2026-09-27** — Del menu de victoria se va **"Repetir este nivel"**: con
+  "Elegir otro mundo" se puede repetir el mismo, y con cuatro opciones el menu
+  se salia de la pantalla por abajo.
+- **2026-09-27** — Las tarjetas de mundo se recortan con **`setCrop` y no con
+  una mascara**: en Phaser 4, `setMask` no funciona con WebGL. Avisa por consola
+  ("This method is not supported in WebGL") y dibuja la lamina entera, que a ese
+  tamano ocupa la pantalla de lado a lado.

@@ -30,6 +30,7 @@ export class EscenaFinal extends Phaser.Scene {
     this.recogidas = d.recogidas || 0;
     this.golpes = d.golpes || 0;
     this.jefesDerrotados = d.jefesDerrotados || 0;
+    this.puntosDeJefes = d.puntosDeJefes || 0;
     this.enemigosVencidos = d.enemigosVencidos || 0;
     this.indiceNivel = d.indiceNivel || 0;
     this.nombreNivel = d.nombreNivel || '';
