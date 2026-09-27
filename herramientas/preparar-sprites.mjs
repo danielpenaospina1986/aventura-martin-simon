@@ -429,6 +429,70 @@ const PERSONAJES = [
     ],
   },
   {
+    // MARTIN MALVADO, el guardian del bano de Miami: la version mala de
+    // Martain, metido en un disfraz de oso de peluche roto por el que se le
+    // sale el relleno amarillo.
+    //
+    // Su hoja viene sobre turquesa liso y, por una vez, SIN linea de suelo
+    // dibujada ni nombres escritos debajo: las zonas van a mano solo para
+    // dejarle fuera a la pose de tirar el pegote que lleva dibujado al lado
+    // (en el juego el relleno es un objeto aparte).
+    //
+    // NADA de limpiarBolsas: el peto claro de la barriga queda a 191 del fondo
+    // y el filtro de las bolsas encerradas es mucho mas ancho que el normal
+    // (tolerancia x 2,2 = 198), asi que se lo comeria. Es la misma trampa que
+    // se llevo por delante a la camioneta del Abuelo.
+    nombre: 'martin-malvado',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    // Se ve a 172 px y a densidad 3 eso son 516 pixeles de verdad.
+    lienzo: { ancho: 520, alto: 520 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/malvado',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'martin-malvado',
+        // SIN porPieza: las seis comparten escala, que es lo que hace que no
+        // encoja ni crezca al cambiar de pose.
+        nombres: ['vigila', 'tira', 'salta', 'baja', 'golpe', 'derrotado'],
+        zonas: [
+          { x: 105, y: 6, ancho: 213, alto: 388 },    // de brazos cruzados
+          { x: 476, y: 21, ancho: 359, alto: 374 },   // tirando el relleno
+          { x: 1039, y: 25, ancho: 239, alto: 369 },  // saltando de torre en torre
+          { x: 88, y: 390, ancho: 307, alto: 367 },   // abajo, burlandose
+          { x: 500, y: 405, ancho: 363, alto: 353 },  // encajando el golpe
+          { x: 881, y: 521, ancho: 471, alto: 236 },  // desinflado entre su relleno
+        ],
+      },
+    ],
+  },
+  {
+    // El pegote de relleno amarillo que tira. En SU PROPIA entrada, como el
+    // heladito y la canastilla: la altura se reparte por grupos, asi que metido
+    // en la hoja del jefe saldria de su tamano.
+    nombre: 'relleno',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/malvado',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'relleno',
+        nombres: ['relleno', 'relleno-gira', 'relleno-splat'],
+        zonas: [
+          { x: 47, y: 218, ancho: 342, alto: 304 },  // el pegote entero
+          { x: 442, y: 175, ancho: 396, alto: 381 }, // dando vueltas
+          { x: 842, y: 273, ancho: 514, alto: 340 }, // desparramado en el suelo
+        ],
+      },
+    ],
+  },
+  {
     // EL ABUELO, el guardian del bano de Medellin: baja de la finca en su
     // pickup doble cabina con el tanque de agua en el platon.
     //

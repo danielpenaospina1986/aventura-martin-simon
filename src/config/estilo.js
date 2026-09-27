@@ -86,15 +86,10 @@ export const COLORES = {
   // el cristal de las cabinas
   carroCristal: 0x9fd8ef,
 
-  // Miami: el Salvavidas, su torre y sus flotadores
-  salvavidasPiel: 0xe0a86b,
-  salvavidasBanador: 0xe23b6d,
-  salvavidasCamiseta: 0xf7f1e1,
-  salvavidasGafas: 0x2d4a63,
-  flotadorAro: 0xf25c54,
-  flotadorAro2: 0xf7f1e1,
+  // Miami: la torre de vigia
   torreMadera: 0xd9b57e,
   torreTecho: 0x7fc4c0,
+  torreFranja: 0xf7f1e1,
 
   // Cartagena: el Capitan Tapon
   capitanCasaca: 0x7a4a7f,
@@ -213,11 +208,17 @@ export const TEXTURAS = {
   canastilla: 'tex-canastilla',
   canastillaCae: 'tex-canastilla-cae',
   canastillaRota: 'tex-canastilla-rota',
-  jefeSalvavidas: 'tex-jefe-salvavidas',
-  jefeSalvavidasTira: 'tex-jefe-salvavidas-tira',
-  jefeSalvavidasResbala: 'tex-jefe-salvavidas-resbala',
+  // Miami: Martin Malvado, con sus seis poses dibujadas
+  malvadoVigila: 'tex-malvado-vigila',
+  malvadoTira: 'tex-malvado-tira',
+  malvadoSalta: 'tex-malvado-salta',
+  malvadoBaja: 'tex-malvado-baja',
+  malvadoGolpe: 'tex-malvado-golpe',
+  malvadoDerrotado: 'tex-malvado-derrotado',
+  relleno: 'tex-relleno',
+  rellenoGira: 'tex-relleno-gira',
+  rellenoSplat: 'tex-relleno-splat',
   torreVigia: 'tex-torre-vigia',
-  flotador: 'tex-flotador',
   jefeCapitan: 'tex-jefe-capitan',
   jefeCapitanEspalda: 'tex-jefe-capitan-espalda',
   jefeCapitanSinTapon: 'tex-jefe-capitan-sin-tapon',

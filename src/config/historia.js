@@ -59,9 +59,9 @@ export const JEFES = {
     derrota: '—Está bien, está bien… váyanse.',
   },
   miami: {
-    nombre: 'el Salvavidas',
-    saludo: '—¡Al agua, patos! Aquí nadie entra sucio.',
-    derrota: '—¡Me resbalé con mi propio bloqueador!',
+    nombre: 'Martín Malvado',
+    saludo: '—¡Yo ya me bañé! ¡Ahora les toca a ustedes!',
+    derrota: '—¡Se me salió todo el relleno!',
   },
   cartagena: {
     nombre: 'el Capitán Tapón',

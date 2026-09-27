@@ -147,7 +147,7 @@ empapados son ellos.
 | 1 | Space Coast | Donde nacieron los dos |
 | 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **el Abuelo** |
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
-| 4 | Miami | Las vacaciones de siempre, y la casa de la tia |
+| 4 | Miami | Las vacaciones de siempre, y la casa de la tia. Aqui les sale al paso **Martin Malvado** |
 | 5 | Cartagena | El paseo que no se les olvida |
 
 ### Como se cuenta
@@ -324,7 +324,7 @@ Reglas para los cinco:
   destruye en cuanto cae, asi que sin eso la pose no se llegaria a ver nunca: la
   escena deja la imagen un momento en su sitio mientras se va.
 - Los que todavia no tienen arte se dibujan **por codigo** con los pinceles de
-  tinta. Papa Inodoro, el Abuelo y Dona Zully ya tienen el suyo.
+  tinta. Solo el Capitan Tapon sigue sin arte propio.
 
 #### 1. Space Coast: Papa Inodoro
 
@@ -401,19 +401,27 @@ Sus dibujos son de verdad (`src/assets/jefes/zully/`), sacados de la hoja que
 paso Daniel: cuatro poses de cuerpo (quieta, la mirada, empapada y victoria) y
 cuatro de manguera.
 
-#### 4. Miami: el Salvavidas
+#### 4. Miami: Martin Malvado
 
-El socorrista que no piensa dejar entrar al mar a dos ninos sin banar. Se pasa
-la pelea subido a sus **torres de vigia**, tirando **flotadores** que ruedan por
-la arena y hay que saltar. **Aguanta ocho golpes.**
+La **version mala de Martain**: el mismo nino, pero metido en un disfraz de oso
+de peluche viejo, roto y remendado, por el que se le sale el **relleno
+amarillo**. Se pasa la pelea subido a las **torres de vigia** de la playa,
+tirando **pegotes de relleno** que ruedan por la arena y hay que saltar.
+**Aguanta ocho golpes.**
 
-Arriba no se le llega. Cada dos flotadores **baja** a dar la charla, y ahi vale
+Arriba no se le llega. Cada dos pegotes **baja** a burlarse, y ahi vale
 cualquier golpe: pisarlo, la katana o un bloque. Los golpes **no le cortan la
 bajada**: mientras esta abajo se le puede dar varias veces, con el parpadeo de
 por medio. Cortandola al primero, aguantar ocho salia a mas de un minuto.
 
 Es la pelea mas larga de las cinco, y por eso es en la que mas corazones caen.
-Al octavo se resbala con su propio bloqueador.
+Al octavo se queda desinflado, como un peluche pinchado, entre su propio
+relleno.
+
+Sus dibujos son de verdad (`src/assets/jefes/malvado/`): seis poses de el
+—vigila, tira, salta, baja, golpe y derrotado— y tres del pegote (entero,
+rodando y desparramado). Las **torres** siguen dibujadas por codigo: son lo
+unico de esa arena que no tiene arte propio.
 
 Las torres son **decorado**: nadie se sube a ellas, pero marcan por donde va a
 saltar, que es lo que hace la pelea legible. Al subirse se pone **claramente**
@@ -854,7 +862,8 @@ dibuje nuevo deberia usarlos, para que el juego hable un solo idioma visual.
 - **Los jefes con cara de la familia:** los cinco guardianes van a ser versiones
   bizarras de la familia, generadas con Gemini. Papa Inodoro lleva la cara de
   Daniel, sacada de una foto suya; el Abuelo se reconoce por el sombrero
-  vueltiao y el poncho. Son sus propias caras y su propia decision, asi que de
+  vueltiao y el poncho; Martin Malvado es el propio Martain con un disfraz de
+  oso roto. Son sus propias caras y su propia decision, asi que de
   licencia no hay nada que mirar; las hojas de partida no se suben al
   repositorio. La pickup del Abuelo trae dibujado el emblema de su marca, que
   entra en la excepcion de mas arriba.
@@ -1564,3 +1573,18 @@ baja.
   `config/ajustes.js`: de ella depende ahora el ancho de la pantalla, y ajustes
   no puede importar de tactil sin que los dos se hagan un nudo. `tactil.js` la
   reexporta como `hayTactil`, asi que quien ya la usaba no se entera.
+- **2026-09-26** — Miami estrena a **Martin Malvado** y con el se va el
+  Salvavidas, que estaba dibujado por codigo. La pelea es la misma —arriba no se
+  le llega, hay que esperar a que baje— y lo que cambia es quien es: la version
+  mala de Martain, en un disfraz de oso roto por el que se le sale el relleno.
+  Lo que tira deja de ser un flotador y pasa a ser un **pegote de relleno
+  amarillo**, que rueda dando vueltas y se desparrama al romperse. Se renombra
+  todo: `Salvavidas` pasa a `MartinMalvado` y `FLOTADOR` a `RELLENO`.
+- **2026-09-26** — De esa arena sobreviven **las torres**, que siguen dibujadas
+  por codigo: son decorado, pero marcan por donde va a saltar, que es lo que
+  hace la pelea legible.
+- **2026-09-26** — Su hoja tampoco lleva `limpiarBolsas`: el peto claro de la
+  barriga del oso queda a 191 del turquesa del fondo y el filtro de las bolsas
+  encerradas es mucho mas ancho que el normal (198), asi que se lo habria
+  comido. Es la tercera vez que aparece la misma trampa; la regla esta escrita
+  en la entrada del Abuelo.

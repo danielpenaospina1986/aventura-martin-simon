@@ -1422,7 +1422,7 @@ test('al Abuelo no se le pega: lo para una canastilla', async ({ page }) => {
   expect(errores).toEqual([]);
 });
 
-test('al Salvavidas solo se le da cuando baja de la torre', async ({ page }) => {
+test('a Martín Malvado solo se le da cuando baja de la torre', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'simon');
   await entrarALaArena(page, 3);
@@ -1459,7 +1459,7 @@ test('al Salvavidas solo se le da cuando baja de la torre', async ({ page }) => 
     return { clase, torres, enAlto, deFrenteEnAlto, vidasAntes, vidas: jefe.vidas };
   });
 
-  expect(resultado.clase).toBe('Salvavidas');
+  expect(resultado.clase).toBe('MartinMalvado');
   expect(resultado.torres).toBeGreaterThanOrEqual(2);
   expect(resultado.enAlto).toBeGreaterThan(0); // que de verdad estuvo arriba
   expect(resultado.deFrenteEnAlto).toBe(0); // y que ahi no se le hizo nada
@@ -1528,7 +1528,7 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   });
 
   expect(jefes.map((j) => j.clase)).toEqual([
-    'PapaInodoro', 'Abuelo', 'DonaZully', 'Salvavidas', 'CapitanTapon',
+    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'CapitanTapon',
   ]);
   // ninguno es el provisional, y todos aguantan mas de un golpe
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
@@ -1549,7 +1549,7 @@ test('desde el suelo se le llega a la coronilla al jefe, en las cinco ciudades',
       await new Promise((r) => setTimeout(r, 1300));
       const n = window.juego.scene.getScene('nivel');
       // El techo de su caja, contado desde el suelo: asi da igual donde ande el
-      // jefe en ese momento (el Salvavidas, por ejemplo, se sube a sus torres).
+      // jefe en ese momento (Martin Malvado, por ejemplo, se sube a sus torres).
       salida.push({
         ciudad: n.datosNivel.fondo,
         techo: suelo - n.jefe.config.caja.alto,
@@ -1589,7 +1589,7 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
       // Se le deja quieto y expuesto: lo que se mide es el salto, no su truco.
       // Primero se espera a pillarlo EN EL SUELO DEL TABLERO y ahi se le quita
       // la gravedad, para que la medida se repita. No vale con "esta apoyado en
-      // algo": el Salvavidas se pasa la pelea saltando, y pillandolo sobre la
+      // algo": Martin Malvado se pasa la pelea saltando, y pillandolo sobre la
       // plataforma de su arena el nino no salta al jefe, salta a la plataforma.
       const { MUNDO } = await import('/src/config/ajustes.js');
       const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
@@ -1597,7 +1597,7 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
       n.jefe.actualizar = () => {};
       n.jefe.body.setAllowGravity(false);
       n.jefe.body.setVelocity(0, 0);
-      // Se le planta en el suelo del tablero: el Salvavidas se pasa la pelea
+      // Se le planta en el suelo del tablero: Martin Malvado se pasa la pelea
       // saltando de torre en torre, y congelado ahi arriba lo que se mediria es
       // otra cosa.
       n.jefe.setPosition(n.jefe.x, suelo - n.jefe.displayHeight / 2);
@@ -1614,10 +1614,10 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
         n.jefe.vidas = 9;
         n.jefe.invulnerableHasta = 0;
         n.jefe.body.setVelocity(0, 0);
-        // Se despeja lo que el jefe haya dejado por el suelo: un flotador del
-        // Salvavidas rodando por la carrerilla congela al nino a media zancada
+        // Se despeja lo que el jefe haya dejado por el suelo: un pegote de
+        // relleno rodando por la carrerilla congela al nino a media zancada
         // y se pierde el salto.
-        [n.flotadores, n.balas, n.heladitos, n.chorros, n.peligros].forEach((g) => {
+        [n.rellenos, n.balas, n.heladitos, n.chorros, n.peligros].forEach((g) => {
           g.getChildren().slice().forEach((cosa) => cosa.active && cosa.destroy());
         });
         j.setPosition(n.jefe.x - salida, n.jefe.body.bottom - 30);

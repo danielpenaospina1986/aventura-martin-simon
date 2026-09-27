@@ -143,9 +143,9 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
   // derrotaba sola en doce segundos, antes de que el nino llegara.
   //
   // No se mide por distancia AL JEFE, sino por el suelo de su arena: los que se
-  // mueven (el Abuelo patrulla, el Salvavidas salta de torre en torre) se
+  // mueven (el Abuelo patrulla, el MartinMalvado salta de torre en torre) se
   // alejaban del nino ellos solos, se quedaban "sin nadie cerca" y dejaban de
-  // pelear en mitad del combate. Al Salvavidas le pasaba cada vez que saltaba a
+  // pelear en mitad del combate. Al MartinMalvado le pasaba cada vez que saltaba a
   // la torre del extremo.
   //
   // La escena le pasa los bordes antes de prepararArena. El margen por la

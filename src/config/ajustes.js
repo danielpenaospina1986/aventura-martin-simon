@@ -291,7 +291,7 @@ export const CANASTILLA = {
   gravedad: 1500,
 };
 
-// La torre de vigia de Miami. Es decorado: el Salvavidas salta de una a otra,
+// La torre de vigia de Miami. Es decorado: el MartinMalvado salta de una a otra,
 // pero nadie se sube a ellas.
 export const TORRE = {
   ancho: 86,
@@ -300,13 +300,17 @@ export const TORRE = {
   margen: 90,
 };
 
-// El flotador que tira el Salvavidas: rueda por el suelo y hay que saltarlo.
-export const FLOTADOR = {
-  ancho: 46,
-  alto: 46,
-  caja: { ancho: 38, alto: 38 },
+// El relleno que tira el MartinMalvado: rueda por el suelo y hay que saltarlo.
+// El pegote de relleno amarillo que tira Martin Malvado, el jefe de Miami. Sale
+// rodando por la arena y hay que saltarlo.
+export const RELLENO = {
+  ancho: 50,
+  alto: 50,
+  caja: { ancho: 36, alto: 34 },
   velocidad: 190,
   duracionMs: 5200,
+  giroMs: 110,     // cada cuanto cambia de pose mientras rueda
+  restosMs: 900,   // lo que se queda desparramado en el suelo
 };
 
 // El heladito de chocolate que escupe Papa Inodoro, el jefe de Space Coast.

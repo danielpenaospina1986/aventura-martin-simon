@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, FLOTADOR, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { AGUA, BALA, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -92,8 +92,8 @@ export class EscenaNivel extends Phaser.Scene {
     // las canastillas de fruta de los balcones de Medellin: cuelgan quietas
     // hasta que les dan
     this.canastillas = this.physics.add.group({ allowGravity: false });
-    // los flotadores que rueda el Salvavidas de Miami
-    this.flotadores = this.physics.add.group();
+    // los pegotes de relleno que tira Martin Malvado, en Miami
+    this.rellenos = this.physics.add.group();
     // las balas de espuma del Capitan Tapon
     this.balas = this.physics.add.group({ allowGravity: false });
     // los heladitos de chocolate de Papa Inodoro: estos SI caen, que su gracia
@@ -317,13 +317,13 @@ export class EscenaNivel extends Phaser.Scene {
       });
     }
 
-    // Los flotadores del Salvavidas ruedan por el suelo y hay que saltarlos.
-    this.physics.add.collider(this.flotadores, solidos);
+    // Los pegotes de Martin Malvado ruedan por el suelo y hay que saltarlos.
+    this.physics.add.collider(this.rellenos, solidos);
     this.jugadores.forEach((jugador) => {
-      this.physics.add.overlap(jugador, this.flotadores, (a, b) => {
+      this.physics.add.overlap(jugador, this.rellenos, (a, b) => {
         if (jugador.estaCongelado) return;
-        const flotador = this.flotadores.contains(a) ? a : b;
-        this.romperFlotador(flotador);
+        const relleno = this.rellenos.contains(a) ? a : b;
+        this.romperRelleno(relleno);
         this.herirJugador(jugador);
       });
     });
@@ -1064,7 +1064,7 @@ export class EscenaNivel extends Phaser.Scene {
       });
   }
 
-  // --- la arena del Salvavidas ----------------------------------------------
+  // --- la arena de Martin Malvado -------------------------------------------
 
   // Sus torres de vigia. Son decorado: nadie se sube, pero marcan por donde va
   // a saltar, que es lo que hace la pelea legible.
@@ -1090,25 +1090,54 @@ export class EscenaNivel extends Phaser.Scene {
     return sitios;
   }
 
-  // Un flotador que sale rodando por el suelo.
-  lanzarFlotador(jefe, direccion) {
-    const flotador = this.flotadores.create(jefe.x + direccion * 40, jefe.y, TEXTURAS.flotador);
-    flotador.setDisplaySize(FLOTADOR.ancho, FLOTADOR.alto).setDepth(8);
-    flotador.body.setSize(
-      FLOTADOR.caja.ancho / flotador.scaleX,
-      FLOTADOR.caja.alto / flotador.scaleY,
+  // Un pegote de relleno, que sale rodando por el suelo.
+  lanzarRelleno(jefe, direccion) {
+    const relleno = this.rellenos.create(jefe.x + direccion * 40, jefe.y, TEXTURAS.relleno);
+    relleno.setDisplaySize(RELLENO.ancho, RELLENO.alto).setDepth(8);
+    relleno.body.setSize(
+      RELLENO.caja.ancho / relleno.scaleX,
+      RELLENO.caja.alto / relleno.scaleY,
       true,
     );
-    flotador.body.setVelocityX(direccion * FLOTADOR.velocidad);
-    flotador.body.setBounce(0.2, 0.2);
-    this.time.delayedCall(FLOTADOR.duracionMs, () => flotador.active && this.romperFlotador(flotador));
-    return flotador;
+    relleno.body.setVelocityX(direccion * RELLENO.velocidad);
+    relleno.body.setBounce(0.2, 0.2);
+
+    // rueda dando vueltas: alterna sus dos poses mientras va por el suelo
+    relleno.giro = this.time.addEvent({
+      delay: RELLENO.giroMs,
+      loop: true,
+      callback: () => {
+        if (!relleno.active) return;
+        const entero = relleno.texture.key === TEXTURAS.relleno;
+        relleno.setTexture(entero ? TEXTURAS.rellenoGira : TEXTURAS.relleno);
+      },
+    });
+
+    this.time.delayedCall(RELLENO.duracionMs, () => relleno.active && this.romperRelleno(relleno));
+    return relleno;
   }
 
-  romperFlotador(flotador) {
-    if (!flotador || !flotador.active) return;
-    burbujas(this, flotador.x, flotador.y, 5);
-    flotador.destroy();
+  romperRelleno(relleno) {
+    if (!relleno || !relleno.active) return;
+    if (relleno.giro) relleno.giro.remove();
+    relleno.giro = null;
+    burbujas(this, relleno.x, relleno.y, 5);
+
+    // Las hebras desparramadas se quedan un momento donde cayo. El sprite se
+    // destruye enseguida, asi que sin esto el dibujo del pegote reventado no se
+    // veria nunca.
+    const restos = this.add
+      .image(relleno.x, relleno.y, TEXTURAS.rellenoSplat)
+      .setDisplaySize(RELLENO.ancho, RELLENO.alto)
+      .setDepth(6);
+    this.tweens.add({
+      targets: restos,
+      alpha: { from: 1, to: 0 },
+      duration: RELLENO.restosMs,
+      onComplete: () => restos.destroy(),
+    });
+
+    relleno.destroy();
   }
 
   // --- la arena del Capitan Tapon -------------------------------------------

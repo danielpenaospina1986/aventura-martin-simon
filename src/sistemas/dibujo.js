@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { BALA, ENEMIGO, FLOTADOR, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
+import { BALA, ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
@@ -520,71 +520,11 @@ export function generarTexturas(escena) {
     brillo(g, 9, 8, 3);
   });
 
-  // --- Miami: el Salvavidas --------------------------------------------------
+  // --- Miami: la torre de vigia -----------------------------------------
   //
-  // El socorrista de la playa, que no quiere ninos sucios en SU arena. Salta de
-  // torre en torre y tira flotadores; solo se le puede dar cuando baja.
-  const salvavidas = (modo) => (g) => {
-    const a = JEFE.ancho;
-    const h = JEFE.alto;
-    const cx = a / 2;
-    const resbala = modo === 'resbala';
-
-    // piernas
-    const piernaY = resbala ? h - 40 : h - 58;
-    tintaRedonda(g, cx - 34, piernaY, 26, resbala ? 34 : 54, 10, COLORES.salvavidasPiel, 5);
-    tintaRedonda(g, cx + 8, piernaY, 26, resbala ? 34 : 54, 10, COLORES.salvavidasPiel, 5);
-
-    // banador
-    tintaRedonda(g, cx - 38, piernaY - 26, 76, 34, 12, COLORES.salvavidasBanador, 5);
-
-    // torso
-    tintaRedonda(g, cx - 40, piernaY - 84, 80, 62, 20, COLORES.salvavidasCamiseta, 6);
-    // la cruz del socorrista
-    g.fillStyle(COLORES.salvavidasBanador, 1);
-    g.fillRect(cx - 7, piernaY - 74, 14, 38);
-    g.fillRect(cx - 19, piernaY - 62, 38, 14);
-
-    // brazos: uno levantado cuando tira
-    tintaRedonda(g, cx - 58, piernaY - 80, 20, 48, 9, COLORES.salvavidasPiel, 5);
-    if (modo === 'tira') {
-      tintaRedonda(g, cx + 38, piernaY - 116, 20, 52, 9, COLORES.salvavidasPiel, 5);
-    } else {
-      tintaRedonda(g, cx + 38, piernaY - 80, 20, 48, 9, COLORES.salvavidasPiel, 5);
-    }
-
-    // cabeza con gorra y gafas de sol
-    const cabezaY = piernaY - 104;
-    tintaCirculo(g, cx, cabezaY, 30, COLORES.salvavidasPiel, 6);
-    tintaRedonda(g, cx - 32, cabezaY - 30, 64, 20, 9, COLORES.salvavidasBanador, 5);
-    tintaRedonda(g, cx + 24, cabezaY - 16, 22, 10, 4, COLORES.salvavidasBanador, 4);
-    if (resbala) {
-      g.lineStyle(5, TINTA, 1);
-      [[cx - 12, cabezaY - 2], [cx + 12, cabezaY - 2]].forEach(([x, y]) => {
-        g.beginPath();
-        g.moveTo(x - 6, y - 6);
-        g.lineTo(x + 6, y + 6);
-        g.moveTo(x + 6, y - 6);
-        g.lineTo(x - 6, y + 6);
-        g.strokePath();
-      });
-      tintaCirculo(g, cx + 2, cabezaY + 18, 8, COLORES.espuma, 3);
-    } else {
-      tintaRedonda(g, cx - 24, cabezaY - 10, 48, 15, 6, COLORES.salvavidasGafas, 4);
-      g.fillStyle(0xffffff, 0.5);
-      g.fillRect(cx - 20, cabezaY - 7, 8, 4);
-      // boca: el silbato
-      tintaCirculo(g, cx + 4, cabezaY + 16, 7, COLORES.salvavidasGafas, 3);
-    }
-
-    brillo(g, cx - 16, cabezaY - 16, 6);
-  };
-
-  generar(escena, TEXTURAS.jefeSalvavidas, JEFE.ancho, JEFE.alto, salvavidas('normal'));
-  generar(escena, TEXTURAS.jefeSalvavidasTira, JEFE.ancho, JEFE.alto, salvavidas('tira'));
-  generar(escena, TEXTURAS.jefeSalvavidasResbala, JEFE.ancho, JEFE.alto, salvavidas('resbala'));
-
-  // Su torre de vigia, en art deco de Miami. Es decorado: no se sube nadie.
+  // Lo unico que queda dibujado por codigo de esa arena: Martin Malvado y su
+  // relleno tienen dibujos de verdad. Es decorado, no se sube nadie, pero
+  // marca por donde va a saltar, que es lo que hace la pelea legible.
   generar(escena, TEXTURAS.torreVigia, TORRE.ancho, TORRE.alto, (g) => {
     const a = TORRE.ancho;
     const h = TORRE.alto;
@@ -595,22 +535,9 @@ export function generarTexturas(escena) {
     tintaRedonda(g, 4, h * 0.2, a - 8, h * 0.28, 8, COLORES.torreMadera, 5);
     // techo, con las franjas art deco
     tintaRedonda(g, 0, h * 0.06, a, h * 0.16, 6, COLORES.torreTecho, 5);
-    g.fillStyle(COLORES.salvavidasCamiseta, 1);
+    g.fillStyle(COLORES.torreFranja, 1);
     g.fillRect(6, h * 0.1, a - 12, 4);
     brillo(g, 14, h * 0.24, 5);
-  });
-
-  // El flotador que tira, que rueda por el suelo.
-  generar(escena, TEXTURAS.flotador, FLOTADOR.ancho, FLOTADOR.alto, (g) => {
-    const r = FLOTADOR.ancho / 2;
-    tintaCirculo(g, r, r, r - 2, COLORES.flotadorAro, 4);
-    g.fillStyle(COLORES.flotadorAro2, 1);
-    g.slice(r, r, r - 3, 0, Math.PI / 2, false);
-    g.fillPath();
-    g.slice(r, r, r - 3, Math.PI, Math.PI * 1.5, false);
-    g.fillPath();
-    tintaCirculo(g, r, r, r * 0.38, COLORES.carroCristal, 4);
-    brillo(g, r * 0.6, r * 0.6, 4);
   });
 
   // --- Cartagena: el Capitan Tapon -------------------------------------------

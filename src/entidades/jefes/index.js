@@ -11,7 +11,7 @@
 import { PapaInodoro } from './PapaInodoro.js';
 import { Abuelo } from './Abuelo.js';
 import { DonaZully } from './DonaZully.js';
-import { Salvavidas } from './Salvavidas.js';
+import { MartinMalvado } from './MartinMalvado.js';
 import { CapitanTapon } from './CapitanTapon.js';
 import { Provisional } from './Provisional.js';
 
@@ -19,7 +19,7 @@ const POR_CIUDAD = {
   'space-coast': PapaInodoro,
   medellin: Abuelo,
   atlanta: DonaZully,
-  miami: Salvavidas,
+  miami: MartinMalvado,
   cartagena: CapitanTapon,
 };
 

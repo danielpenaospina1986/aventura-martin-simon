@@ -1,16 +1,19 @@
 // ---------------------------------------------------------------------------
-// MIAMI: EL SALVAVIDAS
+// MIAMI: MARTIN MALVADO
 //
-// El socorrista de la playa, que no piensa dejar entrar al mar a dos ninos sin
-// banar. Se pasa la pelea subido a sus torres de vigia, tirando FLOTADORES que
-// ruedan por la arena, y de vez en cuando BAJA a dar la charla.
+// La version mala de Martain: el mismo nino, pero metido en un disfraz de oso
+// de peluche viejo, roto y remendado, por el que se le sale el relleno
+// amarillo. Se pasa la pelea subido a las torres de vigia de la playa, tirando
+// PEGOTES DE RELLENO que ruedan por la arena, y de vez en cuando BAJA a
+// burlarse.
 //
 // Como se le gana: arriba no se le llega, asi que hay que esperar a que baje.
 // Mientras esta en el suelo vale cualquier golpe: pisarlo, la katana o un
 // bloque. Aguanta ocho, con un parpadeo de nada entre uno y otro, asi que la
 // pelea es larga; por eso es la que mas corazones reparte.
 //
-// Al octavo se resbala con su propio bloqueador y se va de bruces.
+// Al octavo se queda desinflado, como un peluche pinchado, entre su propio
+// relleno.
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
@@ -27,17 +30,20 @@ const TIEMPOS = {
   sueloMs: 2600,
 };
 
-// Cuantos flotadores tira desde la torre antes de bajar a dar la cara.
+// Cuantos pegotes tira desde la torre antes de bajar a dar la cara.
 const TIROS_POR_TORRE = 2;
 
-export class Salvavidas extends JefeBase {
+export class MartinMalvado extends JefeBase {
   constructor(escena, x, y, direccion = -1) {
     super(escena, x, y, {
-      textura: TEXTURAS.jefeSalvavidas,
-      texturaHerida: TEXTURAS.jefeSalvavidasResbala,
+      textura: TEXTURAS.malvadoVigila,
+      texturaHerida: TEXTURAS.malvadoGolpe,
       vidas: 8, // pelea larga, pero con corazones cayendo
       direccion,
     });
+
+    // La escena la usa al derrotarlo, para que se le vea desinflarse.
+    this.texturaDeDerrota = TEXTURAS.malvadoDerrotado;
 
     // No anda por el suelo: va de torre en torre, asi que se mueve a mano.
     this.body.setAllowGravity(false);
@@ -64,8 +70,17 @@ export class Salvavidas extends JefeBase {
   }
 
   texturaDeAhora() {
-    if (this.estado === 'tira') return TEXTURAS.jefeSalvavidasTira;
-    return TEXTURAS.jefeSalvavidas;
+    if (this.estado === 'tira') return TEXTURAS.malvadoTira;
+    // en el aire, entre una torre y otra, va encogido
+    if (this.estado === 'baja' || this.estado === 'sube') return TEXTURAS.malvadoSalta;
+    // abajo se queda burlandose, que es cuando toca darle
+    if (this.estado === 'suelo') return TEXTURAS.malvadoBaja;
+    return TEXTURAS.malvadoVigila;
+  }
+
+  // Se le pone la pose que le toque, si no esta parpadeando por un golpe.
+  ponerPose() {
+    if (!this.esInvulnerable) this.setTexture(this.texturaDeAhora());
   }
 
   ponerseEn(sitio) {
@@ -118,7 +133,7 @@ export class Salvavidas extends JefeBase {
       if (this.reloj >= this.cambio) {
         this.estado = 'vigila';
         this.cambio = this.reloj + Phaser.Math.Between(TIEMPOS.vigilaMinMs, TIEMPOS.vigilaMaxMs);
-        if (!this.esInvulnerable) this.setTexture(TEXTURAS.jefeSalvavidas);
+        this.ponerPose();
       }
       return;
     }
@@ -140,15 +155,15 @@ export class Salvavidas extends JefeBase {
     this.estado = 'tira';
     this.cambio = this.reloj + TIEMPOS.tirandoMs;
     this.tirosHechos += 1;
-    if (!this.esInvulnerable) this.setTexture(TEXTURAS.jefeSalvavidasTira);
-    if (this.escena.lanzarFlotador) this.escena.lanzarFlotador(this, this.direccion);
+    this.ponerPose();
+    if (this.escena.lanzarRelleno) this.escena.lanzarRelleno(this, this.direccion);
   }
 
-  // Baja a dar la charla: es la unica ventana para darle.
+  // Baja a burlarse: es la unica ventana para darle.
   bajar() {
     this.estado = 'baja';
     this.tirosHechos = 0;
-    if (!this.esInvulnerable) this.setTexture(TEXTURAS.jefeSalvavidas);
+    this.ponerPose();
     this.escena.tweens.add({
       targets: this,
       y: this.alturaDelSuelo,
@@ -160,6 +175,7 @@ export class Salvavidas extends JefeBase {
         this.body.setAllowGravity(false);
         this.estado = 'suelo';
         this.cambio = this.reloj + TIEMPOS.sueloMs;
+        this.ponerPose();
         if (this.escena.sacudirArena) this.escena.sacudirArena(0.008, 200);
       },
     });
@@ -170,9 +186,11 @@ export class Salvavidas extends JefeBase {
     if (!this.sitios || !this.sitios.length) {
       this.estado = 'vigila';
       this.cambio = this.reloj + TIEMPOS.vigilaMinMs;
+      this.ponerPose();
       return;
     }
     this.estado = 'sube';
+    this.ponerPose();
     const nino = this.escena.jugadores && this.escena.jugadores[0];
     let elegida = 0;
     let masLejos = -1;
@@ -197,6 +215,7 @@ export class Salvavidas extends JefeBase {
         this.ponerseEn(destino);
         this.estado = 'vigila';
         this.cambio = this.reloj + Phaser.Math.Between(TIEMPOS.vigilaMinMs, TIEMPOS.vigilaMaxMs);
+        this.ponerPose();
       },
     });
   }
@@ -219,4 +238,4 @@ export class Salvavidas extends JefeBase {
   }
 }
 
-export default Salvavidas;
+export default MartinMalvado;
