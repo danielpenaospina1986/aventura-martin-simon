@@ -1747,6 +1747,114 @@ test('cada jefe paga segun lo dificil que sea su mundo', async ({ page }) => {
   expect(cobrado[1].deJefes).toBe(180);
 });
 
+// ---------------------------------------------------------------------------
+// EL TABLERO DE PUNTAJES
+//
+// Lo importante de verdad: los ninos juegan una tarde y tiene que quedar
+// rastro. Antes solo se apuntaba al quedarse sin vidas o al pasarse los cinco
+// mundos de un tiron, asi que muchas sesiones no dejaban nada.
+// ---------------------------------------------------------------------------
+
+test('una misma partida ocupa UNA fila del tablero, con su mejor puntaje', async ({ page }) => {
+  await abrirJuego(page);
+
+  const tabla = await page.evaluate(async () => {
+    const { anotarPuntaje, nuevaPartida, borrarPuntajes, puestoDe } = await import(
+      '/src/sistemas/puntajes.js'
+    );
+    borrarPuntajes();
+
+    const mia = nuevaPartida();
+    anotarPuntaje('MARTIN', 120, { nivel: 1, partida: mia });
+    anotarPuntaje('MARTIN', 340, { nivel: 2, partida: mia });
+    // vuelve a un mundo facil y hace menos: se queda con lo mejor que hizo
+    anotarPuntaje('MARTIN', 300, { nivel: 3, partida: mia });
+    // y otra partida distinta si abre su propia fila
+    anotarPuntaje('SAMAON', 90, { nivel: 1, partida: nuevaPartida() });
+
+    return {
+      filas: (await import('/src/sistemas/puntajes.js')).mejoresPuntajes().map((f) => ({
+        nombre: f.nombre,
+        puntos: f.puntos,
+      })),
+      puesto: puestoDe(mia),
+    };
+  });
+
+  expect(tabla.filas).toEqual([
+    { nombre: 'MARTIN', puntos: 340 },
+    { nombre: 'SAMAON', puntos: 90 },
+  ]);
+  expect(tabla.puesto).toBe(1);
+});
+
+test('acabar un mundo apunta el puntaje, sin tener que morirse', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  await page.evaluate(async () => {
+    const { borrarPuntajes } = await import('/src/sistemas/puntajes.js');
+    borrarPuntajes();
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    j.monedas = 250;
+    // se quita el jefe de en medio y se toca la meta
+    if (n.jefe) {
+      n.jefe.destroy();
+      n.jefe = null;
+    }
+    n.abrirMeta();
+    j.setPosition(n.nivel.meta.x, n.nivel.meta.y);
+  });
+  await esperarEscena(page, 'victoria');
+  await page.waitForTimeout(400);
+
+  const apuntado = await page.evaluate(async () => {
+    const { mejoresPuntajes } = await import('/src/sistemas/puntajes.js');
+    const v = window.juego.scene.getScene('victoria');
+    return { filas: mejoresPuntajes(), dice: v.loApuntado() };
+  });
+
+  expect(apuntado.filas.length).toBe(1);
+  expect(apuntado.filas[0].puntos).toBe(250);
+  expect(apuntado.filas[0].nombre).toBe('Prueba');
+  // y se le dice al nino, que de esto depende el premio
+  expect(apuntado.dice).toContain('Apuntado como Prueba');
+  expect(apuntado.dice).toContain('1.º');
+});
+
+test('salirse al menu desde la pausa tambien apunta', async ({ page }) => {
+  await entrarAlNivel(page, 'martin');
+
+  await page.evaluate(async () => {
+    const { borrarPuntajes } = await import('/src/sistemas/puntajes.js');
+    borrarPuntajes();
+    const n = window.juego.scene.getScene('nivel');
+    n.jugadores[0].monedas = 77;
+    n.pausar();
+  });
+  await esperarEscena(page, 'pausa');
+
+  // Se elige "Volver al menu" por la escena y no a teclazos: con la suite
+  // entera por delante, las teclas llegaban antes de que el menu escuchara.
+  await page.waitForFunction(
+    () => {
+      const e = window.juego.scene.getScene('pausa');
+      return Boolean(e && e.salirA);
+    },
+    null,
+    { timeout: 10000 },
+  );
+  await page.evaluate(() => window.juego.scene.getScene('pausa').salirA('titulo'));
+  await esperarEscena(page, 'titulo');
+
+  const filas = await page.evaluate(async () => {
+    const { mejoresPuntajes } = await import('/src/sistemas/puntajes.js');
+    return mejoresPuntajes();
+  });
+  expect(filas.length).toBe(1);
+  expect(filas[0].puntos).toBe(77);
+});
+
 test('ni las palomas ni las vacas se represan al final del tablero', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 

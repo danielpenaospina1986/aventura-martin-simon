@@ -20,6 +20,8 @@ import { hayTactil, MandosTactiles } from '../sistemas/tactil.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
 import { AVISOS, jefeDelCuento } from '../config/historia.js';
+import { anotarPuntaje, nuevaPartida } from '../sistemas/puntajes.js';
+import { nombreDeSesion } from '../sistemas/sesion.js';
 import { brilloMoneda, burbujas, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
 import { nivelPorIndice, TOTAL_NIVELES } from '../niveles/index.js';
 import { Jugador } from '../entidades/Jugador.js';
@@ -51,6 +53,11 @@ export class EscenaNivel extends Phaser.Scene {
 
     // Las vidas son de la partida entera; los corazones, de cada tablero.
     this.vidas = d.vidas === undefined ? VIDA.vidasIniciales : d.vidas;
+
+    // El identificador de esta partida, para el tablero de puntajes. Se crea
+    // aqui si no viene de fuera (por ejemplo al entrar a un tablero desde las
+    // pruebas), porque cada partida tiene que poder apuntarse.
+    this.partidaId = d.partidaId || nuevaPartida();
   }
 
   create() {
@@ -583,6 +590,7 @@ export class EscenaNivel extends Phaser.Scene {
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
         puntosDeJefes: jugador.puntosDeJefes,
+        partidaId: this.partidaId,
         enemigosVencidos: jugador.enemigosVencidos,
       });
     });
@@ -739,6 +747,7 @@ export class EscenaNivel extends Phaser.Scene {
         golpes: jugador.golpes,
         jefesDerrotados: jugador.jefesDerrotados,
         puntosDeJefes: jugador.puntosDeJefes,
+        partidaId: this.partidaId,
         enemigosVencidos: jugador.enemigosVencidos,
         vidas: this.vidas,
       };
@@ -1582,10 +1591,25 @@ export class EscenaNivel extends Phaser.Scene {
 
   // --- pausa y depuracion ---------------------------------------------------
 
+  // Se apunta el puntaje tal como va. Se llama al acabar un mundo, al quedarse
+  // sin vidas y al salirse al menu: asi una sesion de juego siempre deja rastro,
+  // aunque nadie llegue al final. Como todas las llamadas de una misma partida
+  // van con su identificador, el tablero se queda con UNA fila, la mejor.
+  apuntarLoQueVa() {
+    const jugador = this.jugadores && this.jugadores[0];
+    if (!jugador) return;
+    anotarPuntaje(nombreDeSesion(), jugador.monedas, {
+      personaje: this.datosPersonaje.nombre,
+      nivel: this.indiceNivel + 1,
+      partida: this.partidaId,
+    });
+  }
+
   pausar() {
     if (this.terminado) return;
     this.scene.pause();
     this.scene.launch('pausa', {
+      alSalir: () => this.apuntarLoQueVa(),
       personajeId: this.personajeId,
       indiceNivel: this.indiceNivel,
       nombreNivel: this.datosNivel.nombre,

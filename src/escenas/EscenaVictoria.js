@@ -16,7 +16,7 @@ import { aEscalaDeJuego, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo
 import { estrellitas } from '../sistemas/efectos.js';
 import { Menu } from '../sistemas/menu.js';
 import { empezarNivel } from '../sistemas/cuento.js';
-import { anotarPuntaje } from '../sistemas/puntajes.js';
+import { anotarPuntaje, puestoDe } from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
 
 export class EscenaVictoria extends Phaser.Scene {
@@ -33,6 +33,7 @@ export class EscenaVictoria extends Phaser.Scene {
     this.golpes = d.golpes || 0;
     this.jefesDerrotados = d.jefesDerrotados || 0;
     this.puntosDeJefes = d.puntosDeJefes || 0;
+    this.partidaId = d.partidaId || '';
     this.enemigosVencidos = d.enemigosVencidos || 0;
     this.indiceNivel = d.indiceNivel || 0;
     this.nombreNivel = d.nombreNivel || '';
@@ -97,15 +98,19 @@ export class EscenaVictoria extends Phaser.Scene {
 
     this.pintarMarcador(ancho / 2 + 62, 172);
 
-    // Pasarse los cinco tableros TAMBIEN cuenta para el tablero de mejores.
-    // Antes solo se apuntaba la partida de quien se quedaba sin vidas, asi que
-    // quien se lo terminaba entero —el que mas puntos hacia— no salia nunca.
-    if (!this.hayOtroNivel) {
-      anotarPuntaje(nombreDeSesion(), this.monedas, {
-        personaje: datos.nombre,
-        nivel: TOTAL_NIVELES,
-      });
-    }
+    // SIEMPRE se apunta, al acabar cualquier mundo, no solo el ultimo. Los
+    // ninos jugaban una tarde entera y no quedaba rastro: no se morian del todo
+    // y tampoco se pasaban los cinco de un tiron, que son los dos unicos sitios
+    // donde se apuntaba antes.
+    //
+    // No llena el tablero porque todas las llamadas de una misma partida van
+    // con su identificador: se actualiza su fila en vez de anadir otra.
+    this.tabla = anotarPuntaje(nombreDeSesion(), this.monedas, {
+      personaje: datos.nombre,
+      nivel: this.indiceNivel + 1,
+      partida: this.partidaId,
+    });
+    this.puesto = puestoDe(this.partidaId);
 
     // Lo que se arrastra al siguiente nivel: la partida es de los cinco.
     const partida = {
@@ -115,6 +120,7 @@ export class EscenaVictoria extends Phaser.Scene {
       golpes: this.golpes,
       jefesDerrotados: this.jefesDerrotados,
       puntosDeJefes: this.puntosDeJefes,
+      partidaId: this.partidaId,
       enemigosVencidos: this.enemigosVencidos,
     };
 
@@ -236,28 +242,27 @@ export class EscenaVictoria extends Phaser.Scene {
       })
       .setOrigin(1, 0.5);
 
+    // Aqui va SIEMPRE que el puntaje quedo apuntado, y en que puesto. Tiene que
+    // verse: de esto depende quien gana el premio de diciembre, asi que no
+    // puede ser un secreto. Antes esta linea llevaba una gracia del marcador
+    // ("prueba con Samaon", "sin un solo golpe"), pero en dos lineas no cabia
+    // dentro del panel y esto importa mas.
     this.add
-      .text(cx, cy + 86, this.mensaje(), {
+      .text(cx, cy + 86, this.loApuntado(), {
         fontFamily: FUENTE.familia,
-        fontSize: '10px',
-        color: COLORES.textoSuave,
+        fontSize: '11px',
+        color: COLORES.textoAcento,
         align: 'center',
       })
       .setOrigin(0.5);
   }
 
-  mensaje() {
-    // Al acabarse el juego, esta linea cuenta ademas que el puntaje quedo
-    // apuntado. Iba en un letrero aparte y se montaba encima del total; en dos
-    // lineas se salia del panel por abajo, asi que va en una sola.
-    if (!this.hayOtroNivel) {
-      return '¡Te pasaste el juego entero! Tu puntaje quedó en el tablero.';
-    }
-    if (this.golpes === 0) return '¡Sin un solo golpe! Eso tiene mucho mérito.';
-    if (this.recogidas >= this.total) return '¡No se te ha escapado ni uno!';
-    const otro = this.personajeId === 'martin' ? PERSONAJES.simon : PERSONAJES.martin;
-    return `Quedan ${this.total - this.recogidas} por ahí. Prueba con ${otro.nombre}.`;
+  loApuntado() {
+    const quien = nombreDeSesion() || 'Sin nombre';
+    if (this.puesto) return `Apuntado como ${quien}  ·  ${this.puesto}.º del tablero`;
+    return `Apuntado como ${quien}`;
   }
+
 }
 
 export default EscenaVictoria;

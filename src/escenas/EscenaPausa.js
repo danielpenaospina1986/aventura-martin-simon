@@ -15,6 +15,7 @@ export class EscenaPausa extends Phaser.Scene {
   }
 
   init(datos) {
+    this.alSalir = (datos || {}).alSalir || null;
     this.personajeId = (datos && datos.personajeId) || 'martin';
   }
 
@@ -70,6 +71,9 @@ export class EscenaPausa extends Phaser.Scene {
   }
 
   salirA(destino) {
+    // Antes de abandonar la partida se apunta lo que lleve: si no, quien se sale
+    // al menu a mitad de camino no deja rastro ninguno en el tablero.
+    if (this.alSalir) this.alSalir();
     this.scene.stop('nivel');
     this.scene.stop();
     this.scene.start(destino);

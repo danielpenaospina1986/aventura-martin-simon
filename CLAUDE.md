@@ -547,9 +547,23 @@ En **quien juega** se teclea el nombre (hasta 10 letras), que hace de
 identificador de la sesion: es lo que se apunta en el tablero de mejores
 puntajes. Se guarda en el navegador para no escribirlo cada vez.
 
-Se apunta una partida **al acabarse las vidas Y al pasarse los cinco tableros**.
-Antes solo lo primero, asi que quien se lo terminaba entero —el que mas puntos
-hacia— no salia nunca en el tablero.
+### Cuando se apunta un puntaje
+
+**Todo el rato.** Una partida se apunta al **acabar cada mundo**, al **quedarse
+sin vidas** y al **salirse al menu** desde la pausa. Antes solo lo primero y lo
+ultimo del todo, y pasaba lo que tenia que pasar: los ninos jugaban una tarde
+entera, ni se morian ni se pasaban los cinco de un tiron, y no quedaba rastro de
+nada. Esto importa de verdad: de este tablero depende el premio que Daniel les
+puso para diciembre.
+
+Para que una partida no llene el tablero con sus pasos intermedios, cada una
+lleva su **identificador** (`nuevaPartida()`, en `puntajes.js`) y todas sus
+anotaciones **actualizan su propia fila** en vez de anadir otra. Se queda con el
+puntaje **mas alto** que haya hecho, no con el ultimo.
+
+Y se **dice en pantalla**: la ultima linea del panel de victoria es siempre
+"Apuntado como NOMBRE · N.º del tablero". Antes ahi iba una gracia del marcador,
+pero esto importa mas y en dos lineas no cabia.
 
 El **tablero de mejores puntajes** guarda solo los **diez** mejores: en cuanto
 entra uno nuevo, el que queda en el puesto once se borra, para no ir llenando el
@@ -1664,3 +1678,18 @@ baja.
   una mascara**: en Phaser 4, `setMask` no funciona con WebGL. Avisa por consola
   ("This method is not supported in WebGL") y dibuja la lamina entera, que a ese
   tamano ocupa la pantalla de lado a lado.
+- **2026-09-28** — **El puntaje se apunta todo el rato**, no solo al final: al
+  acabar cada mundo, al quedarse sin vidas y al salirse al menu desde la pausa.
+  Los ninos jugaban una tarde y no quedaba rastro, porque ni se morian del todo
+  ni se pasaban los cinco mundos de un tiron, que eran los dos unicos sitios
+  donde se apuntaba. De este tablero depende el premio de diciembre, asi que
+  perder una sesion entera no es un detalle.
+- **2026-09-28** — Para que eso no llene el tablero con los pasos intermedios de
+  una misma partida, cada partida lleva su **identificador** y sus anotaciones
+  **actualizan su fila** en vez de anadir otra, quedandose con el puntaje mas
+  alto que hizo. Sin eso, una sesion de cinco mundos ocupaba cinco de los diez
+  puestos ella sola.
+- **2026-09-28** — La ultima linea del panel de victoria pasa a decir siempre
+  **"Apuntado como NOMBRE · N.º del tablero"**. Ahi iba una gracia del marcador
+  ("prueba con Samaon", "sin un solo golpe"); en dos lineas no cabia dentro del
+  panel y esto importa mas.

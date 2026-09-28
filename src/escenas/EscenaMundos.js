@@ -18,6 +18,7 @@ import { NIVELES } from '../niveles/index.js';
 import { pintarFondoDeMenu } from '../sistemas/dibujo.js';
 import { jefeDelCuento } from '../config/historia.js';
 import { empezarPartida } from '../sistemas/cuento.js';
+import { nuevaPartida } from '../sistemas/puntajes.js';
 import { segunElMando } from '../sistemas/tactil.js';
 
 // La tarjeta: lo justo para que quepan las cinco y siga leyendose la ciudad.
@@ -218,6 +219,9 @@ export class EscenaMundos extends Phaser.Scene {
       ...(this.partida || {}),
       personajeId: this.personajeId,
       indiceNivel: this.indice,
+      // Si se viene de una partida en marcha se conserva su identificador, para
+      // que siga ocupando la misma fila del tablero; si no, empieza una nueva.
+      partidaId: (this.partida && this.partida.partidaId) || nuevaPartida(),
     });
   }
 }
