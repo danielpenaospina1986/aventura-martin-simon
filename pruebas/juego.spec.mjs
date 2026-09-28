@@ -1621,6 +1621,11 @@ test('desde el suelo se le llega a la coronilla al jefe, en todas las ciudades',
 test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ page }) => {
   // La de arriba comprueba la geometria; esta lo hace de verdad, con las
   // teclas: carrerilla, salto sin soltar y a ver si le cae encima.
+  //
+  // Necesita mas tiempo del de casa: son cinco ciudades por cuatro carrerillas,
+  // cada una con su salto entero en tiempo de reloj. Con el minuto por defecto
+  // se quedaba al filo, y en cuanto la maquina iba cargada se pasaba.
+  test.setTimeout(180000);
   await entrarAlNivel(page, 'martin');
 
   const resultado = [];

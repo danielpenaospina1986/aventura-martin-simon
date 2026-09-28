@@ -49,7 +49,7 @@ export const NIVEL_5 = {
     { col: 19, fila: 1, texto: 'Hacia las murallas' },
     { col: 36, fila: 7, texto: 'Aquí hay muchos bichos' },
     { col: 152, fila: 1, texto: 'El premio gordo' },
-    { col: 170, fila: 5, texto: '¡El jefe final!' },
+    { col: 170, fila: 5, texto: '¡Jean Luke!' },
   ],
 };
 

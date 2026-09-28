@@ -1733,3 +1733,11 @@ baja.
 - **2026-09-28** — Lo que recorre "todos los mundos" deja de contar hasta cinco
   y pregunta `TOTAL_NIVELES`: tres pruebas y el validador daban por hecho que
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
+- **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
+  mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-28** — La prueba que pisa a los jefes **con las teclas** pide 180 s
+  de plazo: son cinco ciudades por cuatro carrerillas, cada una con su salto
+  entero en tiempo de reloj, y con el minuto de casa se quedaba al filo. Ojo con
+  esa familia de pruebas: si la maquina esta cargada (un navegador con medio
+  centenar de pestanas se lleva varios gigas), fallan unas cuantas a la vez y
+  pasan todas por separado. Eso es la maquina, no el juego.
