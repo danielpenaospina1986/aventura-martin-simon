@@ -21,8 +21,17 @@ import { empezarPartida } from '../sistemas/cuento.js';
 import { nuevaPartida } from '../sistemas/puntajes.js';
 import { segunElMando } from '../sistemas/tactil.js';
 
-// La tarjeta: lo justo para que quepan las cinco y siga leyendose la ciudad.
-const TARJETA = { ancho: 112, alto: 76, separacion: 10, y: 168 };
+// Las tarjetas van en REJILLA, no en fila: con cinco cabian de una tirada, pero
+// con ocho no, y encogerlas hasta que quepan las deja ilegibles y sin sitio
+// donde poner el dedo.
+const TARJETA = {
+  ancho: 104,
+  alto: 68,
+  separacionX: 14,
+  separacionY: 38,
+  porFila: 4,
+  primeraY: 146,
+};
 
 export class EscenaMundos extends Phaser.Scene {
   constructor() {
@@ -58,7 +67,7 @@ export class EscenaMundos extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(ancho / 2, 66, 'Los cinco están abiertos: el marcador se va sumando', {
+      .text(ancho / 2, 66, `Los ${NIVELES.length} están abiertos: el marcador se va sumando`, {
         fontFamily: FUENTE.familia,
         fontSize: '12px',
         color: COLORES.textoSuave,
@@ -91,21 +100,27 @@ export class EscenaMundos extends Phaser.Scene {
   }
 
   montarTarjetas(ancho) {
-    const paso = TARJETA.ancho + TARJETA.separacion;
-    const inicio = ancho / 2 - ((NIVELES.length - 1) * paso) / 2;
+    const pasoX = TARJETA.ancho + TARJETA.separacionX;
+    const pasoY = TARJETA.alto + TARJETA.separacionY;
+    const porFila = TARJETA.porFila;
+    const enLaFila = Math.min(NIVELES.length, porFila);
+    const inicio = ancho / 2 - ((enLaFila - 1) * pasoX) / 2;
 
     this.tarjetas = NIVELES.map((nivel, i) => {
-      const x = inicio + i * paso;
-      const y = TARJETA.y;
+      const x = inicio + (i % porFila) * pasoX;
+      const y = TARJETA.primeraY + Math.floor(i / porFila) * pasoY;
       const jefe = jefeDelCuento(nivel.fondo || '');
 
-      // La ilustracion de la ciudad, recortada al trozo de en medio que tiene la
-      // forma de la tarjeta y escalada para llenarla.
+      // La ilustracion de la ciudad, recortada al trozo de en medio que tiene
+      // la forma de la tarjeta y escalada para llenarla. Los mundos que no
+      // tienen ilustracion propia todavia van con la obra.
       //
       // Se hace con setCrop y NO con una mascara: en Phaser 4, `setMask` no
       // funciona con WebGL (avisa por consola y dibuja la lamina entera, que se
       // sale por toda la pantalla).
-      const textura = TEXTURAS.fondoDe(nivel.fondo || '');
+      const suya = TEXTURAS.fondoDe(nivel.fondo || '');
+      const textura = this.textures.exists(suya) ? suya : TEXTURAS.fondoEnObra;
+      const enObra = textura !== suya;
       let lamina = null;
       if (this.textures.exists(textura)) {
         const fuente = this.textures.get(textura).getSourceImage();
@@ -131,42 +146,43 @@ export class EscenaMundos extends Phaser.Scene {
         .setInteractive({ useHandCursor: true });
 
       // el nombre, sobre una cinta oscura para que se lea encima del dibujo
-      const cinta = this.add
-        .rectangle(x, y + TARJETA.alto / 2 - 11, TARJETA.ancho - 6, 20, COLORES.decoFondo, 0.72);
+      const cinta = this.add.rectangle(
+        x,
+        y + TARJETA.alto / 2 - 10,
+        TARJETA.ancho - 6,
+        18,
+        COLORES.decoFondo,
+        0.74,
+      );
       const nombre = this.add
-        .text(x, y + TARJETA.alto / 2 - 11, nivel.nombre, {
+        .text(x, y + TARJETA.alto / 2 - 10, nivel.nombre, {
           fontFamily: FUENTE.familia,
-          fontSize: '13px',
+          fontSize: '12px',
           color: COLORES.textoClaro,
         })
         .setOrigin(0.5);
 
-      const numero = this.add
-        .text(x, y - TARJETA.alto / 2 - 12, `Mundo ${i + 1}`, {
+      // Lo que paga su jefe, en una chapita arriba: es lo que invita a meterse
+      // en los dificiles, asi que tiene que verse sin leer nada mas.
+      const chapa = this.add
+        .rectangle(x + TARJETA.ancho / 2 - 22, y - TARJETA.alto / 2 + 9, 42, 16, COLORES.decoFondo, 0.8)
+        .setStrokeStyle(1, COLORES.decoMarco, 0.9);
+      const pago = this.add
+        .text(x + TARJETA.ancho / 2 - 22, y - TARJETA.alto / 2 + 9, `+${premioDeJefe(i)}`, {
           fontFamily: FUENTE.familia,
-          fontSize: '12px',
-          color: COLORES.textoSuave,
-          stroke: '#16202c',
-          strokeThickness: 4,
+          fontSize: '11px',
+          color: COLORES.textoAcento,
         })
         .setOrigin(0.5);
 
-      // lo que paga su jefe: es lo que invita a meterse en los dificiles
+      // y debajo, de quien es la arena
       const premio = this.add
-        .text(x, y + TARJETA.alto / 2 + 16, `${jefe ? jefe.nombre : 'Jefe'}`, {
+        .text(x, y + TARJETA.alto / 2 + 6, enObra ? `${jefe ? jefe.nombre : 'Jefe'}  ·  en obra` : (jefe ? jefe.nombre : 'Jefe'), {
           fontFamily: FUENTE.familia,
           fontSize: '10px',
           color: COLORES.textoSuave,
           align: 'center',
-          wordWrap: { width: TARJETA.ancho + 6 },
-        })
-        .setOrigin(0.5, 0);
-
-      const pago = this.add
-        .text(x, y + TARJETA.alto / 2 + 34, `+${premioDeJefe(i)}`, {
-          fontFamily: FUENTE.familia,
-          fontSize: '15px',
-          color: COLORES.textoAcento,
+          wordWrap: { width: TARJETA.ancho + 10 },
         })
         .setOrigin(0.5, 0);
 
@@ -176,7 +192,7 @@ export class EscenaMundos extends Phaser.Scene {
         this.empezar();
       });
 
-      return { lamina, marco, cinta, nombre, numero, premio, pago };
+      return { lamina, marco, cinta, nombre, chapa, premio, pago };
     });
   }
 
@@ -189,8 +205,8 @@ export class EscenaMundos extends Phaser.Scene {
       tarjeta.marco.setScale(elegida ? 1.06 : 1);
       if (tarjeta.lamina) tarjeta.lamina.setAlpha(elegida ? 1 : 0.62);
       tarjeta.nombre.setColor(elegida ? COLORES.textoAcento : COLORES.textoClaro);
-      tarjeta.numero.setAlpha(elegida ? 1 : 0.7);
       tarjeta.pago.setAlpha(elegida ? 1 : 0.6);
+      tarjeta.chapa.setAlpha(elegida ? 0.8 : 0.5);
       tarjeta.premio.setAlpha(elegida ? 1 : 0.6);
     });
   }
@@ -202,6 +218,11 @@ export class EscenaMundos extends Phaser.Scene {
       ['keydown-A', () => this.resaltar(this.indice - 1)],
       ['keydown-RIGHT', () => this.resaltar(this.indice + 1)],
       ['keydown-D', () => this.resaltar(this.indice + 1)],
+      // con dos filas, arriba y abajo saltan de una a otra
+      ['keydown-UP', () => this.resaltar(this.indice - TARJETA.porFila)],
+      ['keydown-W', () => this.resaltar(this.indice - TARJETA.porFila)],
+      ['keydown-DOWN', () => this.resaltar(this.indice + TARJETA.porFila)],
+      ['keydown-S', () => this.resaltar(this.indice + TARJETA.porFila)],
       ['keydown-ENTER', () => this.empezar()],
       ['keydown-SPACE', () => this.empezar()],
       ['keydown-ESC', () => this.scene.start('seleccion')],

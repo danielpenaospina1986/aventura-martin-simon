@@ -520,6 +520,51 @@ export function generarTexturas(escena) {
     brillo(g, 9, 8, 3);
   });
 
+  // --- el fondo de los mundos en obra ---------------------------------------
+  //
+  // Los mundos nuevos todavia no tienen ilustracion propia, asi que van con
+  // este: una obra. Franjas anchas y apagadas de fondo, para que no compita con
+  // el juego —un fondo de rayas amarillas y negras a toda pantalla no hay quien
+  // lo juegue— y una cinta de peligro de verdad cruzando por el medio, que es
+  // lo que se lee como "aqui estan trabajando".
+  generar(escena, TEXTURAS.fondoEnObra, 640, 360, (g) => {
+    const a = 640;
+    const h = 360;
+    g.fillStyle(COLORES.obraFondo, 1);
+    g.fillRect(0, 0, a, h);
+
+    // franjas diagonales anchas, apenas mas claras
+    g.fillStyle(COLORES.obraFranja, 1);
+    for (let x = -h; x < a + h; x += 96) {
+      g.beginPath();
+      g.moveTo(x, h);
+      g.lineTo(x + 48, h);
+      g.lineTo(x + 48 + h, 0);
+      g.lineTo(x + h, 0);
+      g.closePath();
+      g.fillPath();
+    }
+
+    // la cinta de peligro, a media altura
+    const cintaY = h * 0.42;
+    const cintaAlto = 34;
+    g.fillStyle(COLORES.obraCinta, 1);
+    g.fillRect(0, cintaY, a, cintaAlto);
+    g.fillStyle(COLORES.decoFondo, 1);
+    for (let x = -cintaAlto; x < a; x += 44) {
+      g.beginPath();
+      g.moveTo(x, cintaY + cintaAlto);
+      g.lineTo(x + 22, cintaY + cintaAlto);
+      g.lineTo(x + 22 + cintaAlto, cintaY);
+      g.lineTo(x + cintaAlto, cintaY);
+      g.closePath();
+      g.fillPath();
+    }
+    g.fillStyle(COLORES.decoMarcoOscuro, 1);
+    g.fillRect(0, cintaY - 3, a, 3);
+    g.fillRect(0, cintaY + cintaAlto, a, 3);
+  });
+
   // --- Miami: la torre de vigia -----------------------------------------
   //
   // Lo unico que queda dibujado por codigo de esa arena: Martin Malvado y su
@@ -850,7 +895,12 @@ export function pintarFondoDeMenu(escena, ancho, alto, opciones = {}) {
 // no (por ejemplo si fallase la carga), se dibuja el cielo de siempre.
 export function pintarFondo(escena, ancho, alto, opciones = {}) {
   const { veloExtra = 0, conNubes = true, textura } = opciones;
-  const elegida = textura && escena.textures.exists(textura) ? textura : TEXTURAS.fondo;
+  // Si la ciudad no trae ilustracion propia todavia, va la obra: es lo que dice
+  // "este mundo esta a medias" sin tener que escribirlo.
+  const respaldo = escena.textures.exists(TEXTURAS.fondoEnObra)
+    ? TEXTURAS.fondoEnObra
+    : TEXTURAS.fondo;
+  const elegida = textura && escena.textures.exists(textura) ? textura : respaldo;
   if (escena.textures.exists(elegida)) {
     return pintarFondoIlustrado(escena, ancho, alto, veloExtra, elegida);
   }

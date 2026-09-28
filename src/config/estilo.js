@@ -86,6 +86,11 @@ export const COLORES = {
   // el cristal de las cabinas
   carroCristal: 0x9fd8ef,
 
+  // los mundos en obra, mientras no tienen ilustracion propia
+  obraFondo: 0x2b2a3a,
+  obraFranja: 0x35334a,
+  obraCinta: 0xe0b33a,
+
   // Miami: la torre de vigia
   torreMadera: 0xd9b57e,
   torreTecho: 0x7fc4c0,
@@ -252,6 +257,8 @@ export const TEXTURAS = {
   frenteFarol: 'tex-frente-farol',
   frenteMata: 'tex-frente-mata',
   fondo: 'tex-fondo',
+  // el fondo de los mundos que todavia no tienen ilustracion propia
+  fondoEnObra: 'tex-fondo-en-obra',
   portada: 'tex-portada',
   portadaMenu: 'tex-portada-menu',
   // un fondo por ciudad; la clave se arma con el nombre del nivel

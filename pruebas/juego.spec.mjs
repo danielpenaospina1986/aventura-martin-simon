@@ -59,15 +59,25 @@ async function dondeTocar(page) {
   });
 }
 
-// Donde cae la tarjeta de un mundo, en coordenadas del juego. Las cinco van
-// centradas, con 122 px de paso.
-function sitioDelMundo(i, ancho = 640) {
-  const paso = 112 + 10;
-  return ancho / 2 - (4 * paso) / 2 + i * paso;
+// Donde cae la tarjeta de un mundo. Van en rejilla de cuatro por fila, asi que
+// se le pregunta a la escena en vez de repetir aqui las cuentas.
+async function sitioDelMundo(page, i) {
+  return page.evaluate((k) => {
+    const t = window.juego.scene.getScene('mundos').tarjetas[k];
+    return { x: t.marco.x, y: t.marco.y };
+  }, i);
 }
 
 // Donde esta cada boton tactil, preguntandoselo al juego: sus sitios dependen
 // del ancho de la pantalla.
+// Cuantos mundos hay, preguntandoselo al juego: van creciendo.
+async function cuantosMundos(page) {
+  return page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    return TOTAL_NIVELES;
+  });
+}
+
 async function sitiosTactiles(page) {
   const sitios = await page.evaluate(async () => {
     const { sitiosDeLosBotones } = await import('/src/sistemas/tactil.js');
@@ -1191,11 +1201,12 @@ test('derrotar al jefe da el premio de su mundo', async ({ page }) => {
   expect(resultado.deJefes).toBe(resultado.premio);
 });
 
-test('los cinco niveles cargan con su jefe y sus tres checkpoints', async ({ page }) => {
+test('todos los niveles cargan con su jefe y sus tres checkpoints', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
+  const TOTAL = await cuantosMundos(page);
 
-  for (let indice = 0; indice < 5; indice += 1) {
+  for (let indice = 0; indice < TOTAL; indice += 1) {
     const datos = await page.evaluate(async (i) => {
       window.juego.scene.stop('nivel');
       window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
@@ -1539,7 +1550,7 @@ test('a Jean Luke solo se le da mientras rebusca en su balde', async ({ page }) 
   expect(errores).toEqual([]);
 });
 
-test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({ page }) => {
+test('cada ciudad tiene su jefe, y los cinco primeros su propio truco', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
   const jefes = await page.evaluate(async () => {
@@ -1565,17 +1576,18 @@ test('las cinco ciudades tienen su propio jefe, cada uno con su truco', async ({
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
 });
 
-test('desde el suelo se le llega a la coronilla al jefe, en las cinco ciudades', async ({ page }) => {
+test('desde el suelo se le llega a la coronilla al jefe, en todas las ciudades', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
   const medidas = await page.evaluate(async () => {
     const { ALCANCE, MUNDO } = await import('/src/config/ajustes.js');
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
     const suelo = MUNDO.nivelSuelo * MUNDO.casilla;
     // hasta donde llegan los pies del nino con un salto desde el suelo
     const pies = suelo - ALCANCE.alturaSaltoPx;
 
     const salida = [];
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
       window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
       await new Promise((r) => setTimeout(r, 1300));
       const n = window.juego.scene.getScene('nivel');
@@ -1688,11 +1700,16 @@ test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'mundos');
 
-  // los cinco estan abiertos desde el principio
-  const cuantos = await page.evaluate(
-    () => window.juego.scene.getScene('mundos').tarjetas.length,
-  );
-  expect(cuantos).toBe(5);
+  // todos estan abiertos desde el principio, sin desbloquear nada
+  const cuantos = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    return {
+      tarjetas: window.juego.scene.getScene('mundos').tarjetas.length,
+      niveles: TOTAL_NIVELES,
+    };
+  });
+  expect(cuantos.tarjetas).toBe(cuantos.niveles);
+  expect(cuantos.niveles).toBeGreaterThanOrEqual(8);
 
   // tres a la derecha: Miami
   for (let i = 0; i < 3; i += 1) {
@@ -1712,15 +1729,50 @@ test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
   expect(donde.ciudad).toBe('miami');
 });
 
+test('los mundos nuevos cargan, con su jefe prestado y su fondo en obra', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+
+  const nuevos = await page.evaluate(async () => {
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const salida = [];
+    for (const i of [5, 6, 7]) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      await new Promise((r) => setTimeout(r, 1400));
+      const n = window.juego.scene.getScene('nivel');
+      salida.push({
+        ciudad: n.datosNivel.fondo,
+        nombre: n.datosNivel.nombre,
+        // el jefe es prestado, pero el nombre que dice es el suyo
+        jefe: Boolean(n.jefe && n.jefe.active),
+        seLlama: (await import('/src/config/historia.js')).jefeDelCuento(n.datosNivel.fondo).nombre,
+        // y su fondo es la obra, que es la que se pinta cuando no hay propia
+        enObra: !window.juego.textures.exists(TEXTURAS.fondoDe(n.datosNivel.fondo)),
+      });
+    }
+    return salida;
+  });
+
+  expect(nuevos.map((m) => m.ciudad)).toEqual(['orlando', 'lake-lanier', 'finca']);
+  expect(nuevos.map((m) => m.seLlama)).toEqual(['el Tío Camilo', 'Chad', 'Simón Malvado']);
+  nuevos.forEach((m) => {
+    expect(m.jefe).toBe(true);
+    expect(m.enObra).toBe(true);
+  });
+  expect(errores).toEqual([]);
+});
+
 test('cada jefe paga segun lo dificil que sea su mundo', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
   const premios = await page.evaluate(async () => {
     const { premioDeJefe } = await import('/src/config/ajustes.js');
-    return [0, 1, 2, 3, 4].map((i) => premioDeJefe(i));
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    return Array.from({ length: TOTAL_NIVELES }, (_, i) => premioDeJefe(i));
   });
   // 100 el primero, y 20 mas por cada mundo mas dificil
-  expect(premios).toEqual([100, 120, 140, 160, 180]);
+  expect(premios.slice(0, 5)).toEqual([100, 120, 140, 160, 180]);
+  expect(premios[premios.length - 1]).toBe(100 + 20 * (premios.length - 1));
 
   // y lo que suma al marcador es eso, no un numero fijo
   const cobrado = await page.evaluate(async () => {
@@ -2037,12 +2089,13 @@ test('la barra del jefe solo se ve cuando el jefe esta en cuadro', async ({ page
   expect(resultado.cerca).toBe(true);
 });
 
-test('las cinco ciudades traen decorado de fondo y algo por delante', async ({ page }) => {
+test('todas las ciudades traen decorado de fondo y algo por delante', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
   const ciudades = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
     const salida = [];
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
       window.juego.scene.stop('nivel');
       window.juego.scene.start('nivel', { personajeId: 'simon', indiceNivel: i });
       await new Promise((r) => setTimeout(r, 1300));
@@ -2323,7 +2376,8 @@ test.describe('con el dedo', () => {
     await tocar(420, 188);
     await esperarEscena(page, 'mundos');
     // y de ahi, tocando la primera tarjeta de mundo
-    await tocar(sitioDelMundo(0), 168);
+    const primero = await sitioDelMundo(page, 0);
+    await tocar(primero.x, primero.y);
     await esperarEscena(page, 'relato');
     await tocar(320, 200);
     await esperarEscena(page, 'nivel');

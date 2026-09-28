@@ -21,6 +21,19 @@ const POR_CIUDAD = {
   atlanta: DonaZully,
   miami: MartinMalvado,
   cartagena: JeanLuke,
+
+  // Los tres mundos NUEVOS, con jefes prestados hasta que lleguen sus dibujos.
+  // Se le da uno distinto a cada uno para que no se jueguen los tres igual:
+  //
+  //   Orlando      el Tio Camilo, con la pelea de Jean Luke (lo pidio Daniel)
+  //   Lake Lanier  Chad, con la del que tira cosas desde arriba
+  //   La finca     Simon Malvado, con la del que escupe y embiste
+  //
+  // El NOMBRE y las frases de cada uno si son suyos: salen de historia.js, que
+  // va por ciudad y no por clase.
+  orlando: JeanLuke,
+  'lake-lanier': MartinMalvado,
+  finca: PapaInodoro,
 };
 
 export function jefeDeCiudad(ciudad) {

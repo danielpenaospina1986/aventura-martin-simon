@@ -270,5 +270,5 @@ if (fallidos) {
   process.exit(1);
 }
 
-console.log('  RESULTADO: los cinco niveles se pueden terminar con los dos personajes.');
+console.log(`  RESULTADO: los ${NIVELES.length} niveles se pueden terminar con los dos personajes.`);
 console.log('');

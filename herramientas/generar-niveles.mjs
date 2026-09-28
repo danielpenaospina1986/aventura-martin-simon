@@ -413,6 +413,133 @@ const NIVELES = [];
   });
 }
 
+// ------------------------------------------------------------------- 6. Orlando
+//
+// Los tres que siguen son mundos NUEVOS y todavia sin arte propio: van con el
+// fondo "en obra" y con jefes y bichos prestados de los cinco primeros, hasta
+// que lleguen sus dibujos. Lo unico suyo de verdad, por ahora, es el tablero.
+{
+  const t = nuevoTablero();
+
+  tramo(t, 16, 'inicio');
+  hueco(t);
+  tramo(t, 14, 'balcones');
+  hueco(t);
+  tramo(t, 14, 'bichos');
+  hueco(t);
+  checkpoint(t, tramo(t, 14, 'escalera') + 1);
+  hueco(t);
+  tramo(t, 14, 'patio');
+  hueco(t);
+  tramo(t, 14, 'llano');
+  hueco(t);
+  tramo(t, 14, 'bichos');
+  hueco(t);
+  tramo(t, 14, 'balcones');
+  hueco(t);
+  checkpoint(t, tramo(t, 14, 'repisa') + 1);
+  hueco(t);
+  arenaDelJefe(t);
+
+  NIVELES.push({
+    archivo: 'nivel6.js',
+    constante: 'NIVEL_6',
+    nombre: 'Orlando',
+    fondo: 'orlando',
+    mapa: cerrarTablero(t),
+    pistas: [
+      { col: 19, fila: 1, texto: 'Por los tejados' },
+      { col: 36, fila: 7, texto: 'Aquí hay muchos bichos' },
+      { col: 152, fila: 1, texto: 'El premio gordo' },
+      { col: 170, fila: 5, texto: '¡El Tío Camilo!' },
+    ],
+  });
+}
+
+// -------------------------------------------------------------- 7. Lake Lanier
+{
+  const t = nuevoTablero();
+
+  tramo(t, 16, 'inicio');
+  hueco(t);
+  tramo(t, 14, 'escalera');
+  hueco(t);
+  tramo(t, 14, 'patio');
+  hueco(t);
+  checkpoint(t, tramo(t, 14, 'bichos') + 1);
+  hueco(t);
+  tramo(t, 14, 'balcones');
+  hueco(t);
+  tramo(t, 14, 'escalera');
+  hueco(t);
+  tramo(t, 14, 'llano');
+  hueco(t);
+  tramo(t, 14, 'bichos');
+  hueco(t);
+  tramo(t, 14, 'patio');
+  hueco(t);
+  checkpoint(t, tramo(t, 14, 'repisa') + 1);
+  hueco(t);
+  arenaDelJefe(t);
+
+  NIVELES.push({
+    archivo: 'nivel7.js',
+    constante: 'NIVEL_7',
+    nombre: 'Lake Lanier',
+    fondo: 'lake-lanier',
+    mapa: cerrarTablero(t),
+    pistas: [
+      { col: 19, fila: 1, texto: 'Sube por el muelle' },
+      { col: 52, fila: 7, texto: 'Aquí hay muchos bichos' },
+      { col: 168, fila: 1, texto: 'El premio gordo' },
+      { col: 186, fila: 5, texto: '¡Chad, el chef!' },
+    ],
+  });
+}
+
+// ------------------------------------------------------------------ 8. La finca
+{
+  const t = nuevoTablero();
+
+  tramo(t, 16, 'inicio');
+  hueco(t);
+  tramo(t, 14, 'bichos');
+  hueco(t);
+  tramo(t, 14, 'escalera');
+  hueco(t);
+  checkpoint(t, tramo(t, 14, 'balcones') + 1);
+  hueco(t);
+  tramo(t, 14, 'patio');
+  hueco(t);
+  tramo(t, 14, 'bichos');
+  hueco(t);
+  tramo(t, 14, 'escalera');
+  hueco(t);
+  tramo(t, 14, 'llano');
+  hueco(t);
+  tramo(t, 14, 'patio');
+  hueco(t);
+  tramo(t, 14, 'bichos');
+  hueco(t);
+  checkpoint(t, tramo(t, 14, 'repisa') + 1);
+  hueco(t);
+  arenaDelJefe(t);
+
+  NIVELES.push({
+    archivo: 'nivel8.js',
+    constante: 'NIVEL_8',
+    nombre: 'La finca',
+    fondo: 'finca',
+    mapa: cerrarTablero(t),
+    pistas: [
+      { col: 19, fila: 7, texto: 'Aquí hay muchos bichos' },
+      { col: 68, fila: 1, texto: 'Por el granero' },
+      { col: 184, fila: 1, texto: 'El premio gordo' },
+      { col: 202, fila: 5, texto: '¡Simón Malvado!' },
+    ],
+  });
+}
+
 // --- escritura ---------------------------------------------------------------
 
 const LEYENDA = `//   #  suelo solido

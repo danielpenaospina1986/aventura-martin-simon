@@ -141,7 +141,11 @@ tiran agua con jabon, y cada jefe es un guardian del bano. El tono es de
 **travesura, nunca de miedo**: los jefes son comicos y, cuando pierden, los
 empapados son ellos.
 
-### Las cinco ciudades
+### Los ocho mundos
+
+Los cinco primeros son los de siempre, con su arte y su jefe propios. Los tres
+ultimos son **nuevos y estan en obra**: el tablero si es suyo, pero el fondo es
+la obra y el jefe y los bichos van prestados hasta que lleguen sus dibujos.
 
 | # | Ciudad | Que es para ellos |
 |---|---|---|
@@ -149,7 +153,10 @@ empapados son ellos.
 | 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **el Abuelo** |
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia. Aqui les sale al paso **Martin Malvado** |
-| 5 | Cartagena | El paseo que no se les olvida. Aqui les sale al paso **Jean Luke**, el jefe final |
+| 5 | Cartagena | El paseo que no se les olvida. Aqui les sale al paso **Jean Luke** |
+| 6 | Orlando | *En obra.* El viaje de los parques, con **el Tio Camilo** |
+| 7 | Lake Lanier | *En obra.* El lago de los fines de semana, con **Chad** el chef |
+| 8 | La finca | *En obra.* Donde estan los abuelos, con **Simon Malvado** |
 
 ### Como se cuenta
 
@@ -324,8 +331,10 @@ Reglas para los cinco:
 - Un jefe puede traer **dibujo de derrota** (`texturaDeDerrota`). El sprite se
   destruye en cuanto cae, asi que sin eso la pose no se llegaria a ver nunca: la
   escena deja la imagen un momento en su sitio mientras se va.
-- Los que todavia no tienen arte se dibujan **por codigo** con los pinceles de
-  tinta. Ya no queda ninguno: los cinco tienen dibujos de verdad.
+- Los cinco primeros tienen dibujos de verdad. Los **tres mundos nuevos** van
+  con jefes **prestados** —el mismo sprite y la misma pelea de otro— hasta que
+  lleguen los suyos; lo unico propio, por ahora, es el nombre y las frases, que
+  salen de `historia.js` y van por ciudad, no por clase.
 
 #### 1. Space Coast: Papa Inodoro
 
@@ -478,6 +487,9 @@ tampoco pagan lo mismo:
 | 3 Atlanta | Dona Zully | +140 |
 | 4 Miami | Martin Malvado | +160 |
 | 5 Cartagena | Jean Luke | +180 |
+| 6 Orlando | el Tio Camilo | +200 |
+| 7 Lake Lanier | Chad | +220 |
+| 8 La finca | Simon Malvado | +240 |
 
 Lo calcula `premioDeJefe(indice)`, en `ajustes.js`. Lo que han pagado los jefes
 se guarda aparte (`jugador.puntosDeJefes`), porque desde que cada uno paga lo
@@ -536,8 +548,13 @@ mundo"), que **se lleva el marcador**: asi se puede seguir jugando despues de
 pasarse los cinco.
 
 Cada tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
-en medio, con el nombre encima y **lo que paga su jefe** debajo, que es lo que
-invita a meterse en los dificiles.
+en medio, con el nombre en su cinta, **lo que paga su jefe** en una chapita
+arriba —que es lo que invita a meterse en los dificiles— y de quien es la arena
+debajo. Los mundos en obra lo dicen ahi mismo.
+
+Van en **rejilla de cuatro por fila**, no en una tirada: con cinco cabian, con
+ocho no, y encogerlas hasta que quepan las deja ilegibles y sin sitio donde
+poner el dedo.
 
 Ojo: el recorte se hace con **`setCrop`, no con una mascara**. En Phaser 4
 `setMask` no funciona con WebGL: avisa por consola y dibuja la lamina entera,
@@ -674,7 +691,7 @@ hueco **mas su propio ancho**. Con tres casillas (96 + 30 = 126 px) la ventana
 para despegar se queda en 10 px, unas milesimas, y se falla casi siempre.
 `npm run validar` lo comprueba.
 
-### Los cinco tableros
+### Los ocho tableros
 
 Cada tablero es una **ciudad**, con su propio fondo ilustrado:
 
@@ -685,12 +702,18 @@ Cada tablero es una **ciudad**, con su propio fondo ilustrado:
 | 3 | Atlanta | 154 x 12 | 7,7 | 80 | 9 |
 | 4 | Miami | 170 x 12 | 8,5 | 89 | 10 |
 | 5 | Cartagena | 186 x 12 | 9,3 | 100 | 11 |
+| 6 | Orlando | 170 x 12 | 8,5 | 91 | 10 |
+| 7 | Lake Lanier | 186 x 12 | 9,3 | 98 | 13 |
+| 8 | La finca | 202 x 12 | 10,1 | 107 | 16 |
 
 El fondo de cada una vive en `src/assets/fondos/` y el nivel lo nombra en su
-campo `fondo`.
+campo `fondo`. Los tres ultimos **no tienen fondo propio todavia**: `pintarFondo`
+no lo encuentra y pinta **la obra** (`TEXTURAS.fondoEnObra`, dibujada por
+codigo), que es lo que dice de un vistazo "este mundo esta a medias". Lo mismo
+en su tarjeta de la pantalla de mundos.
 
-Todos tienen **tres checkpoints** y **un jefe** antes de la meta. Se juegan en
-orden y el marcador se arrastra de uno a otro: la partida son los cinco.
+Todos tienen **tres checkpoints** y **un jefe** antes de la meta. Se elige a
+cual ir y el marcador se arrastra de uno a otro.
 
 ### Los motivos
 
@@ -1693,3 +1716,20 @@ baja.
   **"Apuntado como NOMBRE · N.º del tablero"**. Ahi iba una gracia del marcador
   ("prueba con Samaon", "sin un solo golpe"); en dos lineas no cabia dentro del
   panel y esto importa mas.
+- **2026-09-28** — Entran **tres mundos nuevos**: Orlando (el Tio Camilo), Lake
+  Lanier (Chad, el chef de los panqueques) y La finca (Simon Malvado). Por ahora
+  van **en obra**: el tablero si es suyo, pero el fondo es una obra dibujada por
+  codigo y el jefe y los bichos van prestados. Se le da a cada uno la pelea de
+  un jefe distinto —Jean Luke, Martin Malvado y Papa Inodoro— para que no se
+  jueguen los tres igual. Su nombre y sus frases si son suyos: salen de
+  `historia.js`, que va por ciudad y no por clase.
+- **2026-09-28** — El fondo "en obra" **no son rayas amarillas a toda
+  pantalla**: eso no hay quien lo juegue. Son franjas anchas y apagadas de
+  fondo, con una sola cinta de peligro cruzando por el medio. Dice lo que tiene
+  que decir sin comerse el juego.
+- **2026-09-28** — Las tarjetas de mundo pasan a **rejilla de cuatro por fila**.
+  Con cinco cabian de una tirada; con ocho no, y encogerlas hasta que quepan las
+  deja ilegibles y sin sitio donde poner el dedo en un telefono.
+- **2026-09-28** — Lo que recorre "todos los mundos" deja de contar hasta cinco
+  y pregunta `TOTAL_NIVELES`: tres pruebas y el validador daban por hecho que
+  eran cinco, y con ocho se quedaban probando la mitad sin quejarse.

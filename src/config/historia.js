@@ -36,6 +36,21 @@ export const CIUDADES = {
     titulo: 'Cartagena',
     frase: 'El paseo que no se les olvida.\nY donde los espera quien ustedes ya saben.',
   },
+
+  // Los tres de abajo son mundos NUEVOS, todavia sin arte propio: van con el
+  // fondo en obra y con jefes prestados hasta que lleguen sus dibujos.
+  orlando: {
+    titulo: 'Orlando',
+    frase: 'El viaje de los parques.\nAquí manda el Tío Camilo.',
+  },
+  'lake-lanier': {
+    titulo: 'Lake Lanier',
+    frase: 'El lago de los fines de semana.\nY la parrilla de Chad.',
+  },
+  finca: {
+    titulo: 'La finca',
+    frase: 'Donde están los abuelos y la vaca.\nY donde Simón se pone malvado.',
+  },
 };
 
 // Lo que dice cada guardian del bano al empezar la pelea y al perderla.
@@ -67,6 +82,21 @@ export const JEFES = {
     nombre: 'Jean Luke',
     saludo: '—¡De aquí no pasa nadie, mocosos!',
     derrota: '—¡Buaaa! ¡Le voy a decir a mi mamá!',
+  },
+  orlando: {
+    nombre: 'el Tío Camilo',
+    saludo: '—¡Nadie se sube a nada sin bañarse!',
+    derrota: '—Bueno, bueno… montémonos sucios.',
+  },
+  'lake-lanier': {
+    nombre: 'Chad',
+    saludo: '—¡Panqueques para todos! ¡Y después, al agua!',
+    derrota: '—¡Se me quemaron los panqueques!',
+  },
+  finca: {
+    nombre: 'Simón Malvado',
+    saludo: '—¡Yo también sé jugar sucio!',
+    derrota: '—¡Me desarmaron! ¡No vale!',
   },
 };
 

@@ -133,6 +133,14 @@ export const CIUDADES = {
 // Si un nivel no dice de que ciudad es, o trae una que no esta, se usa esta.
 export const CIUDAD_POR_DEFECTO = 'space-coast';
 
+// Los tres mundos NUEVOS. Todavia no tienen nada propio: se les presta el
+// pavimento y el decorado de la ciudad a la que mas se parecen, que es lo que
+// se ha hecho siempre aqui con lo que falta. Su FONDO, en cambio, es la obra:
+// eso si se ve a la primera y dice "este mundo esta a medias".
+CIUDADES.orlando = { ...CIUDADES.miami };
+CIUDADES['lake-lanier'] = { ...CIUDADES.atlanta };
+CIUDADES.finca = { ...CIUDADES.medellin };
+
 export function ciudadDe(nombre) {
   return CIUDADES[nombre] || CIUDADES[CIUDAD_POR_DEFECTO];
 }
