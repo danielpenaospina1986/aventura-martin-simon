@@ -292,6 +292,10 @@ export const TEXTURAS = {
   portadaMenu: 'tex-portada-menu',
   // un fondo por ciudad; la clave se arma con el nombre del nivel
   fondoDe: (ciudad) => `tex-fondo-${ciudad}`,
+  // Un fotograma del bicho que embiste. Se arma con la PIEL y la POSE, igual
+  // que el fondo con la ciudad: son diez pieles por seis poses, y sesenta
+  // constantes sueltas no las lee nadie.
+  bichoDe: (piel, pose) => `tex-bicho-${piel}-${pose}`,
   caraMartin: 'tex-cara-martin',
   caraSimon: 'tex-cara-simon',
   martin: 'tex-martin',

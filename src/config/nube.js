@@ -26,7 +26,7 @@
 // Va A LA VISTA en el juego publicado, y no pasa nada: no es una contrasena, es
 // la puerta. Quien manda es el reglamento de la base de datos, que solo deja
 // leer y escribir puntajes, y solo con la forma que toca (ver NUBE.md).
-const DIRECCION = '';
+const DIRECCION = 'https://aventura-martin-simon-default-rtdb.firebaseio.com';
 
 // La que manda de verdad, si alguien la ha cambiado a mano (ver mas abajo).
 let aMano = null;

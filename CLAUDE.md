@@ -153,14 +153,14 @@ delante y de detras.
 
 | # | Ciudad | Que es para ellos |
 |---|---|---|
-| 1 | Space Coast | Donde nacieron los dos |
-| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **el Abuelo** |
+| 1 | Space Coast | Donde nacieron los dos. Aqui les sale al paso **Simon Malvado** |
+| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **Papa Inodoro** |
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia. Aqui les sale al paso **Martin Malvado** |
 | 5 | Cartagena | El paseo que no se les olvida. Aqui les sale al paso **Jean Luke** |
 | 6 | Orlando | El viaje de los parques. Aqui les sale al paso **el Tio Camilo** |
 | 7 | Lake Lanier | El lago de los fines de semana. Aqui les sale al paso **Chad**, el chef |
-| 8 | La finca | **El Refugio**, la finca ganadera de los abuelos en el Magdalena Medio. Aqui les sale al paso **Simon Malvado** |
+| 8 | La finca | **El Refugio**, la finca ganadera de los abuelos en el Magdalena Medio. Aqui les sale al paso **el Abuelo** |
 
 ### Como se cuenta
 
@@ -289,6 +289,36 @@ de galope y una tumbada.
 
 Vive en `entidades/Vaca.js` y en su propio grupo (`escena.vacas`), no en el de
 los bichos: asi lo que cuenta enemigos en pantalla sigue contando baneras.
+
+### Y en cada mundo es otra cosa
+
+La vaca es de **la finca**, que es de donde salio el cuento. En los demas
+mundos el bicho **se comporta exactamente igual** —entra por un lado, se
+planta, avisa, embiste y se derriba igual— pero es lo que de verdad te
+atropellaria alli:
+
+| Mundo | Que embiste |
+|---|---|
+| Space Coast | una **vaca marciana**, de tres ojos y antenas |
+| Medellin | un **bus**: el blanco de *Comercial Hotelera* o el verde de *Circular Sur 303* |
+| Atlanta | **Alma**, la pastora alemana de los ninos, que esta loca |
+| Miami | **Melo**, el pastor australiano de un ojo azul y otro cafe |
+| Cartagena | un **clasico de La Habana**: el descapotable, el sedan o la camioneta |
+| Orlando | un **vagon de montana rusa** desbocado, con sus ninos dentro |
+| Lake Lanier | **Alma** otra vez, que los fines de semana se va con ellos |
+| La finca | la **vaca berrionda** de siempre |
+
+Cada juego de dibujos es una **piel**: seis poses con los mismos nombres
+(`anda1`, `anda2`, `avisa`, `embiste1`, `embiste2`, `tumbada`), en su carpeta de
+`src/assets/bichos/`. Quien guarda cual va en `config/bichos.js`.
+
+Una ciudad puede tener **varias y se sortean** (Medellin dos, Cartagena tres):
+asi el tablero no se hace previsible sin dibujar una pelea nueva. Las pruebas
+fijan cual sale (`escena.pielDeLosBichos`) para no medir a cara o cruz.
+
+Las pieles **no se importan una a una**: `EscenaCarga` las recoge con
+`import.meta.glob`, asi que anadir una es dejar su carpeta ahi y nombrarla en
+`bichos.js`. Sesenta lineas de import a mano no las mantiene nadie.
 
 ### Los jefes
 
@@ -630,14 +660,26 @@ despues del personaje, y tambien desde la pantalla de victoria ("Elegir otro
 mundo"), que **se lleva el marcador**: asi se puede seguir jugando despues de
 pasarselos todos.
 
-Cada tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
+Se ensena **UNO SOLO, grande**, y se pasa de uno a otro de tres maneras: las
+**flechas de los lados**, **deslizando el dedo** o las **flechas del teclado**.
+Arriba dice por cual se va (**"Mundo 4 de 8"**) y abajo hay una fila de
+**puntitos**, uno por mundo, para saber donde se esta sin tener que leer. Se
+entra **tocando la tarjeta** (o con Enter).
+
+Antes salian los ocho a la vez, en rejilla de cuatro por fila. Con cinco mundos
+aquello se leia; con ocho, cada tarjeta se quedaba en 104 x 68 px y en un
+telefono no habia forma ni de verlas ni de acertarles con el dedo. **Mas vale
+ver uno bien que ocho mal.**
+
+La tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
 en medio, con el nombre en su cinta, **lo que paga su jefe** en una chapita
 arriba —que es lo que invita a meterse en los dificiles— y de quien es la arena
-debajo. Los mundos en obra lo dicen ahi mismo.
+debajo.
 
-Van en **rejilla de cuatro por fila**, no en una tirada: con cinco cabian, con
-ocho no, y encogerlas hasta que quepan las deja ilegibles y sin sitio donde
-poner el dedo.
+Deslizar y tocar se deciden **al levantar el dedo**, no al apoyarlo: hasta
+entonces no se sabe si aquello era un toque o un arrastre. Se pide ademas que el
+gesto sea **mas horizontal que vertical**, o bajar el dedo por la pantalla
+cambiaria de mundo sin querer.
 
 Ojo: el recorte se hace con **`setCrop`, no con una mascara**. En Phaser 4
 `setMask` no funciona con WebGL: avisa por consola y dibuja la lamina entera,
@@ -1869,11 +1911,54 @@ baja.
 - **2026-09-28** — Las tarjetas de mundo pasan a **rejilla de cuatro por fila**.
   Con cinco cabian de una tirada; con ocho no, y encogerlas hasta que quepan las
   deja ilegibles y sin sitio donde poner el dedo en un telefono.
+  *(Se volvio atras el 2026-09-29: ahora se ensena una sola, grande.)*
 - **2026-09-28** — Lo que recorre "todos los mundos" deja de contar hasta cinco
   y pregunta `TOTAL_NIVELES`: tres pruebas y el validador daban por hecho que
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
 - **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
   mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-29** — El bicho que embiste **cambia de dibujo segun el mundo**: una
+  vaca marciana en Space Coast, un bus en Medellin, Alma en Atlanta, Melo en
+  Miami, un clasico de La Habana en Cartagena, un vagon de montana rusa en
+  Orlando y la vaca de siempre en la finca. La PELEA no cambia ni un pixel: es
+  el mismo bicho con otra piel. Donde hay varias (dos buses, tres clasicos) se
+  sortea, para que el tablero no se haga previsible sin dibujar una pelea nueva.
+- **2026-09-29** — Las pieles se cargan con **`import.meta.glob`** y sus claves
+  se arman con `TEXTURAS.bichoDe(piel, pose)`, como ya se hacia con los fondos.
+  Diez pieles por seis poses son sesenta archivos: ni sesenta lineas de import
+  ni sesenta constantes sueltas las mantiene nadie, y asi anadir una es dejar su
+  carpeta ahi y nombrarla en `bichos.js`.
+- **2026-09-29** — **Cuarta vez con la trampa de `limpiarBolsas`**, y esta vez
+  en tres hojas a la vez. Se les copio la receta de la vaca (tolerancia 120) sin
+  mirar sus colores, y el filtro de las bolsas —que corta en tolerancia x 2,2,
+  o sea 264— se comio el crema del bus verde (a 234 del fondo), el cafe de Melo
+  (212) y el lila de la vaca marciana (156): los tres salieron en **puro
+  contorno**. Van sin ese filtro y con la tolerancia bajada a 100, 95 y 70. La
+  regla, otra vez: **antes de copiar una receta de recorte hay que medir los
+  colores de ESE dibujo**.
+- **2026-09-29** — Las otras seis hojas SI llevan el filtro, y lo necesitan:
+  varias traen una **sombra ovalada dibujada**, que es el mismo turquesa mas
+  oscuro (a unos 115 del fondo), y con la tolerancia de casa se quedaba pegada
+  debajo como un halo gris. Es lo mismo que ya le pasaba a la vaca original.
+- **2026-09-29** — La pantalla de mundos pasa a **ensenar uno solo, grande**,
+  con flechas a los lados, deslizamiento con el dedo, "Mundo 4 de 8" arriba y
+  una fila de puntitos abajo. Lo pidio Daniel despues de probarlo en el
+  telefono: en rejilla, con ocho, cada tarjeta se quedaba en 104 x 68 px y no
+  habia forma ni de verlas ni de acertarles. Mas vale ver uno bien que ocho mal.
+- **2026-09-29** — Deslizar y tocar **se deciden al LEVANTAR el dedo**, no al
+  apoyarlo: hasta entonces no se sabe si era un toque (que juega) o un arrastre
+  (que cambia de mundo). Y se le pide al gesto que sea **mas horizontal que
+  vertical**, que si no bajar el dedo por la pantalla cambiaba de mundo sin
+  querer.
+- **2026-09-29** — Los jefes **se reordenan por donde vive cada uno**, no por el
+  orden en que se fueron dibujando: **Simon Malvado** a Space Coast, que es de
+  donde son los ninos; **Papa Inodoro** a Medellin, que es de donde sale su
+  "berriondo"; y **el Abuelo** a la finca, que es donde vive —ya no baja a la
+  ciudad, ahora los espera en su tierra con la camioneta y las canastillas.
+  Ojo con esto: el NOMBRE y las FRASES de un jefe viven en `historia.js` y van
+  por **ciudad**, no por clase, asi que hay que mudarlos con el. Si no, la
+  ciudad enseña el dibujo de uno con el nombre de otro, y no da ningun error.
+  Hay una prueba que lo vigila en los ocho mundos.
 - **2026-09-28** — **Lake Lanier y La finca salen de la obra, y con eso los
   ocho mundos quedan terminados.** Lake Lanier estrena su lago con el muelle y
   la marina, y a **Chad**, el chef que tira panqueques desde la torre. La finca
@@ -2040,3 +2125,9 @@ baja.
   contrario durante varias sesiones y se perdio tiempo mirando al sitio
   equivocado. La maquina solo explica lo LENTO; lo que decide si una prueba pasa
   o no es que espere lo que de verdad tiene que esperar.
+- **2026-09-29** — La regla de arriba se aplico otra vez y volvio a acertar: la
+  prueba del bloque que se deshace contra el suelo esperaba **100 ms de reloj** a
+  que el bloque saliera y 1200 a que se rompiera. Con la suite entera por
+  delante el bloque no habia salido cuando se le preguntaba. Ahora espera a que
+  el grupo tenga uno, y luego a que se quede vacio. **Cuando una prueba falla
+  solo en la suite, lo primero es buscarle el `waitForTimeout`.**

@@ -19,14 +19,29 @@
 import Phaser from 'phaser';
 import { VACA } from '../config/ajustes.js';
 import { TEXTURAS } from '../config/estilo.js';
+import { PIEL_POR_DEFECTO } from '../config/bichos.js';
 import { polvo } from '../sistemas/efectos.js';
 
-const TROTE = [TEXTURAS.vacaAnda1, TEXTURAS.vacaAnda2];
-const GALOPE = [TEXTURAS.vacaEmbiste1, TEXTURAS.vacaEmbiste2];
+// Los dibujos de UNA piel. El bicho es el mismo en los ocho mundos —entra
+// corriendo, avisa, embiste y se derriba igual— y lo unico que cambia es QUE
+// ES: una vaca en la finca, un bus en Medellin, Alma en Atlanta... La lista
+// esta en `config/bichos.js`.
+function dibujosDe(piel) {
+  const suyo = (pose) => TEXTURAS.bichoDe(piel, pose);
+  return {
+    trote: [suyo('anda1'), suyo('anda2')],
+    galope: [suyo('embiste1'), suyo('embiste2')],
+    avisa: suyo('avisa'),
+    tumbada: suyo('tumbada'),
+  };
+}
 
 export class Vaca extends Phaser.Physics.Arcade.Sprite {
-  constructor(escena, x, y, direccion = -1) {
-    super(escena, x, y, TEXTURAS.vacaAnda1);
+  constructor(escena, x, y, direccion = -1, piel = PIEL_POR_DEFECTO) {
+    super(escena, x, y, TEXTURAS.bichoDe(piel, 'anda1'));
+
+    this.piel = piel;
+    this.dibujos = dibujosDe(piel);
 
     this.escena = escena;
     escena.add.existing(this);
@@ -82,7 +97,11 @@ export class Vaca extends Phaser.Physics.Arcade.Sprite {
 
     const galopando = this.estado === 'embiste';
     this.body.velocity.x = this.direccion * (galopando ? VACA.velocidadEmbestida : VACA.velocidad);
-    this.animar(delta, galopando ? GALOPE : TROTE, galopando ? VACA.msPorTranco : VACA.msPorPaso);
+    this.animar(
+      delta,
+      galopando ? this.dibujos.galope : this.dibujos.trote,
+      galopando ? VACA.msPorTranco : VACA.msPorPaso,
+    );
 
     // Salta los huecos: si por delante no hay donde pisar, brinca.
     if (this.body.blocked.down) {
@@ -104,14 +123,14 @@ export class Vaca extends Phaser.Physics.Arcade.Sprite {
   bajarLaCabeza() {
     this.estado = 'avisa';
     this.cambio = this.reloj + VACA.avisoMs;
-    this.setTexture(TEXTURAS.vacaAvisa);
+    this.setTexture(this.dibujos.avisa);
   }
 
   arrancar() {
     this.estado = 'embiste';
     this.paso = 0;
     this.relojPaso = 0;
-    this.setTexture(GALOPE[0]);
+    this.setTexture(this.dibujos.galope[0]);
     polvo(this.escena, this.x - this.direccion * 40, this.body.bottom - 6);
   }
 
@@ -122,7 +141,7 @@ export class Vaca extends Phaser.Physics.Arcade.Sprite {
     if (this.estado === 'tumbada') return false;
     this.estado = 'tumbada';
 
-    this.setTexture(TEXTURAS.vacaTumbada);
+    this.setTexture(this.dibujos.tumbada);
     // Se le dejan la gravedad y el suelo: asi se desploma y se acuesta donde
     // toque. Quitandole el cuerpo se quedaba flotando en el aire cuando la
     // pisaban en pleno salto sobre un hueco.

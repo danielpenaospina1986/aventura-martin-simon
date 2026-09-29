@@ -65,13 +65,14 @@ async function dondeTocar(page) {
   });
 }
 
-// Donde cae la tarjeta de un mundo. Van en rejilla de cuatro por fila, asi que
-// se le pregunta a la escena en vez de repetir aqui las cuentas.
-async function sitioDelMundo(page, i) {
-  return page.evaluate((k) => {
-    const t = window.juego.scene.getScene('mundos').tarjetas[k];
-    return { x: t.marco.x, y: t.marco.y };
-  }, i);
+// Donde cae la tarjeta del mundo. Ahora se ensena UNA sola, grande, y se pasa
+// de una a otra deslizando: se le pregunta a la escena en vez de repetir aqui
+// las cuentas.
+async function sitioDeLaTarjeta(page) {
+  return page.evaluate(() => {
+    const e = window.juego.scene.getScene('mundos');
+    return { x: e.marco.x, y: e.marco.y, mundo: e.indice };
+  });
 }
 
 // Donde esta cada boton tactil, preguntandoselo al juego: sus sitios dependen
@@ -473,12 +474,22 @@ test('no puede haber más de tres bloques volando a la vez', async ({ page }) =>
 test('el bloque lanzado se deshace al chocar contra el suelo', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
-  await page.keyboard.press('KeyX');
-  await page.waitForTimeout(100);
-  expect((await estadoJugador(page)).proyectiles).toBe(1);
+  // Se esperan los SUCESOS: que el bloque salga y que se deshaga. Esperar 100
+  // ms de reloj a que salga y 1200 a que se rompa es echarlo a suertes: con la
+  // suite entera por delante el navegador va lento, y el bloque no habia salido
+  // todavia cuando se le preguntaba.
+  const cuantosBloques = (cuantos) =>
+    page.waitForFunction(
+      (n) => window.juego.scene.getScene('nivel').proyectiles.getChildren().length === n,
+      cuantos,
+      { timeout: 15000 },
+    );
 
-  await page.waitForTimeout(1200);
-  expect((await estadoJugador(page)).proyectiles).toBe(0);
+  await page.keyboard.press('KeyX');
+  await cuantosBloques(1);
+
+  // y solo se va cuando toca el suelo, no antes
+  await cuantosBloques(0);
 });
 
 test('la meta está cerrada mientras el jefe siga vivo', async ({ page }) => {
@@ -641,13 +652,17 @@ test('el heladito se estrella al tocar el suelo y deja de hacer daño', async ({
       estrellado: heladito.estrellado === true,
       textura: heladito.texture.key,
       cuerpo: heladito.body.enable,
+      // Lo que tira ESTE jefe, sea quien sea. Lo que se prueba aqui es la
+      // mecanica —sale, vuela, se estrella y deja de hacer dano—, no el dibujo:
+      // esta pelea la comparten dos jefes y pueden cambiar de ciudad.
+      suya: { sale: n.jefe.municion.quieta, rota: n.jefe.municion.seRompe },
     };
   });
 
-  expect(resultado.alSalir.textura).toBe('tex-helado1');
+  expect(resultado.alSalir.textura).toBe(resultado.suya.sale);
   expect(resultado.alSalir.cuerpo).toBe(true);
   expect(resultado.estrellado).toBe(true);
-  expect(resultado.textura).toBe('tex-helado-splat');
+  expect(resultado.textura).toBe(resultado.suya.rota);
   expect(resultado.cuerpo).toBe(false); // ya no puede tocar a nadie
 });
 
@@ -724,10 +739,14 @@ test('ningún jefe se derrota solo mientras el niño no llega', async ({ page })
   const resultado = await page.evaluate(async () => {
     const n = window.juego.scene.getScene('nivel');
     n.scene.restart({ indiceNivel: 2, personajeId: 'simon', acumulado: {} });
-    // el tablero montado, no un tiempo de reloj (ver la prueba de la sombrilla)
+    // El tablero montado, no un tiempo de reloj (ver la prueba de la sombrilla).
+    // Y se mira que sea EL DE ATLANTA: con solo preguntar si hay jefe, se
+    // pillaba el del tablero anterior, que todavia no se habia apagado, y lo
+    // que se media era el jefe de otra ciudad. Estuvo escondido hasta que los
+    // dos jefes dejaron de tener las mismas vidas.
     for (let i = 0; i < 80; i += 1) {
       const e = window.juego.scene.getScene('nivel');
-      if (e && e.jefe && e.jefe.active) break;
+      if (e && e.indiceNivel === 2 && e.jefe && e.jefe.active) break;
       await new Promise((r) => setTimeout(r, 50));
     }
 
@@ -1476,7 +1495,9 @@ async function entrarALaArena(page, indiceNivel) {
 test('al Abuelo no se le pega: lo para una canastilla', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'simon');
-  await entrarALaArena(page, 1);
+  // El Abuelo vive en LA FINCA (el mundo 8), no en Medellin: los jefes se
+  // colocaron por donde vive cada uno.
+  await entrarALaArena(page, 7);
 
   const resultado = await page.evaluate(async () => {
     const n = window.juego.scene.getScene('nivel');
@@ -1616,7 +1637,7 @@ test('cada ciudad tiene su jefe, y los cinco primeros su propio truco', async ({
   });
 
   expect(jefes.map((j) => j.clase)).toEqual([
-    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'JeanLuke',
+    'SimonMalvado', 'PapaInodoro', 'DonaZully', 'MartinMalvado', 'JeanLuke',
   ]);
   // ninguno es el provisional, y todos aguantan mas de un golpe
   jefes.forEach((j) => expect(j.vidas).toBeGreaterThan(2));
@@ -1751,15 +1772,16 @@ test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
   await page.keyboard.press('Enter');
   await esperarEscena(page, 'mundos');
 
-  // todos estan abiertos desde el principio, sin desbloquear nada
+  // todos estan abiertos desde el principio, sin desbloquear nada: hay un
+  // puntito por mundo, y se puede llegar a cualquiera
   const cuantos = await page.evaluate(async () => {
     const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
     return {
-      tarjetas: window.juego.scene.getScene('mundos').tarjetas.length,
+      puntitos: window.juego.scene.getScene('mundos').puntitos.length,
       niveles: TOTAL_NIVELES,
     };
   });
-  expect(cuantos.tarjetas).toBe(cuantos.niveles);
+  expect(cuantos.puntitos).toBe(cuantos.niveles);
   expect(cuantos.niveles).toBeGreaterThanOrEqual(8);
 
   // tres a la derecha: Miami
@@ -1778,6 +1800,268 @@ test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
   });
   expect(donde.indice).toBe(3);
   expect(donde.ciudad).toBe('miami');
+});
+
+test('la pantalla de mundos ensena uno solo, y dice por cual va', async ({ page }) => {
+  // Lo pidio Daniel despues de probarlo en el telefono: con ocho mundos en
+  // rejilla, cada tarjeta se quedaba en 104 x 68 px y no habia forma ni de
+  // verlas ni de acertarles con el dedo.
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'mundos');
+
+  const alEntrar = await page.evaluate(async () => {
+    const { MUNDO } = await import('/src/config/ajustes.js');
+    const e = window.juego.scene.getScene('mundos');
+    return {
+      dice: e.cuenta.text,
+      nombre: e.nombre.text,
+      // la tarjeta ocupa de verdad la pantalla, no es una estampilla
+      anchoTarjeta: Math.round(e.marco.width),
+      anchoPantalla: MUNDO.ancho,
+      flechas: e.flechas.length,
+      puntitos: e.puntitos.length,
+    };
+  });
+
+  expect(alEntrar.dice).toBe('Mundo 1 de 8');
+  expect(alEntrar.nombre).toBe('Space Coast');
+  // mas de la mitad del ancho de la pantalla: eso es "grande"
+  expect(alEntrar.anchoTarjeta).toBeGreaterThan(alEntrar.anchoPantalla / 2);
+  expect(alEntrar.flechas).toBe(2);
+  expect(alEntrar.puntitos).toBe(8);
+
+  // Las flechas del teclado pasan de mundo. Se espera A QUE LLEGUE, no a un
+  // tiempo de reloj: pulsar y leer de seguido es echarlo a suertes, porque la
+  // tecla tarda lo que tarda en llegarle al juego. Es lo mismo que ya hace
+  // `entrarAlNivel` con la flecha de la seleccion de personaje.
+  const irHasta = async (tecla, cual) => {
+    await page.keyboard.press(tecla);
+    await page.waitForFunction(
+      (k) => window.juego.scene.getScene('mundos').indice === k,
+      cual,
+      { timeout: 10000 },
+    );
+    // El juego ignora A PROPOSITO un cambio que llegue a menos de 90 ms del
+    // anterior (ver ESPERA_ENTRE_MUNDOS): hace falta porque Phaser puede
+    // entregar un mismo keydown varias veces. Aqui se le deja pasar esa ventana
+    // antes de la siguiente tecla; si no, la siguiente se perderia. No es
+    // esperar una carrera, es respetar una regla del juego.
+    await page.waitForTimeout(120);
+  };
+
+  await irHasta('ArrowRight', 1);
+  await irHasta('ArrowRight', 2);
+  const trasDos = await page.evaluate(() => {
+    const e = window.juego.scene.getScene('mundos');
+    return { dice: e.cuenta.text, nombre: e.nombre.text };
+  });
+  expect(trasDos.dice).toBe('Mundo 3 de 8');
+  expect(trasDos.nombre).toBe('Atlanta');
+
+  // y hacia atras desde el primero se da la vuelta al ultimo
+  await page.evaluate(() => window.juego.scene.getScene('mundos').mostrar(0));
+  await irHasta('ArrowLeft', 7);
+  const dandoLaVuelta = await page.evaluate(
+    () => window.juego.scene.getScene('mundos').cuenta.text,
+  );
+  expect(dandoLaVuelta).toBe('Mundo 8 de 8');
+});
+
+test('una sola pulsacion mueve UN mundo, no cuatro', async ({ page }) => {
+  // Esto se rompio de verdad y no era cosa de las pruebas: en Phaser 4 un
+  // `keydown-X` puede llegar VARIAS VECES por una sola pulsacion. El plugin de
+  // teclado encola los eventos del navegador y los vacia en su `update()`, y al
+  // SOLTAR la tecla provoca otro vaciado que vuelve a emitir el keydown ya
+  // procesado. Medido con la pila de llamadas: una pulsacion llegaba a mover
+  // cinco mundos, y el numero cambiaba en cada intento.
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'mundos');
+
+  // se cuentan los keydown que le llegan al NAVEGADOR, para poder comparar
+  await page.evaluate(() => {
+    window.__teclas = 0;
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'ArrowRight') window.__teclas += 1;
+      },
+      true,
+    );
+  });
+
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(400);
+
+  const tras = await page.evaluate(() => ({
+    indice: window.juego.scene.getScene('mundos').indice,
+    teclas: window.__teclas,
+  }));
+
+  // una tecla, un mundo
+  expect(tras.teclas).toBe(1);
+  expect(tras.indice).toBe(1);
+});
+
+test('se puede volver a elegir mundo una segunda vez, sin quedarse colgado', async ({ page }) => {
+  // El bug que conto Daniel: jugaba, pausaba, se salia a "Cambiar personaje",
+  // elegia mundo... y la pantalla no respondia. No entraba a ninguno.
+  //
+  // La culpa era de `yendo`, la bandera que evita que un doble clic arranque dos
+  // partidas: Phaser REUTILIZA la instancia de la escena, y el `init` no la
+  // volvia a poner en false. Asi que la primera vez funcionaba y de la segunda
+  // en adelante `empezar()` se salia por la primera linea, en silencio.
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+
+  // --- PRIMERA vez: se entra a un mundo ---
+  await esperarEscena(page, 'mundos');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Escape');
+  await esperarEscena(page, 'nivel');
+
+  // --- se pausa y se sale a cambiar personaje ---
+  await page.evaluate(() => window.juego.scene.getScene('nivel').pausar());
+  await esperarEscena(page, 'pausa');
+  await page.evaluate(() => window.juego.scene.getScene('pausa').salirA('seleccion'));
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+
+  // --- SEGUNDA vez: tiene que dejar entrar igual ---
+  await esperarEscena(page, 'mundos');
+  const alVolver = await page.evaluate(() => window.juego.scene.getScene('mundos').yendo);
+  expect(alVolver).toBe(false); // la bandera se rearma al volver a entrar
+
+  await page.keyboard.press('Enter');
+  // si la pantalla se quedo muerta, esto se queda esperando y falla
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Escape');
+  await esperarEscena(page, 'nivel');
+
+  const jugando = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return Boolean(n && n.jugadores && n.jugadores[0]);
+  });
+  expect(jugando).toBe(true);
+});
+
+test('las flechas de los lados cambian de mundo con un clic', async ({ page }) => {
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'mundos');
+
+  const donde = await dondeTocar(page);
+  const sitios = await page.evaluate(() =>
+    window.juego.scene
+      .getScene('mundos')
+      .flechas.map((f) => ({ x: f.disco.x, y: f.disco.y, hacia: f.haciaDonde })),
+  );
+
+  // Igual que con el teclado: se espera a que LLEGUE al mundo, y despues se
+  // deja pasar la ventana de 90 ms que el juego ignora a proposito.
+  const esperarMundo = async (cual) => {
+    await page.waitForFunction(
+      (k) => window.juego.scene.getScene('mundos').indice === k,
+      cual,
+      { timeout: 10000 },
+    );
+    await page.waitForTimeout(120);
+  };
+
+  const derecha = sitios.find((f) => f.hacia > 0);
+  const p = donde(derecha.x, derecha.y);
+  await page.mouse.click(p.x, p.y);
+  await esperarMundo(1);
+
+  // y la de la izquierda vuelve
+  const izquierda = sitios.find((f) => f.hacia < 0);
+  const q = donde(izquierda.x, izquierda.y);
+  await page.mouse.click(q.x, q.y);
+  await esperarMundo(0);
+});
+
+test('cada mundo tiene SU bicho embistiendo, con sus propios dibujos', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+
+  const salio = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const fuera = [];
+
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      for (let v = 0; v < 150; v += 1) {
+        const e = window.juego.scene.getScene('nivel');
+        if (e && e.indiceNivel === i && e.nivel) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+
+      // se sueltan varios, que donde hay variantes se echa a suertes
+      const pieles = new Set();
+      let dibujoBueno = true;
+      for (let k = 0; k < 10; k += 1) {
+        n.proximaVaca = 0;
+        n.gestionarVacas(1);
+        const hijos = n.vacas.getChildren();
+        const ultima = hijos[hijos.length - 1];
+        if (ultima) {
+          pieles.add(ultima.piel);
+          // y sale con SU dibujo, no con el de la vaca
+          if (ultima.texture.key !== TEXTURAS.bichoDe(ultima.piel, 'anda1')) dibujoBueno = false;
+          ultima.destroy();
+        }
+        await new Promise((r) => setTimeout(r, 15));
+      }
+      fuera.push({ ciudad: n.datosNivel.fondo, pieles: [...pieles].sort(), dibujoBueno });
+    }
+    return fuera;
+  });
+
+  const porCiudad = Object.fromEntries(salio.map((s) => [s.ciudad, s.pieles]));
+
+  // Cada mundo, el suyo. La vaca de siempre se queda SOLO en la finca, que es
+  // de donde salio el cuento.
+  expect(porCiudad['space-coast']).toEqual(['vaca-marciana']);
+  expect(porCiudad.atlanta).toEqual(['alma']);
+  expect(porCiudad.miami).toEqual(['melo']);
+  expect(porCiudad.orlando).toEqual(['vagoneta']);
+  expect(porCiudad['lake-lanier']).toEqual(['alma']);
+  expect(porCiudad.finca).toEqual(['vaca']);
+
+  // Medellin y Cartagena tienen varias y las sortean: en diez tiradas tienen
+  // que haber salido por lo menos dos distintas.
+  expect(porCiudad.medellin.length).toBeGreaterThan(1);
+  porCiudad.medellin.forEach((p) => expect(p).toMatch(/^bus-/));
+  expect(porCiudad.cartagena.length).toBeGreaterThan(1);
+  porCiudad.cartagena.forEach((p) => expect(p).toMatch(/^clasico-/));
+
+  // y ninguno sale con el dibujo de otro
+  salio.forEach((s) => expect(s.dibujoBueno).toBe(true));
+  expect(errores).toEqual([]);
 });
 
 // Va a un mundo por su numero y espera a que ESTE montado, mirando que el
@@ -1844,16 +2128,19 @@ test('los ocho mundos tienen su fondo y su jefe propios, sin obra ninguna', asyn
     expect(m.clase).not.toBeNull();
   });
 
-  // Y cada uno tiene SU clase de jefe, ninguna repetida.
+  // Y cada uno tiene SU clase de jefe, ninguna repetida. El orden es el de
+  // DONDE VIVE cada uno, no el de cuando se dibujaron.
   expect(mundos.map((m) => m.clase)).toEqual([
-    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'JeanLuke',
-    'TioCamilo', 'Chad', 'SimonMalvado',
+    'SimonMalvado', 'PapaInodoro', 'DonaZully', 'MartinMalvado', 'JeanLuke',
+    'TioCamilo', 'Chad', 'Abuelo',
   ]);
 
-  // con el nombre que le toca a su ciudad
+  // Y —esto es lo que se cuela al mudar un jefe— con SU nombre, no con el del
+  // que estaba antes en esa ciudad: el nombre vive en historia.js, que va por
+  // ciudad y no por clase, asi que hay que mudarlo con el.
   expect(mundos.map((m) => m.seLlama)).toEqual([
-    'Papá Inodoro', 'el Abuelo', 'Doña Zully', 'Martín Malvado', 'Jean Luke',
-    'el Tío Camilo', 'Chad', 'Simón Malvado',
+    'Simón Malvado', 'Papá Inodoro', 'Doña Zully', 'Martín Malvado', 'Jean Luke',
+    'el Tío Camilo', 'Chad', 'el Abuelo',
   ]);
 
   expect(errores).toEqual([]);
@@ -1886,7 +2173,7 @@ test('los tres jefes nuevos tiran lo suyo, no lo del jefe del que heredan', asyn
 
   const camilo = await mirar(5, 'orlando', 'lanzarTiroDeJefe');
   const chad = await mirar(6, 'lake-lanier', 'lanzarRelleno');
-  const simon = await mirar(7, 'finca', 'escupirHeladito');
+  const simon = await mirar(0, 'space-coast', 'escupirHeladito');
 
   expect(camilo.jefe).toBe('TioCamilo');
   expect(camilo.tira).toBe('tex-balon');
@@ -1921,7 +2208,7 @@ test('a los jefes de siempre no se les cambio la municion al compartir pelea', a
     );
   };
 
-  const inodoro = await mirar(0, 'space-coast', 'escupirHeladito');
+  const inodoro = await mirar(1, 'medellin', 'escupirHeladito');
   const malvado = await mirar(3, 'miami', 'lanzarRelleno');
   const luke = await mirar(4, 'cartagena', 'lanzarTiroDeJefe');
 
@@ -2263,6 +2550,7 @@ test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ pag
     return {
       estados: [...estados],
       texturas: [...texturas],
+      piel: vaca.piel,
       vencidosAntes: antes,
       vencidosDespues: j.enemigosVencidos,
       derribada: vaca.derribada,
@@ -2274,12 +2562,16 @@ test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ pag
   expect(resultado.estados).toContain('trota');
   expect(resultado.estados).toContain('avisa');
   expect(resultado.estados).toContain('embiste');
-  // el trote se anima: las dos poses de andar salen
-  expect(resultado.texturas).toContain('tex-vaca-anda1');
-  expect(resultado.texturas).toContain('tex-vaca-anda2');
-  expect(resultado.texturas).toContain('tex-vaca-avisa');
+  // El trote se anima: las dos poses de andar salen. Las claves se piden por
+  // el nombre de la POSE, no escritas a mano: ahora hay una piel por mundo y
+  // la clave la arma TEXTURAS.bichoDe, asi que escribirlas aqui era atarse a
+  // como se llaman hoy.
+  const suya = (pose) => `tex-bicho-${resultado.piel}-${pose}`;
+  expect(resultado.texturas).toContain(suya('anda1'));
+  expect(resultado.texturas).toContain(suya('anda2'));
+  expect(resultado.texturas).toContain(suya('avisa'));
   expect(resultado.derribada).toBe(true);
-  expect(resultado.texturaFinal).toBe('tex-vaca-tumbada');
+  expect(resultado.texturaFinal).toBe(suya('tumbada'));
   expect(resultado.apoyada).toBe(true);
   expect(resultado.vencidosDespues).toBe(resultado.vencidosAntes + 1);
   expect(errores).toEqual([]);
@@ -3014,9 +3306,9 @@ test.describe('con el dedo', () => {
     // quien lo haga.
     await tocar(420, 188);
     await esperarEscena(page, 'mundos');
-    // y de ahi, tocando la primera tarjeta de mundo
-    const primero = await sitioDelMundo(page, 0);
-    await tocar(primero.x, primero.y);
+    // y de ahi, tocando la tarjeta del mundo que se este enseñando
+    const tarjeta = await sitioDeLaTarjeta(page);
+    await tocar(tarjeta.x, tarjeta.y);
     await esperarEscena(page, 'relato');
     await tocar(320, 200);
     await esperarEscena(page, 'nivel');
@@ -3061,7 +3353,9 @@ test.describe('con el dedo', () => {
     await esperarEscena(page, 'mundos');
     await page.waitForTimeout(200);
     const enMundos = await textos();
-    expect(enMundos).toContain('Toca el mundo');
+    // Ahora se ensena un mundo a la vez: el aviso habla de deslizar y tocar.
+    expect(enMundos).toContain('Desliza');
+    expect(enMundos).toContain('toca');
     expect(enMundos).not.toMatch(/Enter|Esc|Flechas/);
   });
 
