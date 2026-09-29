@@ -16,7 +16,12 @@ import { aEscalaDeJuego, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo
 import { estrellitas } from '../sistemas/efectos.js';
 import { Menu } from '../sistemas/menu.js';
 import { empezarNivel } from '../sistemas/cuento.js';
-import { anotarPuntaje, puestoDe } from '../sistemas/puntajes.js';
+import {
+  alCambiarTablero,
+  anotarPuntaje,
+  puestoDe,
+  sincronizarTablero,
+} from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
 
 export class EscenaVictoria extends Phaser.Scene {
@@ -247,7 +252,7 @@ export class EscenaVictoria extends Phaser.Scene {
     // puede ser un secreto. Antes esta linea llevaba una gracia del marcador
     // ("prueba con Samaon", "sin un solo golpe"), pero en dos lineas no cabia
     // dentro del panel y esto importa mas.
-    this.add
+    const apuntado = this.add
       .text(cx, cy + 86, this.loApuntado(), {
         fontFamily: FUENTE.familia,
         fontSize: '11px',
@@ -255,6 +260,16 @@ export class EscenaVictoria extends Phaser.Scene {
         align: 'center',
       })
       .setOrigin(0.5);
+
+    // El puesto se dice con lo que sabe este equipo, que puede no ser todo: al
+    // otro nino le pueden haber ganado desde otro aparato. Cuando la nube
+    // contesta, el puesto se corrige aqui mismo.
+    const darseDeBaja = alCambiarTablero(() => {
+      this.puesto = puestoDe(this.partidaId);
+      apuntado.setText(this.loApuntado());
+    });
+    this.events.once('shutdown', darseDeBaja);
+    sincronizarTablero();
   }
 
   loApuntado() {

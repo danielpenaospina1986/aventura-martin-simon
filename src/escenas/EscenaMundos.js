@@ -1,14 +1,17 @@
 // ---------------------------------------------------------------------------
 // ELEGIR MUNDO
 //
-// Despues de elegir personaje se elige A DONDE ir. Los cinco mundos estan
+// Despues de elegir personaje se elige A DONDE ir. Todos los mundos estan
 // abiertos desde el principio: la gracia no es desbloquearlos, es poder volver
 // al que mas guste y seguir sumando puntos.
 //
-// Cada tarjeta es la ILUSTRACION DE FONDO de esa ciudad, recortada con una
-// mascara: es lo que hace que se reconozca de un vistazo sin tener que leer.
+// Cada tarjeta es la ILUSTRACION DE FONDO de esa ciudad, recortada al trozo de
+// en medio: es lo que hace que se reconozca de un vistazo sin tener que leer.
 // Debajo va lo que paga su jefe, que es lo que invita a meterse en los
 // dificiles: el de Space Coast da 100 y cada mundo suma 20 mas.
+//
+// El recorte se hace con setCrop y NO con una mascara: en Phaser 4, setMask no
+// funciona con WebGL (ver mas abajo, donde se monta la tarjeta).
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';

@@ -49,6 +49,7 @@ aventura-martin-simon/
   README.md             portada del repositorio publico
   JUGAR.bat             arranque con doble clic (Windows)
   COMO-JUGAR.txt        controles y reglas, para tener a mano
+  NUBE.md               como encender el tablero compartido (Firebase)
   index.html            contenedor del canvas
   vite.config.js
   CLAUDE.md             esta biblia
@@ -61,10 +62,11 @@ aventura-martin-simon/
       estilo.js         paleta, tipografias y medidas visuales centralizadas
       ciudades.js       el pavimento y las cornisas de cada ciudad
       historia.js       todos los textos del cuento, en un solo sitio
+      nube.js           la direccion del tablero compartido, y nada mas
     escenas/
       EscenaTitulo.js
       EscenaSeleccion.js
-      EscenaMundos.js   a que mundo de los cinco se va
+      EscenaMundos.js   a que mundo se va
       EscenaNivel.js
       EscenaVictoria.js
       EscenaPausa.js
@@ -84,6 +86,7 @@ aventura-martin-simon/
       hud.js            monedas, corazones, vidas y nombre del personaje
       sesion.js         quien esta jugando (el nombre, hasta 10 letras)
       puntajes.js       el tablero de los diez mejores
+      tablero-remoto.js el mismo tablero, pero en la nube
       cuento.js         cuando se cuenta cada cosa
       dibujo.js         fabrica de graficos provisionales (rectangulos)
     assets/
@@ -96,7 +99,7 @@ aventura-martin-simon/
       index.js          la lista de niveles, en orden
       nivel1.js .. nivel5.js   un mapa de texto por tablero
   herramientas/
-    validar-niveles.mjs comprueba que los cinco niveles son terminables
+    validar-niveles.mjs comprueba que todos los niveles son terminables
     generar-niveles.mjs escribe los mapas de src/niveles/
     tratar-fondo.mjs    suaviza la ilustracion de fondo
     preparar-caras.mjs  limpia y recorta las caritas de los ninos
@@ -541,11 +544,11 @@ titulo -> quien juega -> personaje -> MUNDO -> nivel -> victoria
 
 ### Elegir mundo
 
-Los **cinco mundos estan abiertos desde el principio**: la gracia no es
+**Todos los mundos estan abiertos desde el principio**: la gracia no es
 desbloquearlos, es poder volver al que mas guste y seguir sumando. Se elige
 despues del personaje, y tambien desde la pantalla de victoria ("Elegir otro
 mundo"), que **se lleva el marcador**: asi se puede seguir jugando despues de
-pasarse los cinco.
+pasarselos todos.
 
 Cada tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
 en medio, con el nombre en su cinta, **lo que paga su jefe** en una chapita
@@ -584,8 +587,52 @@ pero esto importa mas y en dos lineas no cabia.
 
 El **tablero de mejores puntajes** guarda solo los **diez** mejores: en cuanto
 entra uno nuevo, el que queda en el puesto once se borra, para no ir llenando el
-navegador de partidas viejas. Vive en el navegador de cada equipo, asi que cada
-casa tiene el suyo.
+navegador de partidas viejas.
+
+### Un solo tablero, en la nube
+
+Hay **dos tableros**, y `puntajes.js` los hace parecer uno:
+
+- **El de casa** (`localStorage`), que es el que se pinta. Es instantaneo y
+  funciona sin internet, asi que el juego **nunca espera a nadie**.
+- **El de la nube** (`tablero-remoto.js`), que es el de verdad: el mismo desde
+  el telefono, desde el portatil y desde donde sea.
+
+Se apunta **siempre en los dos**: lo de casa al momento, lo de la nube por
+detras. Cuando la nube contesta, `sincronizarTablero()` funde lo que trae con lo
+de casa y avisa a quien lo este pintando para que lo repinte. Por eso las
+pantallas que lo ensenan (titulo, quien juega y fin de partida) lo pintan **dos
+veces**: primero con lo que sabe el equipo y luego con lo que sabe todo el
+mundo.
+
+Fundir es quedarse con **una fila por partida**, la del mejor puntaje que se le
+conozca, venga de donde venga (`fundirTableros`). Es la misma regla que ya valia
+dentro de un equipo, aplicada a los dos tableros.
+
+Es una base de datos en tiempo real de **Firebase**, y se le habla **por REST,
+con `fetch` pelado**: nada de SDK, que son dos llamadas contadas y el juego ya
+pesa lo suyo con Phaser dentro. Como clave de cada fila va el identificador de
+la partida, asi que lo de "una partida, una fila" sale gratis.
+
+Tres reglas que no se tocan:
+
+1. **Nunca revienta.** Sin internet, con el wifi malo o con Firebase caido, se
+   sigue jugando y se ve el tablero del equipo. Un tablero es un adorno; que un
+   nino no pueda jugar por eso, no.
+2. **Nunca hace esperar.** Todas las llamadas llevan plazo (`NUBE.esperaMs`, 6
+   segundos) y se cortan solas.
+3. **Lo que no sube, no se pierde.** Se queda en una cola en el navegador y se
+   reintenta a la siguiente. De este tablero depende el premio de diciembre:
+   perder la tarde de un nino porque se cayo el wifi no es aceptable.
+
+**Sin direccion configurada todo esto esta apagado** y el juego funciona como
+funcionaba, con el tablero de cada equipo. Como encenderlo (y el reglamento que
+hay que pegar en Firebase) esta en `NUBE.md`; la direccion, en
+`src/config/nube.js` y en ningun otro sitio.
+
+Las **pruebas automaticas no hablan con la nube nunca**: abren el juego con
+`?nube=0`. Si no, cada pasada de la suite dejaria partidas inventadas en el
+tablero de verdad de los ninos. Hay una prueba que vigila justo eso.
 
 - **Esc** pausa el nivel y permite volver al menu.
 
@@ -1735,6 +1782,50 @@ baja.
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
 - **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
   mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-28** — El tablero de mejores puntajes **sube a la nube**, a una
+  base de datos en tiempo real de Firebase. Vivia en el `localStorage` de cada
+  equipo, asi que el telefono de Martain y el portatil de Samaon tenian cada uno
+  el suyo y no habia forma de compararlos, que es exactamente lo que hace falta
+  para el premio de diciembre. El de casa **no se va**: es el que se pinta, al
+  instante, y lo de la nube llega despues y repinta. Asi el juego no espera a
+  nadie y sigue funcionando sin internet.
+- **2026-09-28** — Se le habla a Firebase **por REST, con `fetch` pelado**, y no
+  con su SDK: son dos llamadas contadas (subir una fila, bajar diez) y meter el
+  SDK por eso habria engordado un paquete que ya va por 1,5 MB con Phaser
+  dentro. La clave de cada fila es el identificador de la partida, con lo que la
+  regla de "una partida, una fila" sale sola.
+- **2026-09-28** — Lo que no se puede subir **se guarda en una cola** y se
+  reintenta. Sin eso, una tarde entera de juego se perdia si el wifi se caia en
+  el momento justo, que es la misma clase de agujero que ya nos colo el que solo
+  se apuntara al final.
+- **2026-09-28** — Subir una fila no contesta si o no, sino **tres cosas**:
+  subida, fallo (no se llego) y rechazada (se llego y la base dijo que no).
+  Solo se reintenta el fallo. Con un si/no, una fila que la base rechaza —y las
+  rechaza, porque su reglamento no deja BAJAR un puntaje— se quedaba en la cola
+  para siempre y se reintentaba en cada sincronizacion. Por lo mismo, cuando una
+  subida sale bien se saca de la cola lo que hubiera de esa partida: es una
+  version vieja, con menos puntos, que ya no colaria.
+- **2026-09-28** — La direccion de la base **va a la vista** en el juego
+  publicado, y esta bien asi: no es una contrasena, es la puerta. Quien manda es
+  el reglamento de la base (en `NUBE.md`), que solo deja leer y escribir
+  puntajes, con la forma exacta de un puntaje, y que **solo deja subirlos, nunca
+  bajarlos**, con lo que tampoco se pueden borrar filas.
+- **2026-09-28** — Las pruebas abren el juego con **`?nube=0`**. Con la nube
+  encendida, cada `npm run probar` habria escrito una docena de partidas
+  inventadas en el tablero DE VERDAD de los ninos, y ademas se habria traido sus
+  puntajes reales a mitad de una medida. Hay una prueba que comprueba que la
+  nube esta apagada, que es la red de seguridad de todas las demas.
+- **2026-09-28** — Para poder probar la nube sin tocar Firebase, `nube.js`
+  expone `apuntarLaNubeA(url)` y las pruebas cambian `window.fetch` por una nube
+  de mentira. Asi se puede comprobar lo que de verdad importa —que lo que no
+  sube se encola, que se reintenta, que una partida de cero puntos no se sube y
+  que con la nube colgada el juego sigue— sin depender de que haya internet.
+- **2026-09-28** — Los tableros que se pintan se meten en `loQueDeje()`, un
+  ayudante de `dibujo.js` que mira la lista de la escena antes y despues de
+  pintar y devuelve lo que quedo puesto. Es lo que permite **repintar** el
+  tablero cuando contesta la nube sin ir recogiendo objeto a objeto: un tablero
+  son tres docenas de textos sueltos MAS el panel, que lo dibuja `panelDeco` y
+  no pasa por las manos de la escena.
 - **2026-09-28** — La prueba que pisa a los jefes **con las teclas** pide 180 s
   de plazo: son cinco ciudades por cuatro carrerillas, cada una con su salto
   entero en tiempo de reloj, y con el minuto de casa se quedaba al filo. Ojo con

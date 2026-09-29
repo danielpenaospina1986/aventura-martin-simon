@@ -10,8 +10,8 @@
 import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
-import { panelDeco } from '../sistemas/dibujo.js';
-import { mejoresPuntajes } from '../sistemas/puntajes.js';
+import { loQueDeje, panelDeco } from '../sistemas/dibujo.js';
+import { alCambiarTablero, mejoresPuntajes, sincronizarTablero } from '../sistemas/puntajes.js';
 import { segunElMando } from '../sistemas/tactil.js';
 
 // Donde cae el cartel del titulo dentro de la ilustracion, en tanto por uno.
@@ -84,12 +84,29 @@ export class EscenaTitulo extends Phaser.Scene {
     });
 
     // --- y debajo, a quien hay que ganarle ---
-    this.pintarMejores(centroX, anchoCaja, centroY + altoCaja / 2 + 12, alto);
+    this.montarMejores(centroX, anchoCaja, centroY + altoCaja / 2 + 12, alto);
 
     const comenzar = () => this.scene.start('nombre');
     this.input.keyboard.once('keydown-ENTER', comenzar);
     this.input.keyboard.once('keydown-SPACE', comenzar);
     this.input.once('pointerdown', comenzar);
+  }
+
+  // El tablero se pinta DOS veces: al momento con lo que hay guardado en este
+  // equipo, y otra vez si la nube contesta con algo distinto. Asi la pantalla
+  // sale al instante y encima acaba ensenando el tablero de verdad, el que se
+  // ve igual desde el telefono y desde el portatil.
+  montarMejores(centroX, anchoCaja, arriba, altoPantalla) {
+    const repintar = () => {
+      if (this.piezasMejores) this.piezasMejores.forEach((pieza) => pieza.destroy());
+      this.piezasMejores = loQueDeje(this, () =>
+        this.pintarMejores(centroX, anchoCaja, arriba, altoPantalla));
+    };
+
+    repintar();
+    const darseDeBaja = alCambiarTablero(repintar);
+    this.events.once('shutdown', darseDeBaja);
+    sincronizarTablero();
   }
 
   // El tablero de los mejores, colgado debajo de la caja de empezar. Si no cabe

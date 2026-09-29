@@ -866,6 +866,20 @@ export function panelDeco(escena, x, y, ancho, alto, opciones = {}) {
   return g;
 }
 
+// Pinta algo y devuelve TODO lo que dejo puesto en la escena, para poder
+// borrarlo y volver a pintarlo cuando cambie lo que representa.
+//
+// Lo pide el tablero de mejores puntajes, que se pinta al momento con lo de
+// casa y se repinta cuando contesta la nube. Se mira el antes y el despues de
+// la lista de la escena en vez de ir recogiendo objeto a objeto porque un
+// tablero son tres docenas de textos sueltos MAS el panel, que lo dibuja
+// `panelDeco` y no pasa por aqui.
+export function loQueDeje(escena, pintar) {
+  const antes = new Set(escena.children.list);
+  pintar();
+  return escena.children.list.filter((objeto) => !antes.has(objeto));
+}
+
 // Fondo de los menus: la portada, ya desenfocada de antemano, a pantalla
 // completa. Encima lleva un velo OSCURO y suave, no blanco: oscurecer mantiene
 // los colores de la ilustracion y da contraste al texto claro, mientras que el

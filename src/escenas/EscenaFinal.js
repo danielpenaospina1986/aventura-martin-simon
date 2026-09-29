@@ -11,10 +11,15 @@ import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
+import { loQueDeje, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
 import { Menu } from '../sistemas/menu.js';
 import { empezarNivel } from '../sistemas/cuento.js';
-import { anotarPuntaje, mejoresPuntajes } from '../sistemas/puntajes.js';
+import {
+  alCambiarTablero,
+  anotarPuntaje,
+  mejoresPuntajes,
+  sincronizarTablero,
+} from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
 import { AVISOS } from '../config/historia.js';
 
@@ -82,7 +87,7 @@ ${datos.nombre} llegó hasta ${this.nombreNivel} con ${this.monedas} puntos`,
       )
       .setOrigin(0.5);
 
-    this.pintarTabla(ancho / 2, 200);
+    this.montarTabla(ancho / 2, 200);
 
     const menu = new Menu(this, [
       {
@@ -92,6 +97,21 @@ ${datos.nombre} llegó hasta ${this.nombreNivel} con ${this.monedas} puntos`,
       { etiqueta: 'Cambiar personaje', alElegir: () => this.scene.start('seleccion') },
     ], { y: 318, separacion: 26 });
     this.menu = menu;
+  }
+
+  // Esta es LA pantalla del tablero, asi que aqui importa mas que en ninguna
+  // otra que acabe ensenando el de la nube: es donde el nino mira si le gano al
+  // otro. Se pinta el de casa al momento y se repinta cuando la nube contesta.
+  montarTabla(cx, cy) {
+    const repintar = () => {
+      if (this.piezasTabla) this.piezasTabla.forEach((pieza) => pieza.destroy());
+      this.piezasTabla = loQueDeje(this, () => this.pintarTabla(cx, cy));
+    };
+
+    repintar();
+    const darseDeBaja = alCambiarTablero(repintar);
+    this.events.once('shutdown', darseDeBaja);
+    sincronizarTablero();
   }
 
   // El tablero de mejores: solo caben diez, y el que hace el ultimo puntaje se

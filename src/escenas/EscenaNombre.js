@@ -11,10 +11,10 @@
 import Phaser from 'phaser';
 import { MUNDO, RENDER } from '../config/ajustes.js';
 import { COLORES, FUENTE } from '../config/estilo.js';
-import { pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
+import { loQueDeje, pintarFondoDeMenu, panelDeco } from '../sistemas/dibujo.js';
 import { hayTactil } from '../sistemas/tactil.js';
 import { LARGO_MAXIMO, guardarNombre, limpiarNombre, nombreDeSesion } from '../sistemas/sesion.js';
-import { mejoresPuntajes } from '../sistemas/puntajes.js';
+import { alCambiarTablero, mejoresPuntajes, sincronizarTablero } from '../sistemas/puntajes.js';
 
 export class EscenaNombre extends Phaser.Scene {
   constructor() {
@@ -92,7 +92,7 @@ export class EscenaNombre extends Phaser.Scene {
       .setOrigin(0.5);
 
     if (this.conTeclado) this.pintarTecladoEnPantalla(ancho / 2, 186);
-    else this.pintarTabla(ancho / 2, 250);
+    else this.montarTabla(ancho / 2, 250);
     this.pintar();
     this.escucharTeclado();
   }
@@ -216,6 +216,19 @@ export class EscenaNombre extends Phaser.Scene {
     }
     guardarNombre(limpio);
     this.scene.start('seleccion');
+  }
+
+  // Se pinta con lo de casa al momento, y se repinta si la nube trae otra cosa.
+  montarTabla(cx, cy) {
+    const repintar = () => {
+      if (this.piezasTabla) this.piezasTabla.forEach((pieza) => pieza.destroy());
+      this.piezasTabla = loQueDeje(this, () => this.pintarTabla(cx, cy));
+    };
+
+    repintar();
+    const darseDeBaja = alCambiarTablero(repintar);
+    this.events.once('shutdown', darseDeBaja);
+    sincronizarTablero();
   }
 
   // Los mejores, para que se vea a quien hay que ganarle.

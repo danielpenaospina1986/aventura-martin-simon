@@ -25,7 +25,13 @@ async function abrirJuego(page, extra = '') {
   // densidad 1 a proposito: aqui el navegador dibuja por software, sin tarjeta
   // grafica, y con la densidad de verdad se queda en 20 fotogramas por segundo.
   // Lo que se prueba es la logica del juego, no lo nitido que se ve.
-  await page.goto(`/?densidad=1${extra}`);
+  //
+  // Y nube 0 a proposito tambien: el tablero de puntajes de las pruebas tiene
+  // que ser el del navegador y nada mas. Con la nube encendida, cada pasada de
+  // la suite escribiria partidas inventadas en el tablero DE VERDAD de los
+  // ninos, del que depende el premio de diciembre, y ademas se traeria los
+  // puntajes reales a mitad de una medida.
+  await page.goto(`/?densidad=1&nube=0${extra}`);
   await page.waitForFunction(() => window.juego && window.juego.isRunning, null, {
     timeout: 20000,
   });
@@ -1853,6 +1859,14 @@ test('acabar un mundo apunta el puntaje, sin tener que morirse', async ({ page }
     borrarPuntajes();
     const n = window.juego.scene.getScene('nivel');
     const j = n.jugadores[0];
+
+    // Tocar la meta no es instantaneo: hace falta que la fisica vea el solape,
+    // y con la suite entera por delante eso son varios fotogramas. En ese rato
+    // le puede caer encima una paloma y el puntaje ya no seria 250. Se apagan
+    // los voladores y las vacas mientras dura la medida.
+    n.proximaPaloma = Number.MAX_SAFE_INTEGER;
+    n.proximaVaca = Number.MAX_SAFE_INTEGER;
+
     j.monedas = 250;
     // se quita el jefe de en medio y se toca la meta
     if (n.jefe) {
@@ -1863,7 +1877,6 @@ test('acabar un mundo apunta el puntaje, sin tener que morirse', async ({ page }
     j.setPosition(n.nivel.meta.x, n.nivel.meta.y);
   });
   await esperarEscena(page, 'victoria');
-  await page.waitForTimeout(400);
 
   const apuntado = await page.evaluate(async () => {
     const { mejoresPuntajes } = await import('/src/sistemas/puntajes.js');
@@ -2051,8 +2064,8 @@ test('la paloma también vuela a la altura del segundo piso', async ({ page }) =
 test('pasarse el juego entero también apunta el puntaje', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
-  const resultado = await page.evaluate(async () => {
-    const { borrarPuntajes, mejoresPuntajes } = await import('/src/sistemas/puntajes.js');
+  await page.evaluate(async () => {
+    const { borrarPuntajes } = await import('/src/sistemas/puntajes.js');
     const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
     borrarPuntajes();
 
@@ -2066,7 +2079,16 @@ test('pasarse el juego entero también apunta el puntaje', async ({ page }) => {
       jefesDerrotados: 5,
       enemigosVencidos: 4,
     });
-    await new Promise((r) => setTimeout(r, 900));
+  });
+
+  // Se espera a que la escena ESTE, no 900 ms de reloj. Con la suite entera por
+  // delante el navegador va lento, la pantalla de victoria no habia llegado a
+  // montarse y la prueba leia un tablero todavia vacio. Es la regla de casa
+  // desde hace tiempo y esta se habia quedado sin aplicar.
+  await esperarEscena(page, 'victoria');
+
+  const resultado = await page.evaluate(async () => {
+    const { mejoresPuntajes } = await import('/src/sistemas/puntajes.js');
     return { tabla: mejoresPuntajes() };
   });
 
@@ -2162,7 +2184,7 @@ test('los textos se dibujan a la densidad del render, no a 1x', async ({ page })
   // Esta se abre a densidad 3 a proposito: a 1 no probaria nada, porque
   // "resolucion 1" seria lo correcto y lo roto a la vez. Aqui no se juega, solo
   // se miran propiedades, asi que el navegador lento no estorba.
-  await page.goto('/?densidad=3');
+  await page.goto('/?densidad=3&nube=0');
   await page.waitForFunction(() => window.juego && window.juego.isRunning, null, {
     timeout: 20000,
   });
@@ -2242,6 +2264,323 @@ test('el marcador de victoria cabe en su panel y no pisa el menu', async ({ page
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// EL TABLERO DE LA NUBE
+//
+// El tablero vivia en el navegador de cada equipo, asi que el telefono de
+// Martain y el portatil de Samaon tenian cada uno el suyo y no habia forma de
+// compararlos. De este tablero depende el premio de diciembre, asi que lo que
+// se comprueba aqui es que NO SE PIERDE NADA: ni cuando la nube contesta, ni
+// cuando no contesta, ni cuando se cae el wifi a mitad.
+//
+// Ninguna de estas pruebas habla con Firebase: se le pone al juego una nube de
+// mentira cambiando `window.fetch`, y al acabar se deja todo como estaba.
+// ---------------------------------------------------------------------------
+
+test('las pruebas nunca hablan con la nube de verdad', async ({ page }) => {
+  await abrirJuego(page);
+
+  // Esta es la red de seguridad de todas las demas: con la nube encendida, cada
+  // pasada de la suite dejaria partidas inventadas en el tablero DE VERDAD de
+  // los ninos. `abrirJuego` abre siempre con ?nube=0, y esto lo vigila.
+  const apagada = await page.evaluate(async () => {
+    const { hayNube } = await import('/src/config/nube.js');
+    return hayNube();
+  });
+
+  expect(apagada).toBe(false);
+});
+
+test('el tablero de casa y el de la nube se ven como uno solo', async ({ page }) => {
+  await abrirJuego(page);
+
+  const fundido = await page.evaluate(async () => {
+    const { fundirTableros } = await import('/src/sistemas/puntajes.js');
+
+    const deCasa = [
+      { nombre: 'MARTIN', puntos: 300, partida: 'p1', fecha: 2 },
+      { nombre: 'MARTIN', puntos: 150, partida: 'p3', fecha: 5 },
+    ];
+    // la nube sabe mas de p1: se siguio jugando desde el telefono
+    const deLaNube = [
+      { nombre: 'MARTIN', puntos: 520, partida: 'p1', fecha: 3 },
+      { nombre: 'SAMAON', puntos: 410, partida: 'p2', fecha: 4 },
+    ];
+
+    return fundirTableros(deCasa, deLaNube).map((f) => ({
+      nombre: f.nombre,
+      puntos: f.puntos,
+      partida: f.partida,
+    }));
+  });
+
+  // una partida, UNA fila, con el mejor puntaje que se le conozca
+  expect(fundido).toEqual([
+    { nombre: 'MARTIN', puntos: 520, partida: 'p1' },
+    { nombre: 'SAMAON', puntos: 410, partida: 'p2' },
+    { nombre: 'MARTIN', puntos: 150, partida: 'p3' },
+  ]);
+});
+
+test('al fundir los dos tableros siguen cabiendo solo diez', async ({ page }) => {
+  await abrirJuego(page);
+
+  const salio = await page.evaluate(async () => {
+    const { fundirTableros } = await import('/src/sistemas/puntajes.js');
+    const monton = (desde, cuantas) =>
+      Array.from({ length: cuantas }, (nada, i) => ({
+        nombre: `J${desde + i}`,
+        puntos: (desde + i) * 10,
+        partida: `p${desde + i}`,
+        fecha: desde + i,
+      }));
+    const todas = fundirTableros(monton(1, 9), monton(10, 9));
+    return { cuantas: todas.length, mejor: todas[0].puntos };
+  });
+
+  expect(salio.cuantas).toBe(10);
+  expect(salio.mejor).toBe(180);
+});
+
+test('lo que no se pudo subir se guarda y se reintenta cuando vuelve el internet', async ({
+  page,
+}) => {
+  await abrirJuego(page);
+
+  const resultado = await page.evaluate(async () => {
+    const nube = await import('/src/config/nube.js');
+    const puntajes = await import('/src/sistemas/puntajes.js');
+
+    const deVerdad = window.fetch;
+    const idas = [];
+    let hayInternet = false;
+
+    window.fetch = async (url, opciones = {}) => {
+      const metodo = (opciones && opciones.method) || 'GET';
+      idas.push({ url: String(url), metodo });
+      if (!hayInternet) throw new Error('sin internet');
+      return { ok: true, json: async () => ({}) };
+    };
+
+    try {
+      puntajes.borrarPuntajes();
+      nube.apuntarLaNubeA('https://tablero-de-mentira.invalid');
+
+      const mia = puntajes.nuevaPartida();
+      puntajes.anotarPuntaje('MARTIN', 250, { nivel: 1, partida: mia });
+      // la subida va por detras: se le da un momento para que falle y encole
+      await new Promise((listo) => setTimeout(listo, 80));
+
+      const enCola = JSON.parse(
+        window.localStorage.getItem('aventura-nube-pendientes') || '[]',
+      );
+
+      // vuelve el wifi
+      hayInternet = true;
+      await puntajes.sincronizarTablero();
+
+      return {
+        encoladas: enCola.map((f) => f.puntos),
+        // el tablero de casa no se entero de nada de esto
+        deCasa: puntajes.mejoresPuntajes().length,
+        quedanPendientes: JSON.parse(
+          window.localStorage.getItem('aventura-nube-pendientes') || '[]',
+        ).length,
+        subida: idas.some(
+          (i) => i.metodo === 'PUT' && i.url.includes('/puntajes/' + mia + '.json'),
+        ),
+      };
+    } finally {
+      window.fetch = deVerdad;
+      nube.apuntarLaNubeA();
+      puntajes.borrarPuntajes();
+    }
+  });
+
+  // se cayo el wifi, pero la partida no se perdio
+  expect(resultado.encoladas).toEqual([250]);
+  expect(resultado.deCasa).toBe(1);
+  // y al volver, se subio y la cola quedo limpia
+  expect(resultado.subida).toBe(true);
+  expect(resultado.quedanPendientes).toBe(0);
+});
+
+test('una fila que la base rechaza no se queda taponando la cola', async ({ page }) => {
+  await abrirJuego(page);
+
+  const resultado = await page.evaluate(async () => {
+    const nube = await import('/src/config/nube.js');
+    const puntajes = await import('/src/sistemas/puntajes.js');
+
+    const deVerdad = window.fetch;
+    let comoContesta = 'caida';
+
+    window.fetch = async (url, opciones = {}) => {
+      const metodo = (opciones && opciones.method) || 'GET';
+      if (metodo !== 'PUT') return { ok: true, json: async () => ({}) };
+      if (comoContesta === 'caida') throw new Error('sin internet');
+      // la base contesta, y dice que no: el reglamento no deja bajar un puntaje
+      return { ok: false, status: 401, json: async () => ({}) };
+    };
+
+    try {
+      puntajes.borrarPuntajes();
+      nube.apuntarLaNubeA('https://tablero-de-mentira.invalid');
+
+      puntajes.anotarPuntaje('MARTIN', 90, { nivel: 1, partida: puntajes.nuevaPartida() });
+      await new Promise((listo) => setTimeout(listo, 80));
+      const trasCaerse = JSON.parse(
+        window.localStorage.getItem('aventura-nube-pendientes') || '[]',
+      ).length;
+
+      // vuelve el internet, pero la base la rechaza
+      comoContesta = 'rechaza';
+      await puntajes.sincronizarTablero();
+      const trasElRechazo = JSON.parse(
+        window.localStorage.getItem('aventura-nube-pendientes') || '[]',
+      ).length;
+
+      return { trasCaerse, trasElRechazo };
+    } finally {
+      window.fetch = deVerdad;
+      nube.apuntarLaNubeA();
+      puntajes.borrarPuntajes();
+    }
+  });
+
+  // sin internet se guarda, que eso es culpa del camino
+  expect(resultado.trasCaerse).toBe(1);
+  // pero si la base la rechaza, se tira: reintentarla es quedarsela para
+  // siempre y dejar detras a todas las que si podrian subir
+  expect(resultado.trasElRechazo).toBe(0);
+});
+
+test('una partida de cero puntos no se sube: no hay nada que rastrear', async ({ page }) => {
+  await abrirJuego(page);
+
+  const puso = await page.evaluate(async () => {
+    const nube = await import('/src/config/nube.js');
+    const puntajes = await import('/src/sistemas/puntajes.js');
+
+    const deVerdad = window.fetch;
+    const idas = [];
+    window.fetch = async (url, opciones = {}) => {
+      idas.push((opciones && opciones.method) || 'GET');
+      return { ok: true, json: async () => ({}) };
+    };
+
+    try {
+      puntajes.borrarPuntajes();
+      nube.apuntarLaNubeA('https://tablero-de-mentira.invalid');
+
+      puntajes.anotarPuntaje('NADIE', 0, { nivel: 1, partida: puntajes.nuevaPartida() });
+      await new Promise((listo) => setTimeout(listo, 80));
+      const sinPuntos = idas.filter((m) => m === 'PUT').length;
+
+      puntajes.anotarPuntaje('MARTIN', 12, { nivel: 1, partida: puntajes.nuevaPartida() });
+      await new Promise((listo) => setTimeout(listo, 80));
+
+      return { sinPuntos, conPuntos: idas.filter((m) => m === 'PUT').length };
+    } finally {
+      window.fetch = deVerdad;
+      nube.apuntarLaNubeA();
+      puntajes.borrarPuntajes();
+    }
+  });
+
+  expect(puso.sinPuntos).toBe(0);
+  expect(puso.conPuntos).toBe(1);
+});
+
+test('si la nube no contesta, el juego sigue con el tablero de casa', async ({ page }) => {
+  await abrirJuego(page);
+
+  const resultado = await page.evaluate(async () => {
+    const nube = await import('/src/config/nube.js');
+    const puntajes = await import('/src/sistemas/puntajes.js');
+
+    const deVerdad = window.fetch;
+    // una nube que se queda colgada para siempre: es el caso peor
+    window.fetch = (url, opciones = {}) =>
+      new Promise((nada, mal) => {
+        const senal = opciones && opciones.signal;
+        if (senal) senal.addEventListener('abort', () => mal(new Error('se acabo el plazo')));
+      });
+
+    try {
+      puntajes.borrarPuntajes();
+      nube.apuntarLaNubeA('https://tablero-de-mentira.invalid');
+      puntajes.anotarPuntaje('MARTIN', 480, { nivel: 2, partida: puntajes.nuevaPartida() });
+
+      // no puede quedarse esperando para siempre ni puede reventar
+      const desde = Date.now();
+      const tabla = await puntajes.sincronizarTablero();
+      return { puntos: tabla.map((f) => f.puntos), tardo: Date.now() - desde };
+    } finally {
+      window.fetch = deVerdad;
+      nube.apuntarLaNubeA();
+      puntajes.borrarPuntajes();
+    }
+  });
+
+  expect(resultado.puntos).toEqual([480]);
+  // se corta sola por el plazo (6 s), no se queda colgada
+  expect(resultado.tardo).toBeLessThan(20000);
+});
+
+test('cuando contesta la nube, el tablero del titulo se repinta con lo que trae', async ({
+  page,
+}) => {
+  await abrirJuego(page);
+
+  const textos = await page.evaluate(async () => {
+    const nube = await import('/src/config/nube.js');
+    const puntajes = await import('/src/sistemas/puntajes.js');
+
+    const deVerdad = window.fetch;
+    window.fetch = async (url, opciones = {}) => {
+      const metodo = (opciones && opciones.method) || 'GET';
+      if (metodo !== 'GET') return { ok: true, json: async () => ({}) };
+      // lo que hizo el otro nino, desde otro aparato
+      return {
+        ok: true,
+        json: async () => ({
+          pDeOtroAparato: {
+            nombre: 'SAMAON',
+            puntos: 777,
+            personaje: 'Samaon',
+            nivel: 3,
+            fecha: 1,
+          },
+        }),
+      };
+    };
+
+    try {
+      // el tablero de este equipo esta vacio: todo lo que salga viene de la nube
+      puntajes.borrarPuntajes();
+      nube.apuntarLaNubeA('https://tablero-de-mentira.invalid');
+
+      window.juego.scene.start('titulo');
+      await new Promise((listo) => setTimeout(listo, 700));
+
+      return window.juego.scene
+        .getScene('titulo')
+        .children.list.filter((o) => o.type === 'Text')
+        .map((o) => o.text);
+    } finally {
+      window.fetch = deVerdad;
+      nube.apuntarLaNubeA();
+      puntajes.borrarPuntajes();
+    }
+  });
+
+  const todo = textos.join(' | ');
+  expect(todo).toContain('SAMAON');
+  expect(todo).toContain('777');
+});
+
 
 // ---------------------------------------------------------------------------
 // LOS MANDOS TACTILES
