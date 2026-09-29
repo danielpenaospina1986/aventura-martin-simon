@@ -397,6 +397,23 @@ export const JEFE = {
   ancho: 172,
   alto: 172,
   caja: { ancho: 148, alto: 104 },
+
+  // La barra de vida: un puntito por cada golpe que aguanta, sobre una chapa
+  // oscura.
+  //
+  // Es DISCRETA a proposito. Antes los puntos median 22 px de ancho y se
+  // repartian cada 34, asi que la barra de Martin Malvado —que aguanta ocho—
+  // medi­a 288 px: casi media pantalla, y mas ancha que el propio jefe, que mide
+  // 172. Pesaba mas a la vista que el bicho al que hay que mirar. Ahora la de
+  // ocho se queda en 148 px, por debajo del ancho del jefe.
+  barra: {
+    radio: 6,           // la mitad de lo que medi­an
+    grosorPunto: 2,
+    separacion: 17,
+    altoChapa: 18,
+    margenChapa: 12,    // lo que sobresale la chapa por los lados
+    sobreLaCabeza: 16,  // a que altura va por encima del dibujo
+  },
 };
 
 export const ENEMIGO = {

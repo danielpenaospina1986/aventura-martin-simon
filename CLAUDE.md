@@ -1827,6 +1827,21 @@ baja.
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
 - **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
   mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-28** — La **barra de vida del jefe se achica a la mitad**. Los
+  puntitos median 22 px y se repartian cada 34, asi que la de Martin Malvado
+  —que aguanta ocho— medi­a 288 px: casi media pantalla y mas ancha que el
+  propio jefe, que mide 172. Pesaba mas a la vista que el bicho al que hay que
+  mirar, que es justo lo contrario de lo que tiene que hacer. Ahora la de ocho
+  se queda en 148. Sus medidas viven en `JEFE.barra` y hay una prueba que
+  comprueba, en los ocho mundos, que la barra cabe dentro del ancho del jefe.
+- **2026-09-28** — El **encuadre vertical del fondo pasa a ser por ciudad**
+  (`fondoBajada`, en `ciudades.js`). El dibujo de Orlando trae el horizonte muy
+  abajo —la masa de suelo empieza al 66% de la lamina— y con el encuadre de casa
+  el piso del juego tapaba desde el 54%: se comia justo la franja donde estan
+  las bases del castillo y de las montanas rusas, asi que el castillo se veia
+  cortado y de la ilustracion no se apreciaba casi nada. Subiendolo, su linea de
+  suelo cae sobre la del juego. El valor se sujeta entre -0,5 y 0,5: fuera de
+  ahi se asomaria el borde de la lamina.
 - **2026-09-28** — **Orlando sale de la obra**: estrena fondo propio (el
   horizonte de los parques, con su cielo de rayos art deco) y jefe propio, **el
   Tio Camilo**, un diablo colorado con la cara del tio y el escudo de su equipo

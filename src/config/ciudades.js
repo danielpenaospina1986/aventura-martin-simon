@@ -156,6 +156,13 @@ CIUDADES.orlando = {
   pavimento: { patron: 'baldosa', claro: 0xd9c8b4, medio: 0xbfac96, oscuro: 0x968573 },
   subsuelo: { patron: 'estratos', claro: 0xa89a88, medio: 0x8e8171, oscuro: 0x6b6156 },
   cornisa: { cuerpo: 0x8fb6c4, borde: 0x40646f },
+
+  // Su dibujo trae el horizonte MUY abajo: la masa de suelo empieza al 66% de
+  // la lamina, y con el encuadre de casa el piso del juego tapaba desde el 54%.
+  // O sea que se comia justo la franja donde estan las bases del castillo y de
+  // las montanas rusas, y el castillo se veia cortado. Subiendo el dibujo, su
+  // linea de suelo cae sobre la del juego, que es donde tiene que estar.
+  fondoBajada: -0.06,
 };
 
 // Los dos que SIGUEN en obra. No tienen nada propio: se les presta el pavimento

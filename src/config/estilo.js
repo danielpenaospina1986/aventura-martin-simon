@@ -309,7 +309,15 @@ export const PLANOS = {
   fondo: {
     velocidad: 0.16,     // 1 seria moverse con la camara
     ampliacionMaxima: 2, // cuanto se puede agrandar para cubrir el recorrido
-    bajada: 0.18,        // se baja un poco, que abajo lo tapa el terreno
+
+    // Donde se encuadra la ilustracion a lo alto. Es cuanto del sobrante se
+    // deja por ABAJO: subirlo empuja el dibujo hacia abajo (se ve mas cielo) y
+    // bajarlo lo sube (se ve mas suelo). Entre -0,5 y 0,5; fuera de ahi se
+    // asomaria el borde de la lamina.
+    //
+    // Cada ciudad puede pedir el suyo (`fondoBajada`, en `ciudades.js`) cuando
+    // su dibujo tenga el horizonte mas alto o mas bajo de lo normal.
+    bajada: 0.18,
   },
   // DETRAS DEL MUNDO: decorado grande que pasa por detras del nino y del
   // suelo. Mas lejos que el mundo, mas cerca que la ilustracion de fondo.

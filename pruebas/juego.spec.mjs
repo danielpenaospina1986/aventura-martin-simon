@@ -2284,6 +2284,47 @@ test('pasarse el juego entero también apunta el puntaje', async ({ page }) => {
   expect(resultado.tabla[0].puntos).toBe(77);
 });
 
+test('la barra de vida del jefe nunca pesa mas que el jefe', async ({ page }) => {
+  // Lo pidio Daniel: los puntitos eran tan gordos que la barra del que aguanta
+  // ocho media 288 px —casi media pantalla, y mas ancha que el propio jefe, que
+  // mide 172—, asi que a veces pesaba mas a la vista que el bicho al que hay
+  // que mirar. Se comprueba en el PEOR caso, que es el de mas golpes.
+  await entrarAlNivel(page, 'martin');
+
+  const barras = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const salida = [];
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      // se espera a que el tablero este montado y con su jefe puesto
+      for (let v = 0; v < 120; v += 1) {
+        const n = window.juego.scene.getScene('nivel');
+        if (n && n.jefe && n.jefe.chapa && n.datosNivel && n.indiceNivel === i) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+      if (!n.jefe || !n.jefe.chapa) continue;
+      salida.push({
+        ciudad: n.datosNivel.fondo,
+        golpes: n.jefe.vidasMaximas,
+        barra: Math.round(n.jefe.chapa.width),
+        jefe: Math.round(n.jefe.displayWidth),
+      });
+    }
+    return salida;
+  });
+
+  expect(barras.length).toBeGreaterThan(5);
+  barras.forEach((b) => {
+    // la barra cabe dentro del ancho del jefe
+    expect(b.barra).toBeLessThanOrEqual(b.jefe);
+    // y no se come la pantalla: menos de un cuarto de los 640 de ancho
+    expect(b.barra).toBeLessThan(160);
+    // pero sigue teniendo un puntito por golpe, que para eso esta
+    expect(b.golpes).toBeGreaterThan(0);
+  });
+});
+
 test('la barra del jefe solo se ve cuando el jefe esta en cuadro', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 

@@ -80,6 +80,9 @@ export class EscenaNivel extends Phaser.Scene {
     const { ancho, alto } = MUNDO;
     this.fondo = pintarFondo(this, ancho, alto, {
       textura: TEXTURAS.fondoDe(this.datosNivel.fondo || ''),
+      // Cada ciudad puede pedir su encuadre, si su dibujo trae el horizonte
+      // mas alto o mas bajo de lo normal.
+      bajada: ciudadDe(this.datosNivel.fondo || '').fondoBajada,
     });
 
     this.datosPersonaje = PERSONAJES[this.personajeId] || PERSONAJES.martin;
