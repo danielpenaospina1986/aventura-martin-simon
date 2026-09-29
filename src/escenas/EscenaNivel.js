@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import Phaser from 'phaser';
-import { premioDeJefe, AGUA, GLOBO, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
+import { premioDeJefe, AGUA, TIRO_DE_JEFE, CAMARA, CHORRO, ENEMIGO, RELLENO, HELADITO, JEFE, JUGADOR, LANZAMIENTO, CANASTILLA, MUNDO, PALOMA, PUNTOS, RENDER, SOMBRILLA, VACA, TORRE, VIDA } from '../config/ajustes.js';
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { PERSONAJES } from '../config/personajes.js';
 import { Controles, PERFILES } from '../sistemas/controles.js';
@@ -29,6 +29,16 @@ import { Paloma } from '../entidades/Paloma.js';
 import { Vaca } from '../entidades/Vaca.js';
 
 const C = MUNDO.casilla;
+
+// Con que se dibuja un tiro cuando el jefe no dice de que es el suyo. No
+// deberia hacer falta nunca (los dos jefes que tiran cosas traen su `municion`),
+// pero un jefe nuevo al que se le olvide preferimos que tire globos de agua a
+// que reviente la partida por un sprite sin textura.
+const MUNICION_DE_RESPALDO = {
+  quieta: TEXTURAS.globo,
+  vuela: TEXTURAS.globoVuela,
+  seRompe: TEXTURAS.globoRevienta,
+};
 
 export class EscenaNivel extends Phaser.Scene {
   constructor() {
@@ -70,6 +80,9 @@ export class EscenaNivel extends Phaser.Scene {
     const { ancho, alto } = MUNDO;
     this.fondo = pintarFondo(this, ancho, alto, {
       textura: TEXTURAS.fondoDe(this.datosNivel.fondo || ''),
+      // Cada ciudad puede pedir su encuadre, si su dibujo trae el horizonte
+      // mas alto o mas bajo de lo normal.
+      bajada: ciudadDe(this.datosNivel.fondo || '').fondoBajada,
     });
 
     this.datosPersonaje = PERSONAJES[this.personajeId] || PERSONAJES.martin;
@@ -102,8 +115,15 @@ export class EscenaNivel extends Phaser.Scene {
     this.canastillas = this.physics.add.group({ allowGravity: false });
     // los pegotes de relleno que tira Martin Malvado, en Miami
     this.rellenos = this.physics.add.group();
-    // los globos de agua que tira Jean Luke, el jefe final
-    this.globos = this.physics.add.group({ allowGravity: false });
+    // Lo que tiran los jefes que marchan y recargan: los globos de agua de
+    // Jean Luke y los balones en llamas del Tio Camilo.
+    //
+    // OJO con el nombre: `proyectiles`, a secas, ya son los BLOQUES que lanza
+    // Samaon, unas lineas mas abajo. Llamando a este igual, el segundo pisaba
+    // al primero y lo que tiraba el jefe nacia dentro del grupo de los bloques,
+    // con gravedad y con el choque contra el suelo puesto: se estrellaba en el
+    // sitio, sin volar ni un pixel.
+    this.tirosDeJefe = this.physics.add.group({ allowGravity: false });
     // los heladitos de chocolate de Papa Inodoro: estos SI caen, que su gracia
     // es que salgan en arco y se estrellen
     this.heladitos = this.physics.add.group();
@@ -337,11 +357,11 @@ export class EscenaNivel extends Phaser.Scene {
       });
     });
 
-    // Los globos de agua de Jean Luke.
+    // Lo que tiran los jefes que marchan y recargan.
     this.jugadores.forEach((jugador) => {
-      this.physics.add.overlap(jugador, this.globos, (a, b) => {
+      this.physics.add.overlap(jugador, this.tirosDeJefe, (a, b) => {
         if (jugador.estaCongelado) return;
-        this.romperGlobo(this.globos.contains(a) ? a : b);
+        this.romperTiroDeJefe(this.tirosDeJefe.contains(a) ? a : b);
         this.herirJugador(jugador);
       });
     });
@@ -1104,8 +1124,12 @@ export class EscenaNivel extends Phaser.Scene {
   }
 
   // Un pegote de relleno, que sale rodando por el suelo.
+  // Lo que tira un jefe de torre: un pegote de relleno si es Martin Malvado, un
+  // panqueque si es Chad. Los DIBUJOS los pone el jefe, en su `municion`.
   lanzarRelleno(jefe, direccion) {
-    const relleno = this.rellenos.create(jefe.x + direccion * 40, jefe.y, TEXTURAS.relleno);
+    const municion = jefe.municion || MUNICION_DE_RESPALDO;
+    const relleno = this.rellenos.create(jefe.x + direccion * 40, jefe.y, municion.quieta);
+    relleno.seRompeCon = municion.seRompe;
     relleno.setDisplaySize(RELLENO.ancho, RELLENO.alto).setDepth(8);
     relleno.body.setSize(
       RELLENO.caja.ancho / relleno.scaleX,
@@ -1121,8 +1145,8 @@ export class EscenaNivel extends Phaser.Scene {
       loop: true,
       callback: () => {
         if (!relleno.active) return;
-        const entero = relleno.texture.key === TEXTURAS.relleno;
-        relleno.setTexture(entero ? TEXTURAS.rellenoGira : TEXTURAS.relleno);
+        const entero = relleno.texture.key === municion.quieta;
+        relleno.setTexture(entero ? municion.vuela : municion.quieta);
       },
     });
 
@@ -1140,7 +1164,7 @@ export class EscenaNivel extends Phaser.Scene {
     // destruye enseguida, asi que sin esto el dibujo del pegote reventado no se
     // veria nunca.
     const restos = this.add
-      .image(relleno.x, relleno.y, TEXTURAS.rellenoSplat)
+      .image(relleno.x, relleno.y, relleno.seRompeCon || MUNICION_DE_RESPALDO.seRompe)
       .setDisplaySize(RELLENO.ancho, RELLENO.alto)
       .setDepth(6);
     this.tweens.add({
@@ -1155,40 +1179,65 @@ export class EscenaNivel extends Phaser.Scene {
 
   // --- la arena de Jean Luke ------------------------------------------------
 
-  // Un globo de agua, recto y lento: se le ve venir.
-  lanzarGlobo(jefe) {
+  // Lo que tira un jefe: recto y lento, que se le vea venir.
+  //
+  // Los DIBUJOS no salen de aqui, los pone el jefe en su `municion`: un globo de
+  // agua si es Jean Luke, un balon en llamas si es el Tio Camilo. La pelea es la
+  // misma y por eso el vuelo tambien; lo unico que cambia es lo que se ve.
+  lanzarTiroDeJefe(jefe) {
     const dir = jefe.direccion;
-    const globo = this.globos.create(jefe.x + dir * 60, jefe.y + GLOBO.salidaY, TEXTURAS.globo);
-    globo.setDisplaySize(GLOBO.ancho, GLOBO.alto).setDepth(8);
-    globo.setFlipX(dir < 0);
-    globo.body.setSize(GLOBO.caja.ancho / globo.scaleX, GLOBO.caja.alto / globo.scaleY, true);
-    globo.body.setAllowGravity(false);
-    globo.body.setVelocityX(dir * GLOBO.velocidad);
+    const municion = jefe.municion || MUNICION_DE_RESPALDO;
 
-    // en cuanto sale se estira: la pose de volar es la que lleva las rayas
-    this.time.delayedCall(GLOBO.estiraMs, () => {
-      if (globo.active) globo.setTexture(TEXTURAS.globoVuela);
+    const tiro = this.tirosDeJefe.create(
+      jefe.x + dir * 60,
+      jefe.y + TIRO_DE_JEFE.salidaY,
+      municion.quieta,
+    );
+    tiro.setDisplaySize(TIRO_DE_JEFE.ancho, TIRO_DE_JEFE.alto).setDepth(8);
+    tiro.setFlipX(dir < 0);
+    tiro.body.setSize(
+      TIRO_DE_JEFE.caja.ancho / tiro.scaleX,
+      TIRO_DE_JEFE.caja.alto / tiro.scaleY,
+      true,
+    );
+    tiro.body.setAllowGravity(false);
+    tiro.body.setVelocityX(dir * TIRO_DE_JEFE.velocidad);
+
+    // Se guardan en el propio tiro, que para cuando se rompa el jefe puede
+    // haber caido ya y no habria a quien preguntarle.
+    tiro.seRompeCon = municion.seRompe;
+    tiro.echaChispas = Boolean(municion.echaChispas);
+
+    // en cuanto sale se estira: la pose de volar es la que lleva la estela
+    this.time.delayedCall(TIRO_DE_JEFE.estiraMs, () => {
+      if (tiro.active) tiro.setTexture(municion.vuela);
     });
 
-    this.time.delayedCall(GLOBO.duracionMs, () => globo.active && this.romperGlobo(globo));
-    return globo;
+    this.time.delayedCall(
+      TIRO_DE_JEFE.duracionMs,
+      () => tiro.active && this.romperTiroDeJefe(tiro),
+    );
+    return tiro;
   }
 
-  romperGlobo(globo) {
+  romperTiroDeJefe(globo) {
     if (!globo || !globo.active) return;
-    burbujas(this, globo.x, globo.y, 4);
+    // Un globo de agua suelta burbujas; un balon en llamas, chispas. Ponerle
+    // burbujas al fuego quedaba raro de verdad.
+    if (globo.echaChispas) estrellitas(this, globo.x, globo.y, 5);
+    else burbujas(this, globo.x, globo.y, 4);
 
     // El charco se queda un momento donde reviento. El sprite se destruye
-    // enseguida, asi que sin esto el dibujo del globo reventado no se veria.
-    const charco = this.add
-      .image(globo.x, globo.y, TEXTURAS.globoRevienta)
-      .setDisplaySize(GLOBO.anchoCharco, GLOBO.altoCharco)
+    // enseguida, asi que sin esto el dibujo de lo reventado no se veria.
+    const marca = this.add
+      .image(globo.x, globo.y, globo.seRompeCon || MUNICION_DE_RESPALDO.seRompe)
+      .setDisplaySize(TIRO_DE_JEFE.anchoMarca, TIRO_DE_JEFE.altoMarca)
       .setDepth(6);
     this.tweens.add({
-      targets: charco,
+      targets: marca,
       alpha: { from: 1, to: 0 },
-      duration: GLOBO.charcoMs,
-      onComplete: () => charco.destroy(),
+      duration: TIRO_DE_JEFE.marcaMs,
+      onComplete: () => marca.destroy(),
     });
 
     globo.destroy();
@@ -1197,13 +1246,17 @@ export class EscenaNivel extends Phaser.Scene {
   // --- la arena de Papa Inodoro ---------------------------------------------
 
   // Un heladito de chocolate, que sale de la boca en arco y da tumbos.
+  // Lo que escupe un jefe que ronda y embiste: un heladito de chocolate si es
+  // Papa Inodoro, un juguete si es Simon Malvado. Los DIBUJOS los pone el jefe.
   escupirHeladito(jefe) {
     const dir = jefe.direccion;
+    const municion = jefe.municion || MUNICION_DE_RESPALDO;
     const heladito = this.heladitos.create(
       jefe.x + dir * HELADITO.salidaX,
       jefe.y + HELADITO.salidaY,
-      TEXTURAS.helado1,
+      municion.quieta,
     );
+    heladito.seRompeCon = municion.seRompe;
     heladito.setDisplaySize(HELADITO.ancho, HELADITO.alto).setDepth(8);
     heladito.setFlipX(dir < 0);
 
@@ -1224,8 +1277,8 @@ export class EscenaNivel extends Phaser.Scene {
       loop: true,
       callback: () => {
         if (!heladito.active) return;
-        const cae = heladito.texture.key === TEXTURAS.helado1;
-        heladito.setTexture(cae ? TEXTURAS.helado2 : TEXTURAS.helado1);
+        const cae = heladito.texture.key === municion.quieta;
+        heladito.setTexture(cae ? municion.vuela : municion.quieta);
       },
     });
     return heladito;
@@ -1238,7 +1291,7 @@ export class EscenaNivel extends Phaser.Scene {
     heladito.estrellado = true;
     if (heladito.giro) heladito.giro.remove();
     heladito.giro = null;
-    heladito.setTexture(TEXTURAS.heladoSplat);
+    heladito.setTexture(heladito.seRompeCon || MUNICION_DE_RESPALDO.seRompe);
     heladito.body.setVelocity(0, 0);
     heladito.body.enable = false;
     this.tweens.add({

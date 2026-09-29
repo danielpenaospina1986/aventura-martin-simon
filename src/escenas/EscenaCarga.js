@@ -59,6 +59,41 @@ import jeanLukeDerrotado from '../assets/jefes/jeanluke/derrotado.webp';
 import globo from '../assets/jefes/jeanluke/globo.png';
 import globoVuela from '../assets/jefes/jeanluke/globo-vuela.png';
 import globoRevienta from '../assets/jefes/jeanluke/globo-revienta.png';
+
+// Orlando: el Tio Camilo, con sus balones en llamas
+import tioCamiloMarcha from '../assets/jefes/camilo/marcha.webp';
+import tioCamiloApunta from '../assets/jefes/camilo/apunta.webp';
+import tioCamiloTira from '../assets/jefes/camilo/tira.webp';
+import tioCamiloRecarga from '../assets/jefes/camilo/recarga.webp';
+import tioCamiloGolpe from '../assets/jefes/camilo/golpe.webp';
+import tioCamiloDerrotado from '../assets/jefes/camilo/derrotado.webp';
+import balon from '../assets/jefes/camilo/balon.png';
+import balonVuela from '../assets/jefes/camilo/balon-vuela.png';
+import balonRevienta from '../assets/jefes/camilo/balon-revienta.png';
+
+// Lake Lanier: Chad, con sus panqueques
+import chadVigila from '../assets/jefes/chad/vigila.webp';
+import chadTira from '../assets/jefes/chad/tira.webp';
+import chadSalta from '../assets/jefes/chad/salta.webp';
+import chadBaja from '../assets/jefes/chad/baja.webp';
+import chadGolpe from '../assets/jefes/chad/golpe.webp';
+import chadDerrotado from '../assets/jefes/chad/derrotado.webp';
+import panqueque from '../assets/jefes/chad/panqueque.png';
+import panquequeGira from '../assets/jefes/chad/panqueque-gira.png';
+import panquequeSplat from '../assets/jefes/chad/panqueque-splat.png';
+
+// La finca: Simon Malvado, con sus juguetes
+import simonMalvadoQuieto from '../assets/jefes/simonmalvado/quieto.webp';
+import simonMalvadoBrinco from '../assets/jefes/simonmalvado/brinco.webp';
+import simonMalvadoEscupe from '../assets/jefes/simonmalvado/escupe.webp';
+import simonMalvadoEnojado from '../assets/jefes/simonmalvado/enojado.webp';
+import simonMalvadoEmbiste from '../assets/jefes/simonmalvado/embiste.webp';
+import simonMalvadoAturdido from '../assets/jefes/simonmalvado/aturdido.webp';
+import simonMalvadoGolpe from '../assets/jefes/simonmalvado/golpe.webp';
+import simonMalvadoDerrotado from '../assets/jefes/simonmalvado/derrotado.webp';
+import juguete1 from '../assets/jefes/simonmalvado/juguete1.png';
+import juguete2 from '../assets/jefes/simonmalvado/juguete2.png';
+import jugueteSplat from '../assets/jefes/simonmalvado/juguete-splat.png';
 import zullyQuieta from '../assets/jefes/zully/quieta.png';
 import zullyMirada from '../assets/jefes/zully/mirada.png';
 import zullyEmpapada from '../assets/jefes/zully/empapada.png';
@@ -84,6 +119,9 @@ import fondoMedellin from '../assets/fondos/medellin.jpg';
 import fondoAtlanta from '../assets/fondos/atlanta.jpg';
 import fondoMiami from '../assets/fondos/miami.jpg';
 import fondoCartagena from '../assets/fondos/cartagena.jpg';
+import fondoOrlando from '../assets/fondos/orlando.jpg';
+import fondoLakeLanier from '../assets/fondos/lake-lanier.jpg';
+import fondoFinca from '../assets/fondos/finca.jpg';
 
 // Un fondo por ciudad. La clave la arma TEXTURAS.fondoDe con el mismo nombre
 // que lleva cada nivel en su campo "fondo".
@@ -93,6 +131,9 @@ const FONDOS_CIUDAD = {
   atlanta: fondoAtlanta,
   miami: fondoMiami,
   cartagena: fondoCartagena,
+  orlando: fondoOrlando,
+  'lake-lanier': fondoLakeLanier,
+  finca: fondoFinca,
 };
 import caraMartin from '../assets/cara-martin.png';
 import caraSimon from '../assets/cara-simon.png';
@@ -187,6 +228,35 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.globo, globo);
     this.load.image(TEXTURAS.globoVuela, globoVuela);
     this.load.image(TEXTURAS.globoRevienta, globoRevienta);
+    this.load.image(TEXTURAS.tioCamiloMarcha, tioCamiloMarcha);
+    this.load.image(TEXTURAS.tioCamiloApunta, tioCamiloApunta);
+    this.load.image(TEXTURAS.tioCamiloTira, tioCamiloTira);
+    this.load.image(TEXTURAS.tioCamiloRecarga, tioCamiloRecarga);
+    this.load.image(TEXTURAS.tioCamiloGolpe, tioCamiloGolpe);
+    this.load.image(TEXTURAS.tioCamiloDerrotado, tioCamiloDerrotado);
+    this.load.image(TEXTURAS.balon, balon);
+    this.load.image(TEXTURAS.balonVuela, balonVuela);
+    this.load.image(TEXTURAS.balonRevienta, balonRevienta);
+    this.load.image(TEXTURAS.chadVigila, chadVigila);
+    this.load.image(TEXTURAS.chadTira, chadTira);
+    this.load.image(TEXTURAS.chadSalta, chadSalta);
+    this.load.image(TEXTURAS.chadBaja, chadBaja);
+    this.load.image(TEXTURAS.chadGolpe, chadGolpe);
+    this.load.image(TEXTURAS.chadDerrotado, chadDerrotado);
+    this.load.image(TEXTURAS.panqueque, panqueque);
+    this.load.image(TEXTURAS.panquequeGira, panquequeGira);
+    this.load.image(TEXTURAS.panquequeSplat, panquequeSplat);
+    this.load.image(TEXTURAS.simonMalvadoQuieto, simonMalvadoQuieto);
+    this.load.image(TEXTURAS.simonMalvadoBrinco, simonMalvadoBrinco);
+    this.load.image(TEXTURAS.simonMalvadoEscupe, simonMalvadoEscupe);
+    this.load.image(TEXTURAS.simonMalvadoEnojado, simonMalvadoEnojado);
+    this.load.image(TEXTURAS.simonMalvadoEmbiste, simonMalvadoEmbiste);
+    this.load.image(TEXTURAS.simonMalvadoAturdido, simonMalvadoAturdido);
+    this.load.image(TEXTURAS.simonMalvadoGolpe, simonMalvadoGolpe);
+    this.load.image(TEXTURAS.simonMalvadoDerrotado, simonMalvadoDerrotado);
+    this.load.image(TEXTURAS.juguete1, juguete1);
+    this.load.image(TEXTURAS.juguete2, juguete2);
+    this.load.image(TEXTURAS.jugueteSplat, jugueteSplat);
     this.load.image(TEXTURAS.zullyQuieta, zullyQuieta);
     this.load.image(TEXTURAS.zullyMirada, zullyMirada);
     this.load.image(TEXTURAS.zullyEmpapada, zullyEmpapada);

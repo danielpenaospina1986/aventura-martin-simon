@@ -344,9 +344,14 @@ export const HELADITO = {
 };
 
 
-// El globo de agua que tira Jean Luke, el jefe final. Sale recto y lento: se le
-// ve venir, que es lo que hace justa la pelea.
-export const GLOBO = {
+// Lo que tiran los jefes que MARCHAN Y RECARGAN: los globos de agua de Jean
+// Luke y los balones en llamas del Tio Camilo. Sale recto y lento: se le ve
+// venir, que es lo que hace justa la pelea.
+//
+// Las medidas son las mismas para los dos, porque la pelea es la misma. Lo que
+// cambia de un jefe a otro son los DIBUJOS, y esos los dice cada jefe en su
+// `municion`: aqui no se nombra a ninguno.
+export const TIRO_DE_JEFE = {
   ancho: 42,
   alto: 42,
   caja: { ancho: 30, alto: 30 },
@@ -354,9 +359,11 @@ export const GLOBO = {
   duracionMs: 3600,
   salidaY: -18,       // sale de la mano, no de la barriga
   estiraMs: 90,       // lo que tarda en ponerse la pose de volar
-  anchoCharco: 58,
-  altoCharco: 58,
-  charcoMs: 800,      // lo que se queda el charco en el suelo
+  // La marca que deja donde se estrella: un charco, si era un globo de agua, o
+  // un chamuscon, si era un balon en llamas.
+  anchoMarca: 58,
+  altoMarca: 58,
+  marcaMs: 800,
 };
 
 export const JEFE = {
@@ -390,6 +397,23 @@ export const JEFE = {
   ancho: 172,
   alto: 172,
   caja: { ancho: 148, alto: 104 },
+
+  // La barra de vida: un puntito por cada golpe que aguanta, sobre una chapa
+  // oscura.
+  //
+  // Es DISCRETA a proposito. Antes los puntos median 22 px de ancho y se
+  // repartian cada 34, asi que la barra de Martin Malvado —que aguanta ocho—
+  // medi­a 288 px: casi media pantalla, y mas ancha que el propio jefe, que mide
+  // 172. Pesaba mas a la vista que el bicho al que hay que mirar. Ahora la de
+  // ocho se queda en 148 px, por debajo del ancho del jefe.
+  barra: {
+    radio: 6,           // la mitad de lo que medi­an
+    grosorPunto: 2,
+    separacion: 17,
+    altoChapa: 18,
+    margenChapa: 12,    // lo que sobresale la chapa por los lados
+    sobreLaCabeza: 16,  // a que altura va por encima del dibujo
+  },
 };
 
 export const ENEMIGO = {

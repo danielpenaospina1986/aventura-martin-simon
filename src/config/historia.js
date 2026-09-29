@@ -49,7 +49,7 @@ export const CIUDADES = {
   },
   finca: {
     titulo: 'La finca',
-    frase: 'Donde están los abuelos y la vaca.\nY donde Simón se pone malvado.',
+    frase: 'El Refugio: los abuelos, el lago y la vaca.\nY aquí Simón se pone malvado.',
   },
 };
 

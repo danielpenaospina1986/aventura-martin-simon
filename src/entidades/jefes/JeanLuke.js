@@ -27,22 +27,52 @@ const TIEMPOS = {
 
 const VELOCIDAD_MARCHA = 64;
 
+// Lo que es SUYO de cada jefe que pelea asi. La pelea (marchar, tirar, agacharse
+// a recargar de espaldas) es la misma; lo que cambia de uno a otro son sus
+// dibujos, lo que tira y cuanto aguanta.
+//
+// Va suelto y se pasa al constructor porque hace falta DENTRO del super(): la
+// barra de vida se monta ahi con las vidas que le lleguen, asi que cambiarlas
+// despues dejaria la barra con un puntito de menos.
+export const LO_DE_JEAN_LUKE = {
+  marcha: TEXTURAS.jeanLukeMarcha,
+  apunta: TEXTURAS.jeanLukeApunta,
+  tira: TEXTURAS.jeanLukeTira,
+  recarga: TEXTURAS.jeanLukeRecarga,
+  golpe: TEXTURAS.jeanLukeGolpe,
+  derrotado: TEXTURAS.jeanLukeDerrotado,
+  vidas: 5,
+  // La escena no sabe de globos: le pregunta esto al jefe.
+  municion: {
+    quieta: TEXTURAS.globo,
+    vuela: TEXTURAS.globoVuela,
+    seRompe: TEXTURAS.globoRevienta,
+  },
+};
+
 // Cuantos globos tira antes de tener que agacharse a por mas. Con los golpes
 // encajados va tirando mas seguido, pero la ventana de recarga no se acorta: la
 // pelea se pone tensa sin volverse injusta.
 const GLOBOS_POR_CARGA = 3;
 
 export class JeanLuke extends JefeBase {
-  constructor(escena, x, y, direccion = -1) {
+  // `suyo` es lo que cambia de un jefe de esta pelea a otro. Por defecto, el de
+  // Cartagena; el Tio Camilo pasa el suyo y no toca nada mas.
+  constructor(escena, x, y, direccion = -1, suyo = LO_DE_JEAN_LUKE) {
     super(escena, x, y, {
-      textura: TEXTURAS.jeanLukeMarcha,
-      texturaHerida: TEXTURAS.jeanLukeGolpe,
-      vidas: 5,
+      textura: suyo.marcha,
+      texturaHerida: suyo.golpe,
+      vidas: suyo.vidas,
       direccion,
     });
 
+    this.suyo = suyo;
+
     // La escena la usa al derrotarlo, para que se le vea sentarse a llorar.
-    this.texturaDeDerrota = TEXTURAS.jeanLukeDerrotado;
+    this.texturaDeDerrota = suyo.derrotado;
+
+    // Lo que tira.
+    this.municion = suyo.municion;
 
     this.estado = 'marcha';
     this.cambio = TIEMPOS.marchaMinMs;
@@ -56,10 +86,10 @@ export class JeanLuke extends JefeBase {
   }
 
   texturaDeAhora() {
-    if (this.estado === 'recarga') return TEXTURAS.jeanLukeRecarga;
-    if (this.estado === 'apunta') return TEXTURAS.jeanLukeApunta;
-    if (this.estado === 'tira') return TEXTURAS.jeanLukeTira;
-    return TEXTURAS.jeanLukeMarcha;
+    if (this.estado === 'recarga') return this.suyo.recarga;
+    if (this.estado === 'apunta') return this.suyo.apunta;
+    if (this.estado === 'tira') return this.suyo.tira;
+    return this.suyo.marcha;
   }
 
   ponerPose() {
@@ -150,7 +180,7 @@ export class JeanLuke extends JefeBase {
     this.cambio = this.reloj + TIEMPOS.tirandoMs;
     this.globosQuedan -= 1;
     this.ponerPose();
-    if (this.escena.lanzarGlobo) this.escena.lanzarGlobo(this);
+    if (this.escena.lanzarTiroDeJefe) this.escena.lanzarTiroDeJefe(this);
   }
 
   // Se agacha de espaldas sobre el balde. ES LA VENTANA.

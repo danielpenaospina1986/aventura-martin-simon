@@ -224,6 +224,35 @@ export const TEXTURAS = {
   globo: 'tex-globo',
   globoVuela: 'tex-globo-vuela',
   globoRevienta: 'tex-globo-revienta',
+  tioCamiloMarcha: 'tex-camilo-marcha',
+  tioCamiloApunta: 'tex-camilo-apunta',
+  tioCamiloTira: 'tex-camilo-tira',
+  tioCamiloRecarga: 'tex-camilo-recarga',
+  tioCamiloGolpe: 'tex-camilo-golpe',
+  tioCamiloDerrotado: 'tex-camilo-derrotado',
+  balon: 'tex-balon',
+  balonVuela: 'tex-balon-vuela',
+  balonRevienta: 'tex-balon-revienta',
+  chadVigila: 'tex-chad-vigila',
+  chadTira: 'tex-chad-tira',
+  chadSalta: 'tex-chad-salta',
+  chadBaja: 'tex-chad-baja',
+  chadGolpe: 'tex-chad-golpe',
+  chadDerrotado: 'tex-chad-derrotado',
+  panqueque: 'tex-panqueque',
+  panquequeGira: 'tex-panqueque-gira',
+  panquequeSplat: 'tex-panqueque-splat',
+  simonMalvadoQuieto: 'tex-simonmalvado-quieto',
+  simonMalvadoBrinco: 'tex-simonmalvado-brinco',
+  simonMalvadoEscupe: 'tex-simonmalvado-escupe',
+  simonMalvadoEnojado: 'tex-simonmalvado-enojado',
+  simonMalvadoEmbiste: 'tex-simonmalvado-embiste',
+  simonMalvadoAturdido: 'tex-simonmalvado-aturdido',
+  simonMalvadoGolpe: 'tex-simonmalvado-golpe',
+  simonMalvadoDerrotado: 'tex-simonmalvado-derrotado',
+  juguete1: 'tex-juguete1',
+  juguete2: 'tex-juguete2',
+  jugueteSplat: 'tex-juguete-splat',
   // la vaca berrionda, con sus seis poses dibujadas
   vacaAnda1: 'tex-vaca-anda1',
   vacaAnda2: 'tex-vaca-anda2',
@@ -300,7 +329,15 @@ export const PLANOS = {
   fondo: {
     velocidad: 0.16,     // 1 seria moverse con la camara
     ampliacionMaxima: 2, // cuanto se puede agrandar para cubrir el recorrido
-    bajada: 0.18,        // se baja un poco, que abajo lo tapa el terreno
+
+    // Donde se encuadra la ilustracion a lo alto. Es cuanto del sobrante se
+    // deja por ABAJO: subirlo empuja el dibujo hacia abajo (se ve mas cielo) y
+    // bajarlo lo sube (se ve mas suelo). Entre -0,5 y 0,5; fuera de ahi se
+    // asomaria el borde de la lamina.
+    //
+    // Cada ciudad puede pedir el suyo (`fondoBajada`, en `ciudades.js`) cuando
+    // su dibujo tenga el horizonte mas alto o mas bajo de lo normal.
+    bajada: 0.18,
   },
   // DETRAS DEL MUNDO: decorado grande que pasa por detras del nino y del
   // suelo. Mas lejos que el mundo, mas cerca que la ilustracion de fondo.

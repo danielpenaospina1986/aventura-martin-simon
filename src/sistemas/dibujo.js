@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { GLOBO, ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
+import { ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,
@@ -908,7 +908,7 @@ export function pintarFondoDeMenu(escena, ancho, alto, opciones = {}) {
 // Fondo de todas las pantallas. Si la ilustracion esta cargada se usa esa; si
 // no (por ejemplo si fallase la carga), se dibuja el cielo de siempre.
 export function pintarFondo(escena, ancho, alto, opciones = {}) {
-  const { veloExtra = 0, conNubes = true, textura } = opciones;
+  const { veloExtra = 0, conNubes = true, textura, bajada } = opciones;
   // Si la ciudad no trae ilustracion propia todavia, va la obra: es lo que dice
   // "este mundo esta a medias" sin tener que escribirlo.
   const respaldo = escena.textures.exists(TEXTURAS.fondoEnObra)
@@ -916,13 +916,27 @@ export function pintarFondo(escena, ancho, alto, opciones = {}) {
     : TEXTURAS.fondo;
   const elegida = textura && escena.textures.exists(textura) ? textura : respaldo;
   if (escena.textures.exists(elegida)) {
-    return pintarFondoIlustrado(escena, ancho, alto, veloExtra, elegida);
+    return pintarFondoIlustrado(escena, ancho, alto, veloExtra, elegida, bajada);
   }
   pintarFondoDibujado(escena, ancho, alto, conNubes);
   return { ajustarParallax() {} };
 }
 
-function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXTURAS.fondo) {
+function pintarFondoIlustrado(
+  escena,
+  ancho,
+  alto,
+  veloExtra = 0,
+  textura = TEXTURAS.fondo,
+  bajada,
+) {
+  // Cuanto del sobrante se deja por abajo. Fuera de [-0,5 , 0,5] se asomaria el
+  // borde de la lamina por arriba o por abajo, asi que se sujeta ahi.
+  const encuadre = Math.max(
+    -0.5,
+    Math.min(0.5, bajada === undefined ? PLANOS.fondo.bajada : bajada),
+  );
+
   const fuente = escena.textures.get(textura).getSourceImage();
   const cubrir = Math.max(ancho / fuente.width, alto / fuente.height);
 
@@ -961,8 +975,10 @@ function pintarFondoIlustrado(escena, ancho, alto, veloExtra = 0, textura = TEXT
         cubrir * PLANOS.fondo.ampliacionMaxima,
       );
       imagen.setScale(escala).setOrigin(0, 0.5).setX(0);
-      // se baja un poco: la parte de abajo del dibujo queda tapada por el suelo
-      imagen.setY(alto / 2 + Math.max(0, imagen.displayHeight - alto) * PLANOS.fondo.bajada);
+      // Donde se encuadra a lo alto. Por defecto se baja un poco, que abajo lo
+      // tapa el terreno; una ciudad con el horizonte muy abajo en su dibujo
+      // pide lo contrario, o el suelo del juego se le come el suyo.
+      imagen.setY(alto / 2 + Math.max(0, imagen.displayHeight - alto) * encuadre);
 
       const sobra = Math.max(0, imagen.displayWidth - ancho) * 0.99;
       // La velocidad la mueve el repartidor de planos, no scrollFactor: con el

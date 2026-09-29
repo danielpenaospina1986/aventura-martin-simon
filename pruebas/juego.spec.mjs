@@ -1711,7 +1711,7 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
         // Se despeja lo que el jefe haya dejado por el suelo: un pegote de
         // relleno rodando por la carrerilla congela al nino a media zancada
         // y se pierde el salto.
-        [n.rellenos, n.globos, n.heladitos, n.chorros, n.peligros].forEach((g) => {
+        [n.rellenos, n.tirosDeJefe, n.heladitos, n.chorros, n.peligros].forEach((g) => {
           g.getChildren().slice().forEach((cosa) => cosa.active && cosa.destroy());
         });
         j.setPosition(n.jefe.x - salida, n.jefe.body.bottom - 30);
@@ -1780,37 +1780,251 @@ test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
   expect(donde.ciudad).toBe('miami');
 });
 
-test('los mundos nuevos cargan, con su jefe prestado y su fondo en obra', async ({ page }) => {
+// Va a un mundo por su numero y espera a que ESTE montado, mirando que el
+// tablero que hay puesto sea de verdad el suyo. No vale esperar un tiempo de
+// reloj: con la maquina cargada el tablero no ha llegado a montarse.
+async function irAlMundo(page, indice, ciudad) {
+  await page.evaluate((i) => {
+    window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+  }, indice);
+  await page.waitForFunction(
+    (c) => {
+      const n = window.juego.scene.getScene('nivel');
+      return Boolean(
+        n && n.datosNivel && n.datosNivel.fondo === c && n.sys.settings.status === 5 && n.jefe,
+      );
+    },
+    ciudad,
+    { timeout: 20000 },
+  );
+}
+
+test('los ocho mundos tienen su fondo y su jefe propios, sin obra ninguna', async ({
+  page,
+}) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
 
-  const nuevos = await page.evaluate(async () => {
+  const mundos = await page.evaluate(async () => {
     const { TEXTURAS } = await import('/src/config/estilo.js');
+    const { jefeDelCuento } = await import('/src/config/historia.js');
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
     const salida = [];
-    for (const i of [5, 6, 7]) {
+
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
       window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
-      await new Promise((r) => setTimeout(r, 1400));
+      // se espera a que el tablero ESTE, no un tiempo de reloj
+      for (let v = 0; v < 150; v += 1) {
+        const n = window.juego.scene.getScene('nivel');
+        if (n && n.jefe && n.datosNivel && n.indiceNivel === i) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
       const n = window.juego.scene.getScene('nivel');
       salida.push({
         ciudad: n.datosNivel.fondo,
-        nombre: n.datosNivel.nombre,
-        // el jefe es prestado, pero el nombre que dice es el suyo
-        jefe: Boolean(n.jefe && n.jefe.active),
-        seLlama: (await import('/src/config/historia.js')).jefeDelCuento(n.datosNivel.fondo).nombre,
-        // y su fondo es la obra, que es la que se pinta cuando no hay propia
+        clase: n.jefe ? n.jefe.constructor.name : null,
+        seLlama: jefeDelCuento(n.datosNivel.fondo).nombre,
+        // "en obra" = no tiene fondo propio, asi que se le pinta la obra
         enObra: !window.juego.textures.exists(TEXTURAS.fondoDe(n.datosNivel.fondo)),
+        // y su jefe sale con SU dibujo, no con el de otro
+        suDibujo: n.jefe ? n.jefe.texture.key : null,
       });
     }
     return salida;
   });
 
-  expect(nuevos.map((m) => m.ciudad)).toEqual(['orlando', 'lake-lanier', 'finca']);
-  expect(nuevos.map((m) => m.seLlama)).toEqual(['el Tío Camilo', 'Chad', 'Simón Malvado']);
-  nuevos.forEach((m) => {
-    expect(m.jefe).toBe(true);
-    expect(m.enObra).toBe(true);
+  expect(mundos.map((m) => m.ciudad)).toEqual([
+    'space-coast', 'medellin', 'atlanta', 'miami', 'cartagena',
+    'orlando', 'lake-lanier', 'finca',
+  ]);
+
+  // Ya no queda ningun mundo en obra: los ocho tienen su ilustracion.
+  mundos.forEach((m) => {
+    expect(m.enObra).toBe(false);
+    expect(m.clase).not.toBeNull();
   });
+
+  // Y cada uno tiene SU clase de jefe, ninguna repetida.
+  expect(mundos.map((m) => m.clase)).toEqual([
+    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'JeanLuke',
+    'TioCamilo', 'Chad', 'SimonMalvado',
+  ]);
+
+  // con el nombre que le toca a su ciudad
+  expect(mundos.map((m) => m.seLlama)).toEqual([
+    'Papá Inodoro', 'el Abuelo', 'Doña Zully', 'Martín Malvado', 'Jean Luke',
+    'el Tío Camilo', 'Chad', 'Simón Malvado',
+  ]);
+
   expect(errores).toEqual([]);
+});
+
+test('los tres jefes nuevos tiran lo suyo, no lo del jefe del que heredan', async ({ page }) => {
+  // Los tres heredan la pelea de otro, asi que lo que hay que vigilar es que no
+  // se les haya quedado la municion del original.
+  await entrarAlNivel(page, 'martin');
+
+  const mirar = async (indice, ciudad, comoLanza) => {
+    await irAlMundo(page, indice, ciudad);
+    return page.evaluate(
+      async ({ comoLanza }) => {
+        const n = window.juego.scene.getScene('nivel');
+        const j = n.jugadores[0];
+        j.setPosition(n.jefe.x - 520, j.y);
+        j.body.setVelocity(0, 0);
+        const tiro = n[comoLanza](n.jefe, n.jefe.direccion);
+        return {
+          jefe: n.jefe.constructor.name,
+          golpes: n.jefe.vidasMaximas,
+          tira: tiro.texture.key,
+          seRompeCon: tiro.seRompeCon,
+        };
+      },
+      { comoLanza },
+    );
+  };
+
+  const camilo = await mirar(5, 'orlando', 'lanzarTiroDeJefe');
+  const chad = await mirar(6, 'lake-lanier', 'lanzarRelleno');
+  const simon = await mirar(7, 'finca', 'escupirHeladito');
+
+  expect(camilo.jefe).toBe('TioCamilo');
+  expect(camilo.tira).toBe('tex-balon');
+  expect(camilo.seRompeCon).toBe('tex-balon-revienta');
+  expect(camilo.golpes).toBe(6);
+
+  expect(chad.jefe).toBe('Chad');
+  expect(chad.tira).toBe('tex-panqueque');
+  expect(chad.seRompeCon).toBe('tex-panqueque-splat');
+  expect(chad.golpes).toBe(8);
+
+  expect(simon.jefe).toBe('SimonMalvado');
+  expect(simon.tira).toBe('tex-juguete1');
+  expect(simon.seRompeCon).toBe('tex-juguete-splat');
+  expect(simon.golpes).toBe(5);
+});
+
+test('a los jefes de siempre no se les cambio la municion al compartir pelea', async ({
+  page,
+}) => {
+  await entrarAlNivel(page, 'martin');
+
+  const mirar = async (indice, ciudad, comoLanza) => {
+    await irAlMundo(page, indice, ciudad);
+    return page.evaluate(
+      async ({ comoLanza }) => {
+        const n = window.juego.scene.getScene('nivel');
+        const tiro = n[comoLanza](n.jefe, n.jefe.direccion);
+        return { jefe: n.jefe.constructor.name, tira: tiro.texture.key };
+      },
+      { comoLanza },
+    );
+  };
+
+  const inodoro = await mirar(0, 'space-coast', 'escupirHeladito');
+  const malvado = await mirar(3, 'miami', 'lanzarRelleno');
+  const luke = await mirar(4, 'cartagena', 'lanzarTiroDeJefe');
+
+  expect(inodoro.jefe).toBe('PapaInodoro');
+  expect(inodoro.tira).toBe('tex-helado1');
+  expect(malvado.jefe).toBe('MartinMalvado');
+  expect(malvado.tira).toBe('tex-relleno');
+  expect(luke.jefe).toBe('JeanLuke');
+  expect(luke.tira).toBe('tex-globo');
+});
+
+test('el Tío Camilo es suyo: sus dibujos, sus balones y seis golpes', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+  await irAlMundo(page, 5, 'orlando');
+
+  const camilo = await page.evaluate(async () => {
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+
+    // se le pone el nino delante, que si no no pelea
+    const j = n.jugadores[0];
+    j.setPosition(jefe.x - 200, jefe.y);
+    j.body.setVelocity(0, 0);
+
+    // y se le hace tirar uno a mano, para ver con que lo dibuja
+    const tiro = n.lanzarTiroDeJefe(jefe);
+
+    return {
+      clase: jefe.constructor.name,
+      vidas: jefe.vidasMaximas,
+      // los puntitos de la barra tienen que ser tantos como golpes aguanta
+      puntos: jefe.puntos.length,
+      suDibujo: jefe.texture.key,
+      esElSuyo: jefe.texture.key === TEXTURAS.tioCamiloMarcha,
+      // y el proyectil, un balon y no un globo de agua
+      tira: tiro.texture.key,
+      esBalon: tiro.texture.key === TEXTURAS.balon,
+      seRompeCon: tiro.seRompeCon === TEXTURAS.balonRevienta,
+      echaChispas: tiro.echaChispas,
+      derrotaConLaSuya: jefe.texturaDeDerrota === TEXTURAS.tioCamiloDerrotado,
+    };
+  });
+
+  expect(camilo.clase).toBe('TioCamilo');
+  expect(camilo.esElSuyo).toBe(true);
+  expect(camilo.derrotaConLaSuya).toBe(true);
+  // aguanta uno mas que Jean Luke, y la barra lo dice
+  expect(camilo.vidas).toBe(6);
+  expect(camilo.puntos).toBe(6);
+  // tira balones en llamas, no globos de agua
+  expect(camilo.esBalon).toBe(true);
+  expect(camilo.seRompeCon).toBe(true);
+  expect(camilo.echaChispas).toBe(true);
+  expect(errores).toEqual([]);
+});
+
+test('lo que tira un jefe VUELA: no es un bloque de los de Samaon', async ({ page }) => {
+  // Esto se rompio de verdad, y en silencio. Al sacar el proyectil del jefe a
+  // su propio grupo se le puso de nombre `proyectiles`... que ya eran los
+  // BLOQUES que lanza Samaon. El segundo pisaba al primero, asi que lo que
+  // tiraba el jefe nacia con gravedad y con el choque contra el suelo puesto:
+  // se estrellaba en el sitio sin volar un pixel. Y como el sprite salia con su
+  // dibujo correcto, por una captura no se notaba.
+  await entrarAlNivel(page, 'martin');
+  await irAlMundo(page, 5, 'orlando');
+
+  const vuelo = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    // lejos del jefe, que si le da al nino se rompe y no se mide nada
+    j.setPosition(n.jefe.x - 520, j.y);
+    j.body.setVelocity(0, 0);
+
+    const tiro = n.lanzarTiroDeJefe(n.jefe);
+    const salioEn = { x: tiro.x, y: tiro.y };
+    const suGrupo = n.tirosDeJefe.contains(tiro);
+    const enLosBloques = n.proyectiles.contains(tiro);
+
+    await new Promise((r) => setTimeout(r, 500));
+    return {
+      suGrupo,
+      enLosBloques,
+      // ha recorrido camino de lado
+      avanzo: Math.abs(tiro.x - salioEn.x),
+      // y NO se ha caido: va por el aire
+      cayo: tiro.y - salioEn.y,
+      sigueVivo: tiro.active,
+      seEstiro: tiro.texture.key,
+    };
+  });
+
+  // va en SU grupo, no en el de los bloques
+  expect(vuelo.suGrupo).toBe(true);
+  expect(vuelo.enLosBloques).toBe(false);
+  // cruza de verdad (a 220 px/s, en medio segundo son mas de 80)
+  expect(vuelo.avanzo).toBeGreaterThan(80);
+  // y no le tira la gravedad
+  expect(Math.abs(vuelo.cayo)).toBeLessThan(4);
+  expect(vuelo.sigueVivo).toBe(true);
+  // en cuanto sale se pone la pose de volar
+  expect(vuelo.seEstiro).toContain('vuela');
 });
 
 test('cada jefe paga segun lo dificil que sea su mundo', async ({ page }) => {
@@ -2134,6 +2348,47 @@ test('pasarse el juego entero también apunta el puntaje', async ({ page }) => {
 
   expect(resultado.tabla.length).toBe(1);
   expect(resultado.tabla[0].puntos).toBe(77);
+});
+
+test('la barra de vida del jefe nunca pesa mas que el jefe', async ({ page }) => {
+  // Lo pidio Daniel: los puntitos eran tan gordos que la barra del que aguanta
+  // ocho media 288 px —casi media pantalla, y mas ancha que el propio jefe, que
+  // mide 172—, asi que a veces pesaba mas a la vista que el bicho al que hay
+  // que mirar. Se comprueba en el PEOR caso, que es el de mas golpes.
+  await entrarAlNivel(page, 'martin');
+
+  const barras = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const salida = [];
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      // se espera a que el tablero este montado y con su jefe puesto
+      for (let v = 0; v < 120; v += 1) {
+        const n = window.juego.scene.getScene('nivel');
+        if (n && n.jefe && n.jefe.chapa && n.datosNivel && n.indiceNivel === i) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+      if (!n.jefe || !n.jefe.chapa) continue;
+      salida.push({
+        ciudad: n.datosNivel.fondo,
+        golpes: n.jefe.vidasMaximas,
+        barra: Math.round(n.jefe.chapa.width),
+        jefe: Math.round(n.jefe.displayWidth),
+      });
+    }
+    return salida;
+  });
+
+  expect(barras.length).toBeGreaterThan(5);
+  barras.forEach((b) => {
+    // la barra cabe dentro del ancho del jefe
+    expect(b.barra).toBeLessThanOrEqual(b.jefe);
+    // y no se come la pantalla: menos de un cuarto de los 640 de ancho
+    expect(b.barra).toBeLessThan(160);
+    // pero sigue teniendo un puntito por golpe, que para eso esta
+    expect(b.golpes).toBeGreaterThan(0);
+  });
 });
 
 test('la barra del jefe solo se ve cuando el jefe esta en cuadro', async ({ page }) => {

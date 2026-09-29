@@ -78,19 +78,31 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
 
   // Tantos puntitos encima de la cabeza como golpes aguante, sobre una chapa
   // oscura: sueltos, se confundian con los premios, que tambien son rojos.
+  //
+  // Va pequena a proposito (ver `JEFE.barra`): con los puntos grandes de antes,
+  // la de ocho golpes era mas ancha que el propio jefe y se comia la pantalla.
   crearBarraDeVida() {
     const cuantos = this.vidasMaximas;
+    const b = JEFE.barra;
+
     this.chapa = this.escena.add
-      .rectangle(0, 0, cuantos * 34 + 16, 30, COLORES.decoFondo, 0.85)
-      .setStrokeStyle(2, COLORES.decoMarco, 0.95)
+      .rectangle(
+        0,
+        0,
+        cuantos * b.separacion + b.margenChapa,
+        b.altoChapa,
+        COLORES.decoFondo,
+        0.85,
+      )
+      .setStrokeStyle(1.5, COLORES.decoMarco, 0.95)
       .setDepth(10);
 
     this.puntos = [];
     for (let i = 0; i < cuantos; i += 1) {
       this.puntos.push(
         this.escena.add
-          .circle(0, 0, 11, COLORES.jefeVida)
-          .setStrokeStyle(3, 0x16202c, 0.8)
+          .circle(0, 0, b.radio, COLORES.jefeVida)
+          .setStrokeStyle(b.grosorPunto, 0x16202c, 0.8)
           .setDepth(11),
       );
     }
@@ -98,8 +110,8 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
   }
 
   colocarBarraDeVida() {
-    const separacion = 34;
-    const arriba = this.y - this.config.alto / 2 - 20;
+    const { separacion, margenChapa, sobreLaCabeza } = JEFE.barra;
+    const arriba = this.y - this.config.alto / 2 - sobreLaCabeza;
 
     // La barra se queda dentro de la pantalla aunque el jefe este pegado al
     // borde de su arena: al final del tablero la camara ya no puede avanzar
@@ -108,7 +120,7 @@ export class JefeBase extends Phaser.Physics.Arcade.Sprite {
     const zoom = camara.zoom || 1;
     const izquierda = camara.scrollX + (camara.width * (1 - 1 / zoom)) / 2;
     const anchoVisible = camara.width / zoom;
-    const medioAncho = (this.vidasMaximas * separacion) / 2 + 12;
+    const medioAncho = (this.vidasMaximas * separacion) / 2 + margenChapa;
     const centro = Phaser.Math.Clamp(
       this.x,
       izquierda + medioAncho,

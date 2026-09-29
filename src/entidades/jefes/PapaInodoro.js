@@ -44,18 +44,48 @@ const TIEMPOS = {
 // lo justo para que el nino le llegue a la coronilla de un salto.
 const CAJA = { ancho: 112, alto: JEFE.caja.alto };
 
+// Lo que es SUYO de cada jefe que pelea asi. La pelea (rondar, escupir en
+// arco, enojarse, embestir y estamparse) es la misma; lo que cambia son sus
+// dibujos, lo que tira, cuanto aguanta y lo ancha que es su caja.
+//
+// Va suelto y se pasa al constructor porque las vidas y la caja hacen falta
+// DENTRO del super().
+export const LO_DE_PAPA_INODORO = {
+  quieto: TEXTURAS.inodoroQuieto,
+  brinco: TEXTURAS.inodoroBrinco,
+  escupe: TEXTURAS.inodoroEscupe,
+  enojado: TEXTURAS.inodoroEnojado,
+  embiste: TEXTURAS.inodoroEmbiste,
+  aturdido: TEXTURAS.inodoroAturdido,
+  golpe: TEXTURAS.inodoroGolpe,
+  derrotado: TEXTURAS.inodoroDerrotado,
+  vidas: 4,
+  caja: CAJA,
+  // La escena no sabe de heladitos: le pregunta esto al jefe.
+  municion: {
+    quieta: TEXTURAS.helado1,
+    vuela: TEXTURAS.helado2,
+    seRompe: TEXTURAS.heladoSplat,
+  },
+};
+
 export class PapaInodoro extends JefeBase {
-  constructor(escena, x, y, direccion = -1) {
+  // `suyo` es lo que cambia de un jefe de esta pelea a otro. Por defecto, el de
+  // Space Coast; Simon Malvado pasa el suyo y no toca nada mas.
+  constructor(escena, x, y, direccion = -1, suyo = LO_DE_PAPA_INODORO) {
     super(escena, x, y, {
-      textura: TEXTURAS.inodoroQuieto,
-      texturaHerida: TEXTURAS.inodoroGolpe,
-      caja: CAJA,
-      vidas: 4,
+      textura: suyo.quieto,
+      texturaHerida: suyo.golpe,
+      caja: suyo.caja || CAJA,
+      vidas: suyo.vidas,
       direccion,
     });
 
+    this.suyo = suyo;
+    this.municion = suyo.municion;
+
     // La escena la usa al derrotarlo, para que se le vea irse por el sifon.
-    this.texturaDeDerrota = TEXTURAS.inodoroDerrotado;
+    this.texturaDeDerrota = suyo.derrotado;
 
     this.estado = 'ronda';
     this.cambio = TIEMPOS.esperaMinMs;
@@ -70,11 +100,11 @@ export class PapaInodoro extends JefeBase {
   }
 
   texturaDeAhora() {
-    if (this.estado === 'aturdido') return TEXTURAS.inodoroAturdido;
-    if (this.estado === 'embiste') return TEXTURAS.inodoroEmbiste;
-    if (this.estado === 'enojado') return TEXTURAS.inodoroEnojado;
-    if (this.estado === 'escupe') return TEXTURAS.inodoroEscupe;
-    return this.enElAire ? TEXTURAS.inodoroBrinco : TEXTURAS.inodoroQuieto;
+    if (this.estado === 'aturdido') return this.suyo.aturdido;
+    if (this.estado === 'embiste') return this.suyo.embiste;
+    if (this.estado === 'enojado') return this.suyo.enojado;
+    if (this.estado === 'escupe') return this.suyo.escupe;
+    return this.enElAire ? this.suyo.brinco : this.suyo.quieto;
   }
 
   // A proposito NO hace nada: el golpe no le corta el aturdimiento.

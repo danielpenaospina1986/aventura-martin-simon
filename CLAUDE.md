@@ -146,9 +146,10 @@ empapados son ellos.
 
 ### Los ocho mundos
 
-Los cinco primeros son los de siempre, con su arte y su jefe propios. Los tres
-ultimos son **nuevos y estan en obra**: el tablero si es suyo, pero el fondo es
-la obra y el jefe y los bichos van prestados hasta que lleguen sus dibujos.
+**Los ocho tienen ya su arte y su jefe propios.** Ninguno queda en obra: cada
+uno con su ilustracion de fondo, su guardian dibujado y lo que ese guardian
+tira. Lo unico que sigue prestado en algunos son los adornos de los planos de
+delante y de detras.
 
 | # | Ciudad | Que es para ellos |
 |---|---|---|
@@ -157,9 +158,9 @@ la obra y el jefe y los bichos van prestados hasta que lleguen sus dibujos.
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia. Aqui les sale al paso **Martin Malvado** |
 | 5 | Cartagena | El paseo que no se les olvida. Aqui les sale al paso **Jean Luke** |
-| 6 | Orlando | *En obra.* El viaje de los parques, con **el Tio Camilo** |
-| 7 | Lake Lanier | *En obra.* El lago de los fines de semana, con **Chad** el chef |
-| 8 | La finca | *En obra.* Donde estan los abuelos, con **Simon Malvado** |
+| 6 | Orlando | El viaje de los parques. Aqui les sale al paso **el Tio Camilo** |
+| 7 | Lake Lanier | El lago de los fines de semana. Aqui les sale al paso **Chad**, el chef |
+| 8 | La finca | **El Refugio**, la finca ganadera de los abuelos en el Magdalena Medio. Aqui les sale al paso **Simon Malvado** |
 
 ### Como se cuenta
 
@@ -334,10 +335,28 @@ Reglas para los cinco:
 - Un jefe puede traer **dibujo de derrota** (`texturaDeDerrota`). El sprite se
   destruye en cuanto cae, asi que sin eso la pose no se llegaria a ver nunca: la
   escena deja la imagen un momento en su sitio mientras se va.
-- Los cinco primeros tienen dibujos de verdad. Los **tres mundos nuevos** van
-  con jefes **prestados** —el mismo sprite y la misma pelea de otro— hasta que
-  lleguen los suyos; lo unico propio, por ahora, es el nombre y las frases, que
-  salen de `historia.js` y van por ciudad, no por clase.
+- **Los ocho tienen dibujos de verdad.** Los tres ultimos **comparten pelea**
+  con uno de los cinco primeros —cada uno hereda de su clase— pero todo lo que
+  se ve es suyo: sus poses, lo que tira y cuanto aguanta.
+
+  | Jefe | Pelea como | Porque |
+  |---|---|---|
+  | el Tio Camilo | Jean Luke | lo pidio Daniel |
+  | Chad | Martin Malvado | tira desde la torre y baja a burlarse |
+  | Simon Malvado | Papa Inodoro | escupe, se enoja y embiste |
+
+  Lo que cambia de un jefe al otro va en un solo bulto (`suyo`) que se pasa al
+  constructor, porque las vidas y la caja hacen falta **dentro** del `super()`:
+  la barra se monta ahi, y cambiarlas despues la dejaria con un puntito de
+  menos. Si algun dia una pelea la comparten tres, se sube a una base propia;
+  con dos, partirla seria inventarse una abstraccion de mas.
+- Lo que **tira** un jefe no lo sabe la escena: lo dice el jefe, en su
+  `municion` (que dibujo lleva quieto, en el aire y roto, y si al romperse echa
+  chispas o burbujas). Vale para las tres familias de proyectil: los que salen
+  rectos (`TIRO_DE_JEFE`), los que ruedan por el suelo (`RELLENO`) y los que van
+  en arco y se estrellan (`HELADITO`). Las medidas del vuelo son las mismas
+  dentro de cada familia, porque la pelea es la misma; lo que cambia es lo que
+  se ve.
 
 #### 1. Space Coast: Papa Inodoro
 
@@ -459,6 +478,67 @@ llamar a su mama**, empapado con sus propios globos.
 Sus dibujos son de verdad (`src/assets/jefes/jeanluke/`): seis poses de el
 —marcha, apunta, tira, recarga, golpe y derrotado— y tres del globo (entero,
 volando y reventado).
+
+#### 6. Orlando: el Tio Camilo
+
+Un **diablo colorado y barrigon con la cara del tio**: cachos, rabo de punta de
+flecha, zapatones y el escudo de su equipo en la barriga. Ronda su arena con un
+costal de balones al hombro y los tira **en llamas**. **Aguanta seis.**
+
+Se le gana **igual que a Jean Luke**, y por eso `TioCamilo` hereda de el: marcha
+y tira; cuando se le acaban los balones se agacha **de espaldas sobre el
+costal** a buscar mas, y ahi se queda desprevenido. Un golpe en ese momento
+—pisandolo, con la katana o con un bloque— y lo encaja. Al sexto se sienta a
+llorar, empapado.
+
+Que herede de Jean Luke y no de `JefeBase` es a proposito: la pelea es **la
+misma**, hasta en los tiempos, y lo unico suyo son sus dibujos, lo que tira y
+cuanto aguanta. Todo eso se le pasa al constructor en un solo bulto (`suyo`),
+porque las vidas hacen falta **dentro** del `super()`: la barra se monta ahi y
+cambiarlas despues la dejaria con un puntito de menos. Si algun dia sale un
+tercero con esta pelea, esto se sube a una base propia; con dos, partirlo seria
+inventarse una abstraccion de mas.
+
+Aguanta uno mas que Jean Luke porque Orlando va despues de Cartagena y tiene que
+notarse, pero sin pasarse: ocho ya se hacia largo cuando se probo con Martin
+Malvado.
+
+Sus dibujos son de verdad (`src/assets/jefes/camilo/`): seis poses de el
+—marcha, apunta, tira, recarga, golpe y derrotado— y tres del balon (entero,
+volando y apagado).
+
+#### 7. Lake Lanier: Chad
+
+El chef del lago: gafas oscuras, toque, delantal manchado y un sarten en la
+mano. Se pasa la pelea subido a las **torres de vigia** tirando **panqueques**,
+que ruedan por la orilla y hay que saltar. **Aguanta ocho.**
+
+Se le gana **igual que a Martin Malvado**, y por eso `Chad` hereda de el:
+arriba no se le llega, y cada dos panqueques **baja** a burlarse, que es cuando
+vale cualquier golpe. Los golpes no le cortan la bajada.
+
+Sus dibujos son de verdad (`src/assets/jefes/chad/`): seis poses de el —vigila,
+tira, salta, baja, golpe y derrotado— y tres del panqueque (entero, girando y
+aplastado en su charco de miel).
+
+#### 8. La finca: Simon Malvado
+
+Un nino regordete con el pelo largo y **cara y cuerpo de muneco de piezas de
+armar**. Un malcriado de manual, que se defiende **tirando juguetes**.
+**Aguanta cinco.**
+
+Se le gana **igual que a Papa Inodoro**, y por eso `SimonMalvado` hereda de el:
+ronda dando brinquitos y tira juguetes en arco; cuando se harta **se enoja** y
+**embiste** de lado a lado, y al final de la embestida se estampa y se queda
+**aturdido**. Esa es la unica ventana. Al quinto se desarma en el suelo.
+
+A diferencia de Papa Inodoro, lleva la **caja de casa** (`JEFE.caja`) y no la
+estrecha: el es un muneco y ocupa su lienzo a lo ancho, mientras que el retrete
+dejaba un palmo de aire a cada lado.
+
+Sus dibujos son de verdad (`src/assets/jefes/simonmalvado/`): ocho poses de el
+—quieto, brinco, escupe, enojado, embiste, aturdido, golpe y derrotado— y tres
+del juguete (volando, dando tumbos y reventado).
 
 ## 5. Sensacion de movimiento
 
@@ -754,10 +834,16 @@ Cada tablero es una **ciudad**, con su propio fondo ilustrado:
 | 8 | La finca | 202 x 12 | 10,1 | 107 | 16 |
 
 El fondo de cada una vive en `src/assets/fondos/` y el nivel lo nombra en su
-campo `fondo`. Los tres ultimos **no tienen fondo propio todavia**: `pintarFondo`
-no lo encuentra y pinta **la obra** (`TEXTURAS.fondoEnObra`, dibujada por
-codigo), que es lo que dice de un vistazo "este mundo esta a medias". Lo mismo
-en su tarjeta de la pantalla de mundos.
+campo `fondo`. **Los ocho lo tienen.** Queda el respaldo de **la obra**
+(`TEXTURAS.fondoEnObra`, dibujada por codigo) para el mundo que se anada antes
+que su ilustracion: `pintarFondo` no encuentra la suya y pinta esa, que dice de
+un vistazo "este mundo esta a medias". Lo mismo en su tarjeta.
+
+Una lamina puede venir con **marco de cartel**, un margen de papel alrededor.
+Eso en el juego se ve como una franja clara pegada al borde de la pantalla y
+canta muchisimo cuando el fondo se mueve, asi que se recorta: `preparar-fondos.mjs`
+acepta un `recorte` por ciudad y corta al mismo formato de la lamina, sin
+deformar nada. Le paso a Orlando.
 
 Todos tienen **tres checkpoints** y **un jefe** antes de la meta. Se elige a
 cual ir y el marcador se arrastra de uno a otro.
@@ -919,6 +1005,12 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   una casa de pueblo con su bandera). Atlanta, Miami y Cartagena **usan el de
   Medellin de prestado** hasta que llegue el suyo, que es lo que se ha hecho
   siempre aqui con lo que falta.
+
+  **Orlando** no usa el de Medellin: un guayacan en flor y una chiva delante de
+  una montana rusa se leian fatal. Se le presta el de Space Coast, que tambien
+  es Florida —palmeras delante y, por detras, la casa y el jeep—, pero **sin el
+  letrero del muelle**, que pone "Cocoa Beach Pier" con todas sus letras. Un
+  adorno generico se perdona; uno que nombra otra ciudad, no.
 
   Sus medidas (lienzos de 480-660 px, contorno a la mitad, opaco, apoyado en la
   linea del suelo) **estan probadas y valen de patron** para lo que venga: un
@@ -1782,6 +1874,99 @@ baja.
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
 - **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
   mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-28** — **Lake Lanier y La finca salen de la obra, y con eso los
+  ocho mundos quedan terminados.** Lake Lanier estrena su lago con el muelle y
+  la marina, y a **Chad**, el chef que tira panqueques desde la torre. La finca
+  estrena **El Refugio** —la casa blanca de puertas negras, el lago, los cebues
+  y la ceiba— y a **Simon Malvado**, el nino de piezas de armar que tira
+  juguetes. Los dos heredan la pelea de otro jefe y solo cambian lo que se ve.
+- **2026-09-28** — Las otras DOS familias de proyectil (el que rueda por el
+  suelo y el que va en arco) pasan tambien a preguntarle al jefe por su
+  `municion`, como ya hacia el que sale recto. Sin eso, darle panqueques a Chad
+  y juguetes a Simon habria sido duplicar los dos sistemas enteros.
+- **2026-09-28** — **Los adornos prestados se eligen por clima, no por
+  comodidad.** A Lake Lanier se le pusieron los de Space Coast enteros y las
+  PALMERAS cantaban: es un lago de Georgia, de pinos y robles, y van grandes y
+  en primer plano, asi que se lo llevaban a otro clima de un vistazo. Se le
+  dejan el jeep y la casa por detras (al menos son del mismo pais, y un jeep en
+  un lago pega, que es con lo que se remolcan las lanchas) y los provisionales
+  por delante.
+  Se probo a dejarlo SIN nada detras y no vale: una ciudad sin decorado de fondo
+  se ve vacia, y hay una prueba que lo vigila en las ocho. La regla era buena; lo
+  perezoso era la solucion.
+  En La finca, en cambio, lo de Medellin SI pega —la chiva y la casa de pueblo
+  son colombianas—, pero se le quita el guayacan de delante: su ilustracion ya
+  viene llena de arboles en flor y el tablero se convertia en una pared amarilla
+  por la que no se veia jugar.
+- **2026-09-28** — La hoja de Simon Malvado se recorta con **tolerancia 25**, la
+  mas baja del proyecto, y con `limpiarBolsas`. Su pose de aturdido trae el
+  mareo dibujado como un **disco RELLENO del mismo turquesa del fondo**, que
+  quedaba como un plato teal clavado sobre su cabeza. Es una bolsa encerrada de
+  manual, pero la cuenta de siempre no valia: el azul CLARO de sus jeans esta a
+  solo 66 del turquesa. La ventana es estrecha y existe: el disco esta a 6-20,
+  el fondo no se desvia mas de 20, y los jeans estan a 66, asi que la tolerancia
+  tiene que caer entre 20 y 30. Se eligio 25.
+- **2026-09-28** — Y el juguete que tira, con **tolerancia 50**: su azul queda a
+  101 del turquesa, y con la de casa el filtro de residuos (tolerancia x 1,7)
+  le habria mordido los bordes.
+- **2026-09-28** — La pose del **brinco** de Simon Malvado trae dibujada una
+  sombra ovalada debajo, que es justo lo que no queremos (aqui todo se apoya
+  solo). Su zona corta a un pixel del muneco y la deja fuera. Al prompt se le
+  anadio que no dibujara sombras ni marcos, y los dos fondos siguientes ya
+  vinieron limpios.
+- **2026-09-28** — La **barra de vida del jefe se achica a la mitad**. Los
+  puntitos median 22 px y se repartian cada 34, asi que la de Martin Malvado
+  —que aguanta ocho— medi­a 288 px: casi media pantalla y mas ancha que el
+  propio jefe, que mide 172. Pesaba mas a la vista que el bicho al que hay que
+  mirar, que es justo lo contrario de lo que tiene que hacer. Ahora la de ocho
+  se queda en 148. Sus medidas viven en `JEFE.barra` y hay una prueba que
+  comprueba, en los ocho mundos, que la barra cabe dentro del ancho del jefe.
+- **2026-09-28** — El **encuadre vertical del fondo pasa a ser por ciudad**
+  (`fondoBajada`, en `ciudades.js`). El dibujo de Orlando trae el horizonte muy
+  abajo —la masa de suelo empieza al 66% de la lamina— y con el encuadre de casa
+  el piso del juego tapaba desde el 54%: se comia justo la franja donde estan
+  las bases del castillo y de las montanas rusas, asi que el castillo se veia
+  cortado y de la ilustracion no se apreciaba casi nada. Subiendolo, su linea de
+  suelo cae sobre la del juego. El valor se sujeta entre -0,5 y 0,5: fuera de
+  ahi se asomaria el borde de la lamina.
+- **2026-09-28** — **Orlando sale de la obra**: estrena fondo propio (el
+  horizonte de los parques, con su cielo de rayos art deco) y jefe propio, **el
+  Tio Camilo**, un diablo colorado con la cara del tio y el escudo de su equipo
+  en la barriga, que tira **balones en llamas**. Pelea como Jean Luke, que es lo
+  que pidio Daniel, asi que `TioCamilo` hereda de el y solo cambia sus dibujos,
+  su municion y cuanto aguanta.
+- **2026-09-28** — Lo que tira un jefe **deja de estar clavado al globo de
+  agua**. La escena ya no sabe de globos: le pregunta al jefe por su `municion`
+  (los tres dibujos y si echa chispas o burbujas al romperse), y las medidas del
+  vuelo, que son las mismas para los dos, se quedan en `TIRO_DE_JEFE`. Sin eso,
+  darle balones al Tio Camilo habria sido duplicar el sistema entero.
+- **2026-09-28** — **Ojo al renombrar: hay que buscar el nombre nuevo ANTES de
+  usarlo.** Al sacar el proyectil del jefe a su propio grupo se le puso
+  `proyectiles`... que ya eran los BLOQUES que lanza Samaon, quince lineas mas
+  abajo en la misma escena. El segundo `this.proyectiles` pisaba al primero, asi
+  que lo que tiraba el jefe nacia en el grupo de los bloques —con gravedad y con
+  el choque contra el suelo puesto— y se estrellaba en el sitio sin volar un
+  pixel. Y de propina, `romperProyectil` tambien existia ya, asi que el metodo
+  nuevo quedaba pisado por el viejo. Dos choques del mismo descuido, y ninguno
+  daba error: el sprite salia con su dibujo correcto y por una captura no se
+  notaba. Ahora se llaman `tirosDeJefe` y `lanzarTiroDeJefe`, y hay una prueba
+  que comprueba que lo que tira el jefe **de verdad vuela** y no cae.
+- **2026-09-28** — Un fondo puede venir con **marco de cartel**. El de Orlando
+  traia 13 px de papel crema arriba y abajo y 17 a los lados, y eso en el juego
+  se ve como una franja clara pegada al borde que canta cuando el fondo se
+  mueve. `preparar-fondos.mjs` gana un `recorte` por ciudad, que corta al mismo
+  formato de la lamina para no deformar nada.
+- **2026-09-28** — La hoja del Tio Camilo **si lleva `limpiarBolsas`**, y es la
+  primera de un jefe que lo lleva: el hueco entre su brazo y la boca del costal
+  es una bolsa de fondo encerrada y quedaba un parche turquesa pegado al cuerpo.
+  Lo que hubo que hacer fue **bajarle la tolerancia a 70**, porque el filtro de
+  las bolsas corta en tolerancia x 2,2 y aqui habia DOS cosas cerca del fondo:
+  el crema del costal (194) y —la que casi se cuela— sus **lagrimas y el charco**
+  de la pose de derrotado, que son celestes y se quedan a 170. Con la tolerancia
+  de casa (90) se iban las dos; con 80, las lagrimas se salvaban de milagro,
+  solo porque ninguna queda encerrada por tinta. Con 70 corta en 154 y las dos
+  quedan con margen. Bajarla no cuesta nada cuando el fondo es liso: este no se
+  desvia mas de 11 de su propia muestra.
 - **2026-09-28** — El tablero de mejores puntajes **sube a la nube**, a una
   base de datos en tiempo real de Firebase. Vivia en el `localStorage` de cada
   equipo, asi que el telefono de Martain y el portatil de Samaon tenian cada uno
