@@ -137,9 +137,12 @@ async function entrarAlNivel(page, personaje = 'martin', extra = '') {
     const n = window.juego.scene.getScene('nivel');
     n.probabilidadCorazon = 0;
     n.probabilidadVidaExtra = 0;
-    // Y no entran vacas por su cuenta: cruzan corriendo y, en una prueba que
-    // mide monedas o golpes, meterian ruido sin avisar.
+    // Y no entran vacas ni palomas por su cuenta: cruzan solas y, en una
+    // prueba que mide monedas, saltos o golpes, meterian ruido sin avisar. Un
+    // golpe de paloma en mitad de un salto cambia la medida entera. Las pruebas
+    // que SI quieren una se la traen ellas.
     n.proximaVaca = Number.MAX_SAFE_INTEGER;
+    n.proximaPaloma = Number.MAX_SAFE_INTEGER;
   });
 }
 
@@ -270,7 +273,14 @@ test('el jugador corre y salta con la altura prevista', async ({ page }) => {
   expect(altura).toBeGreaterThan(95);
   expect(altura).toBeLessThan(130);
 
-  await page.waitForTimeout(1200);
+  // Se espera a que TOQUE suelo, no 1200 ms de reloj: con la maquina cargada el
+  // juego va a menos fotogramas, pasa menos tiempo de juego en el mismo tiempo
+  // de reloj y el nino seguia por el aire cuando se le preguntaba.
+  await page.waitForFunction(
+    () => window.juego.scene.getScene('nivel').jugadores[0].body.blocked.down,
+    null,
+    { timeout: 15000 },
+  );
   const alAterrizar = await estadoJugador(page);
   expect(alAterrizar.enSuelo).toBe(true);
 
@@ -295,7 +305,13 @@ test('el salto corto sube menos que el salto largo', async ({ page }) => {
     await page.waitForTimeout(ms);
     await page.keyboard.up('Space');
     const altura = await alturaPromesa;
-    await page.waitForTimeout(1200);
+    // A tierra antes del siguiente salto, esperando el suceso y no el reloj: si
+    // el segundo salto sale con el nino todavia en el aire, no se mide un salto.
+    await page.waitForFunction(
+      () => window.juego.scene.getScene('nivel').jugadores[0].body.blocked.down,
+      null,
+      { timeout: 15000 },
+    );
     return altura;
   };
 
@@ -496,16 +512,26 @@ test('al jefe se le gana saltándole encima cuando está expuesto', async ({ pag
       const n = window.juego.scene.getScene('nivel');
       const j = n.jugadores[0];
       if (!n.jefe || !n.jefe.active) return;
+      const antes = n.jefe.vidas;
       n.jefe.invulnerableHasta = 0; // sin esperar el parpadeo
       j.setPosition(n.jefe.x, n.jefe.body.top - 70);
       j.body.setVelocity(0, 140);
-      await new Promise((r) => setTimeout(r, 420));
+
+      // Se espera a que el golpe CUENTE, no 420 ms de reloj. Con la suite
+      // entera por delante el navegador va lento, la caida no habia llegado a
+      // tocar al jefe y ese golpe se perdia: al final quedaba en pie y la
+      // prueba fallaba sin que el juego estuviera mal.
+      for (let i = 0; i < 120 && n.jefe && n.jefe.active && n.jefe.vidas === antes; i += 1) {
+        await new Promise((r) => setTimeout(r, 25));
+      }
     });
   };
 
   const vidas = await page.evaluate(() => window.juego.scene.getScene('nivel').jefe.vidas);
   for (let i = 0; i < vidas; i += 1) await saltarEncima();
-  await page.waitForTimeout(400);
+  await page.waitForFunction(() => !window.juego.scene.getScene('nivel').jefe, null, {
+    timeout: 15000,
+  });
 
   // derrotado: desaparece y la meta se enciende
   const despues = await page.evaluate(() => {
@@ -647,28 +673,42 @@ test('la katana de Martín también hace daño al jefe', async ({ page }) => {
 test('el bloque de Simón también hace daño al jefe', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
-  await esperarJefeExpuesto(page);
-  const antes = await page.evaluate(() => {
-    const n = window.juego.scene.getScene('nivel');
-    const j = n.jugadores[0];
-    j.setPosition(n.jefe.x - 190, j.y);
-    j.body.setVelocity(0, 0);
-    j.mirando = 1;
-    return n.jefe.vidas;
-  });
-  await page.waitForTimeout(150);
-  await page.keyboard.press('KeyX');
+  const antes = await page.evaluate(
+    () => window.juego.scene.getScene('nivel').jefe.vidas,
+  );
 
-  // Se espera al SUCESO (que le baje una vida) y no un tiempo de reloj: el
-  // bloque tarda lo que tarda en cruzar, y con la suite entera por delante el
-  // navegador va mas lento y 600 ms se quedaban cortos.
-  const despues = await page.evaluate(async (antes) => {
-    const n = window.juego.scene.getScene('nivel');
-    for (let i = 0; i < 40 && n.jefe && n.jefe.vidas === antes; i += 1) {
-      await new Promise((r) => setTimeout(r, 50));
-    }
-    return { existe: !!n.jefe, activo: n.jefe ? n.jefe.active : false, vidas: n.jefe ? n.jefe.vidas : 0 };
-  }, antes);
+  // El bloque tarda lo suyo en cruzar los 190 px, y la ventana del jefe dura lo
+  // que dura: si se cierra por el camino, el golpe rebota con un ¡clonc! y esa
+  // tirada se pierde. Con la maquina cargada eso pasa a menudo, asi que se
+  // prueba en VARIAS ventanas en vez de jugarselo todo a la primera.
+  let despues = null;
+  for (let intento = 0; intento < 6 && !despues; intento += 1) {
+    await esperarJefeExpuesto(page);
+    await page.evaluate(() => {
+      const n = window.juego.scene.getScene('nivel');
+      const j = n.jugadores[0];
+      j.setPosition(n.jefe.x - 190, j.y);
+      j.body.setVelocity(0, 0);
+      j.mirando = 1;
+    });
+    await page.keyboard.press('KeyX');
+
+    // Se espera al SUCESO (que le baje una vida) y no a un tiempo de reloj.
+    const estado = await page.evaluate(async (antes) => {
+      const n = window.juego.scene.getScene('nivel');
+      for (let i = 0; i < 60 && n.jefe && n.jefe.vidas === antes; i += 1) {
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return {
+        existe: !!n.jefe,
+        activo: n.jefe ? n.jefe.active : false,
+        vidas: n.jefe ? n.jefe.vidas : 0,
+      };
+    }, antes);
+    if (estado.vidas !== antes) despues = estado;
+  }
+
+  expect(despues, 'el bloque no le llego a bajar ninguna vida').not.toBeNull();
   expect(despues.existe).toBe(true);
   expect(despues.activo).toBe(true);
   expect(despues.vidas).toBe(antes - 1);

@@ -1826,9 +1826,32 @@ baja.
   tablero cuando contesta la nube sin ir recogiendo objeto a objeto: un tablero
   son tres docenas de textos sueltos MAS el panel, que lo dibuja `panelDeco` y
   no pasa por las manos de la escena.
+- **2026-09-28** — Se acaban las **pruebas que fallan cuando la maquina esta
+  cargada**. Llevaban varias sesiones cayendo cuatro o cinco por pasada, unas
+  distintas cada vez y todas pasando sueltas, y ya se estaba volviendo normal
+  decir "es la maquina". El problema era real y era de las pruebas: cinco sitios
+  seguian **esperando tiempo de reloj** en vez del suceso. Con el navegador
+  lento, en el mismo tiempo de reloj pasa MENOS tiempo de juego, asi que el nino
+  no habia aterrizado, el golpe no habia llegado al jefe o la pantalla de
+  victoria no se habia montado. Los cinco pasan a esperar lo que de verdad
+  esperan: que toque suelo, que le baje una vida al jefe, que la escena este.
+- **2026-09-28** — `entrarAlNivel` **calla tambien a las palomas**, como ya
+  callaba a las vacas. Una paloma que suelta lo suyo en mitad de una medida de
+  salto o de monedas cambia el resultado entero, y llegan al azar. Las pruebas
+  que SI quieren una se la traen ellas, creandola a mano o poniendo su reloj a
+  cero, asi que ninguna se entera del cambio.
+- **2026-09-28** — La prueba del bloque de Samaon contra el jefe **lo intenta en
+  varias ventanas** y no solo en la primera. El bloque tarda lo suyo en cruzar
+  190 px y la ventana del jefe dura lo que dura: si se cierra por el camino, el
+  golpe rebota con un ¡clonc! y esa tirada se pierde. Eso no es un fallo del
+  juego, es la pelea funcionando.
 - **2026-09-28** — La prueba que pisa a los jefes **con las teclas** pide 180 s
   de plazo: son cinco ciudades por cuatro carrerillas, cada una con su salto
-  entero en tiempo de reloj, y con el minuto de casa se quedaba al filo. Ojo con
-  esa familia de pruebas: si la maquina esta cargada (un navegador con medio
-  centenar de pestanas se lleva varios gigas), fallan unas cuantas a la vez y
-  pasan todas por separado. Eso es la maquina, no el juego.
+  entero en tiempo de reloj, y con el minuto de casa se quedaba al filo.
+
+  Y la regla que deja esto, que es la que hay que aplicar la proxima vez: **si
+  una prueba falla con la suite entera por delante y pasa suelta, no es la
+  maquina, es que esta esperando el reloj en vez del suceso.** Se dijo lo
+  contrario durante varias sesiones y se perdio tiempo mirando al sitio
+  equivocado. La maquina solo explica lo LENTO; lo que decide si una prueba pasa
+  o no es que espere lo que de verdad tiene que esperar.
