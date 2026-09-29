@@ -59,6 +59,10 @@ const CIUDADES = [
   // y abajo y 17 a los lados. Se le quitan con tres de propina, que el borde
   // del marco va difuminado.
   { nombre: 'orlando', parches: [], recorte: { arriba: 16, abajo: 16, izquierda: 20, derecha: 20 } },
+  // Estos dos vinieron ya sin marco: al prompt se le anadio que no dibujara
+  // ninguno, despues de lo de Orlando.
+  { nombre: 'lake-lanier', parches: [] },
+  { nombre: 'finca', parches: [] },
 ];
 
 if (!existsSync('src/assets/fondos')) mkdirSync('src/assets/fondos', { recursive: true });

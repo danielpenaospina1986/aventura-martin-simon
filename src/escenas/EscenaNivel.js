@@ -1124,8 +1124,12 @@ export class EscenaNivel extends Phaser.Scene {
   }
 
   // Un pegote de relleno, que sale rodando por el suelo.
+  // Lo que tira un jefe de torre: un pegote de relleno si es Martin Malvado, un
+  // panqueque si es Chad. Los DIBUJOS los pone el jefe, en su `municion`.
   lanzarRelleno(jefe, direccion) {
-    const relleno = this.rellenos.create(jefe.x + direccion * 40, jefe.y, TEXTURAS.relleno);
+    const municion = jefe.municion || MUNICION_DE_RESPALDO;
+    const relleno = this.rellenos.create(jefe.x + direccion * 40, jefe.y, municion.quieta);
+    relleno.seRompeCon = municion.seRompe;
     relleno.setDisplaySize(RELLENO.ancho, RELLENO.alto).setDepth(8);
     relleno.body.setSize(
       RELLENO.caja.ancho / relleno.scaleX,
@@ -1141,8 +1145,8 @@ export class EscenaNivel extends Phaser.Scene {
       loop: true,
       callback: () => {
         if (!relleno.active) return;
-        const entero = relleno.texture.key === TEXTURAS.relleno;
-        relleno.setTexture(entero ? TEXTURAS.rellenoGira : TEXTURAS.relleno);
+        const entero = relleno.texture.key === municion.quieta;
+        relleno.setTexture(entero ? municion.vuela : municion.quieta);
       },
     });
 
@@ -1160,7 +1164,7 @@ export class EscenaNivel extends Phaser.Scene {
     // destruye enseguida, asi que sin esto el dibujo del pegote reventado no se
     // veria nunca.
     const restos = this.add
-      .image(relleno.x, relleno.y, TEXTURAS.rellenoSplat)
+      .image(relleno.x, relleno.y, relleno.seRompeCon || MUNICION_DE_RESPALDO.seRompe)
       .setDisplaySize(RELLENO.ancho, RELLENO.alto)
       .setDepth(6);
     this.tweens.add({
@@ -1242,13 +1246,17 @@ export class EscenaNivel extends Phaser.Scene {
   // --- la arena de Papa Inodoro ---------------------------------------------
 
   // Un heladito de chocolate, que sale de la boca en arco y da tumbos.
+  // Lo que escupe un jefe que ronda y embiste: un heladito de chocolate si es
+  // Papa Inodoro, un juguete si es Simon Malvado. Los DIBUJOS los pone el jefe.
   escupirHeladito(jefe) {
     const dir = jefe.direccion;
+    const municion = jefe.municion || MUNICION_DE_RESPALDO;
     const heladito = this.heladitos.create(
       jefe.x + dir * HELADITO.salidaX,
       jefe.y + HELADITO.salidaY,
-      TEXTURAS.helado1,
+      municion.quieta,
     );
+    heladito.seRompeCon = municion.seRompe;
     heladito.setDisplaySize(HELADITO.ancho, HELADITO.alto).setDepth(8);
     heladito.setFlipX(dir < 0);
 
@@ -1269,8 +1277,8 @@ export class EscenaNivel extends Phaser.Scene {
       loop: true,
       callback: () => {
         if (!heladito.active) return;
-        const cae = heladito.texture.key === TEXTURAS.helado1;
-        heladito.setTexture(cae ? TEXTURAS.helado2 : TEXTURAS.helado1);
+        const cae = heladito.texture.key === municion.quieta;
+        heladito.setTexture(cae ? municion.vuela : municion.quieta);
       },
     });
     return heladito;
@@ -1283,7 +1291,7 @@ export class EscenaNivel extends Phaser.Scene {
     heladito.estrellado = true;
     if (heladito.giro) heladito.giro.remove();
     heladito.giro = null;
-    heladito.setTexture(TEXTURAS.heladoSplat);
+    heladito.setTexture(heladito.seRompeCon || MUNICION_DE_RESPALDO.seRompe);
     heladito.body.setVelocity(0, 0);
     heladito.body.enable = false;
     this.tweens.add({

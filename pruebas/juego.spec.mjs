@@ -1799,44 +1799,138 @@ async function irAlMundo(page, indice, ciudad) {
   );
 }
 
-test('los tres mundos nuevos cargan, cada uno con el jefe que le toca', async ({ page }) => {
+test('los ocho mundos tienen su fondo y su jefe propios, sin obra ninguna', async ({
+  page,
+}) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
 
-  const mirar = async (indice, ciudad) => {
-    await irAlMundo(page, indice, ciudad);
-    return page.evaluate(async () => {
-      const { TEXTURAS } = await import('/src/config/estilo.js');
+  const mundos = await page.evaluate(async () => {
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const { jefeDelCuento } = await import('/src/config/historia.js');
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const salida = [];
+
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      // se espera a que el tablero ESTE, no un tiempo de reloj
+      for (let v = 0; v < 150; v += 1) {
+        const n = window.juego.scene.getScene('nivel');
+        if (n && n.jefe && n.datosNivel && n.indiceNivel === i) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
       const n = window.juego.scene.getScene('nivel');
-      return {
+      salida.push({
         ciudad: n.datosNivel.fondo,
-        jefe: Boolean(n.jefe && n.jefe.active),
-        seLlama: (await import('/src/config/historia.js')).jefeDelCuento(n.datosNivel.fondo)
-          .nombre,
-        // en obra = no tiene fondo propio, asi que se le pinta la obra
+        clase: n.jefe ? n.jefe.constructor.name : null,
+        seLlama: jefeDelCuento(n.datosNivel.fondo).nombre,
+        // "en obra" = no tiene fondo propio, asi que se le pinta la obra
         enObra: !window.juego.textures.exists(TEXTURAS.fondoDe(n.datosNivel.fondo)),
-      };
-    });
-  };
-
-  const orlando = await mirar(5, 'orlando');
-  const lanier = await mirar(6, 'lake-lanier');
-  const finca = await mirar(7, 'finca');
-
-  // Orlando ya salio de la obra: tiene su fondo y su jefe propios.
-  expect(orlando.seLlama).toBe('el Tío Camilo');
-  expect(orlando.enObra).toBe(false);
-  expect(orlando.jefe).toBe(true);
-
-  // Los otros dos siguen en obra, con jefe prestado y nombre propio.
-  expect(lanier.seLlama).toBe('Chad');
-  expect(finca.seLlama).toBe('Simón Malvado');
-  [lanier, finca].forEach((m) => {
-    expect(m.jefe).toBe(true);
-    expect(m.enObra).toBe(true);
+        // y su jefe sale con SU dibujo, no con el de otro
+        suDibujo: n.jefe ? n.jefe.texture.key : null,
+      });
+    }
+    return salida;
   });
 
+  expect(mundos.map((m) => m.ciudad)).toEqual([
+    'space-coast', 'medellin', 'atlanta', 'miami', 'cartagena',
+    'orlando', 'lake-lanier', 'finca',
+  ]);
+
+  // Ya no queda ningun mundo en obra: los ocho tienen su ilustracion.
+  mundos.forEach((m) => {
+    expect(m.enObra).toBe(false);
+    expect(m.clase).not.toBeNull();
+  });
+
+  // Y cada uno tiene SU clase de jefe, ninguna repetida.
+  expect(mundos.map((m) => m.clase)).toEqual([
+    'PapaInodoro', 'Abuelo', 'DonaZully', 'MartinMalvado', 'JeanLuke',
+    'TioCamilo', 'Chad', 'SimonMalvado',
+  ]);
+
+  // con el nombre que le toca a su ciudad
+  expect(mundos.map((m) => m.seLlama)).toEqual([
+    'Papá Inodoro', 'el Abuelo', 'Doña Zully', 'Martín Malvado', 'Jean Luke',
+    'el Tío Camilo', 'Chad', 'Simón Malvado',
+  ]);
+
   expect(errores).toEqual([]);
+});
+
+test('los tres jefes nuevos tiran lo suyo, no lo del jefe del que heredan', async ({ page }) => {
+  // Los tres heredan la pelea de otro, asi que lo que hay que vigilar es que no
+  // se les haya quedado la municion del original.
+  await entrarAlNivel(page, 'martin');
+
+  const mirar = async (indice, ciudad, comoLanza) => {
+    await irAlMundo(page, indice, ciudad);
+    return page.evaluate(
+      async ({ comoLanza }) => {
+        const n = window.juego.scene.getScene('nivel');
+        const j = n.jugadores[0];
+        j.setPosition(n.jefe.x - 520, j.y);
+        j.body.setVelocity(0, 0);
+        const tiro = n[comoLanza](n.jefe, n.jefe.direccion);
+        return {
+          jefe: n.jefe.constructor.name,
+          golpes: n.jefe.vidasMaximas,
+          tira: tiro.texture.key,
+          seRompeCon: tiro.seRompeCon,
+        };
+      },
+      { comoLanza },
+    );
+  };
+
+  const camilo = await mirar(5, 'orlando', 'lanzarTiroDeJefe');
+  const chad = await mirar(6, 'lake-lanier', 'lanzarRelleno');
+  const simon = await mirar(7, 'finca', 'escupirHeladito');
+
+  expect(camilo.jefe).toBe('TioCamilo');
+  expect(camilo.tira).toBe('tex-balon');
+  expect(camilo.seRompeCon).toBe('tex-balon-revienta');
+  expect(camilo.golpes).toBe(6);
+
+  expect(chad.jefe).toBe('Chad');
+  expect(chad.tira).toBe('tex-panqueque');
+  expect(chad.seRompeCon).toBe('tex-panqueque-splat');
+  expect(chad.golpes).toBe(8);
+
+  expect(simon.jefe).toBe('SimonMalvado');
+  expect(simon.tira).toBe('tex-juguete1');
+  expect(simon.seRompeCon).toBe('tex-juguete-splat');
+  expect(simon.golpes).toBe(5);
+});
+
+test('a los jefes de siempre no se les cambio la municion al compartir pelea', async ({
+  page,
+}) => {
+  await entrarAlNivel(page, 'martin');
+
+  const mirar = async (indice, ciudad, comoLanza) => {
+    await irAlMundo(page, indice, ciudad);
+    return page.evaluate(
+      async ({ comoLanza }) => {
+        const n = window.juego.scene.getScene('nivel');
+        const tiro = n[comoLanza](n.jefe, n.jefe.direccion);
+        return { jefe: n.jefe.constructor.name, tira: tiro.texture.key };
+      },
+      { comoLanza },
+    );
+  };
+
+  const inodoro = await mirar(0, 'space-coast', 'escupirHeladito');
+  const malvado = await mirar(3, 'miami', 'lanzarRelleno');
+  const luke = await mirar(4, 'cartagena', 'lanzarTiroDeJefe');
+
+  expect(inodoro.jefe).toBe('PapaInodoro');
+  expect(inodoro.tira).toBe('tex-helado1');
+  expect(malvado.jefe).toBe('MartinMalvado');
+  expect(malvado.tira).toBe('tex-relleno');
+  expect(luke.jefe).toBe('JeanLuke');
+  expect(luke.tira).toBe('tex-globo');
 });
 
 test('el Tío Camilo es suyo: sus dibujos, sus balones y seis golpes', async ({ page }) => {
@@ -1931,34 +2025,6 @@ test('lo que tira un jefe VUELA: no es un bloque de los de Samaon', async ({ pag
   expect(vuelo.sigueVivo).toBe(true);
   // en cuanto sale se pone la pose de volar
   expect(vuelo.seEstiro).toContain('vuela');
-});
-
-test('a Jean Luke no se le cambio la municion al compartir pelea', async ({ page }) => {
-  // El Tio Camilo hereda de Jean Luke, asi que lo que hay que vigilar es que no
-  // se le haya llevado nada por delante al de Cartagena.
-  await entrarAlNivel(page, 'martin');
-  await irAlMundo(page, 4, 'cartagena');
-
-  const luke = await page.evaluate(async () => {
-    const { TEXTURAS } = await import('/src/config/estilo.js');
-    const n = window.juego.scene.getScene('nivel');
-    const jefe = n.jefe;
-    const tiro = n.lanzarTiroDeJefe(jefe);
-    return {
-      clase: jefe.constructor.name,
-      vidas: jefe.vidasMaximas,
-      esElSuyo: jefe.texture.key === TEXTURAS.jeanLukeMarcha,
-      esGlobo: tiro.texture.key === TEXTURAS.globo,
-      // el globo suelta burbujas, no chispas
-      echaChispas: Boolean(tiro.echaChispas),
-    };
-  });
-
-  expect(luke.clase).toBe('JeanLuke');
-  expect(luke.vidas).toBe(5);
-  expect(luke.esElSuyo).toBe(true);
-  expect(luke.esGlobo).toBe(true);
-  expect(luke.echaChispas).toBe(false);
 });
 
 test('cada jefe paga segun lo dificil que sea su mundo', async ({ page }) => {

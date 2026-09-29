@@ -165,12 +165,64 @@ CIUDADES.orlando = {
   fondoBajada: -0.06,
 };
 
-// Los dos que SIGUEN en obra. No tienen nada propio: se les presta el pavimento
-// y el decorado de la ciudad a la que mas se parecen, que es lo que se ha hecho
-// siempre aqui con lo que falta. Su FONDO, en cambio, es la obra: eso si se ve a
-// la primera y dice "este mundo esta a medias".
-CIUDADES['lake-lanier'] = { ...CIUDADES.atlanta };
-CIUDADES.finca = { ...CIUDADES.medellin };
+// Lake Lanier: la orilla del lago, de tierra y grava claras, con la cornisa en
+// el verde de sus pinos.
+//
+// De DETRAS se le presta lo de Space Coast, que al menos es del mismo pais: el
+// jeep (que en un lago pega, que es con lo que se remolcan las lanchas) y la
+// casa. De DELANTE no se le presta nada: se queda con los provisionales (una
+// rama que cuelga, un farol y una mata), que son genericos.
+//
+// Lo que NO se le pone son las PALMERAS. Esto es un lago de Georgia, de pinos y
+// robles, y unas palmeras delante se lo llevaban a otro clima de un vistazo.
+// Eran lo unico que cantaba de verdad: son grandes y van en primer plano. Es la
+// misma lecccion que Orlando con la chiva de Medellin, y el letrero del muelle
+// sigue fuera por lo de siempre, que nombra Cocoa Beach.
+//
+// Se intento dejarlo sin nada detras y no vale: una ciudad sin decorado de
+// fondo se ve vacia, y hay una prueba que lo vigila en las ocho.
+//
+// Su dibujo acaba al 67% de la lamina (por debajo es agua lisa), asi que se
+// sube para que la orilla caiga sobre el suelo del juego.
+CIUDADES['lake-lanier'] = {
+  pais: 'us',
+  frente: [
+    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 176, cada: 1180, desfase: 640, detras: true },
+    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 140, cada: 1340, desfase: 1520, detras: true },
+    { textura: TEXTURAS.frenteCasaFlorida, desde: 'abajo', alto: 200, cada: 1420, desfase: 1060, detras: true },
+  ],
+  pavimento: { patron: 'arena', claro: 0xded0b4, medio: 0xc3b394, oscuro: 0x9b8d72 },
+  subsuelo: { patron: 'estratos', claro: 0xa89c86, medio: 0x8d8270, oscuro: 0x6a6153 },
+  cornisa: { cuerpo: 0x8aa878, borde: 0x47603c },
+  fondoBajada: -0.08,
+};
+
+// La finca (El Refugio): tierra apisonada del Magdalena Medio, con la cornisa
+// en el teja de su techo.
+//
+// Aqui SI pega lo de Medellin, y es el unico de los tres mundos nuevos donde lo
+// prestado no chirria: la chiva y la casa de pueblo son colombianas, que es
+// justo lo que es esta finca.
+//
+// Lo que NO se le pone es un guayacan delante, aunque lo tengamos: su
+// ilustracion ya viene llena de arboles en flor, y anadiendo los nuestros el
+// tablero se convertia en una pared amarilla por la que no se veia jugar. De
+// delante se le deja solo la palmera alta, que es vertical y deja ver.
+//
+// Su dibujo acaba al 71% (por debajo es un liso), asi que se sube bastante.
+CIUDADES.finca = {
+  pais: 'co',
+  frente: [
+    { textura: TEXTURAS.frentePalmeraAlta, desde: 'abajo', alto: 210, cada: 1180, desfase: 520 },
+    // por detras del nino, la chiva camino de la finca y la casa de pueblo
+    { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 170, cada: 1460, desfase: 820, detras: true },
+    { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 210, cada: 1560, desfase: 1620, detras: true },
+  ],
+  pavimento: { patron: 'arena', claro: 0xd9c096, medio: 0xbfa478, oscuro: 0x95805a },
+  subsuelo: { patron: 'estratos', claro: 0xa98f6a, medio: 0x8d7757, oscuro: 0x6b5a41 },
+  cornisa: { cuerpo: 0xc4734f, borde: 0x7a3f28 },
+  fondoBajada: -0.14,
+};
 
 export function ciudadDe(nombre) {
   return CIUDADES[nombre] || CIUDADES[CIUDAD_POR_DEFECTO];

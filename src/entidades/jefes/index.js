@@ -14,6 +14,8 @@ import { DonaZully } from './DonaZully.js';
 import { MartinMalvado } from './MartinMalvado.js';
 import { JeanLuke } from './JeanLuke.js';
 import { TioCamilo } from './TioCamilo.js';
+import { Chad } from './Chad.js';
+import { SimonMalvado } from './SimonMalvado.js';
 import { Provisional } from './Provisional.js';
 
 const POR_CIUDAD = {
@@ -23,20 +25,15 @@ const POR_CIUDAD = {
   miami: MartinMalvado,
   cartagena: JeanLuke,
 
-  // Orlando ya tiene el suyo, con sus dibujos: el Tio Camilo. Pelea como Jean
-  // Luke (lo pidio Daniel), pero es suyo todo lo que se ve.
+  // Y los tres nuevos, que ya tienen tambien los suyos. Cada uno pelea como
+  // uno de los cinco primeros, pero es suyo todo lo que se ve:
+  //
+  //   el Tio Camilo   pelea como Jean Luke        (lo pidio Daniel)
+  //   Chad            como Martin Malvado         (tira desde la torre)
+  //   Simon Malvado   como Papa Inodoro           (escupe y embiste)
   orlando: TioCamilo,
-
-  // Los dos que SIGUEN en obra, con jefes prestados hasta que lleguen sus
-  // dibujos. Se le da uno distinto a cada uno para que no se jueguen igual:
-  //
-  //   Lake Lanier  Chad, con la del que tira cosas desde arriba
-  //   La finca     Simon Malvado, con la del que escupe y embiste
-  //
-  // El NOMBRE y las frases de los dos si son suyos: salen de historia.js, que
-  // va por ciudad y no por clase.
-  'lake-lanier': MartinMalvado,
-  finca: PapaInodoro,
+  'lake-lanier': Chad,
+  finca: SimonMalvado,
 };
 
 export function jefeDeCiudad(ciudad) {

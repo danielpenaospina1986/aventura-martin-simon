@@ -33,17 +33,45 @@ const TIEMPOS = {
 // Cuantos pegotes tira desde la torre antes de bajar a dar la cara.
 const TIROS_POR_TORRE = 2;
 
+// Lo que es SUYO de cada jefe que pelea asi. La pelea (vigilar desde la torre,
+// tirar, bajar a burlarse) es la misma; lo que cambia de uno a otro son sus
+// dibujos, lo que tira y cuanto aguanta.
+//
+// Va suelto y se pasa al constructor porque las vidas hacen falta DENTRO del
+// super(): la barra se monta ahi, y cambiarlas despues la dejaria con un
+// puntito de menos.
+export const LO_DE_MARTIN_MALVADO = {
+  vigila: TEXTURAS.malvadoVigila,
+  tira: TEXTURAS.malvadoTira,
+  salta: TEXTURAS.malvadoSalta,
+  baja: TEXTURAS.malvadoBaja,
+  golpe: TEXTURAS.malvadoGolpe,
+  derrotado: TEXTURAS.malvadoDerrotado,
+  vidas: 8, // pelea larga, pero con corazones cayendo
+  // La escena no sabe de pegotes: le pregunta esto al jefe.
+  municion: {
+    quieta: TEXTURAS.relleno,
+    vuela: TEXTURAS.rellenoGira,
+    seRompe: TEXTURAS.rellenoSplat,
+  },
+};
+
 export class MartinMalvado extends JefeBase {
-  constructor(escena, x, y, direccion = -1) {
+  // `suyo` es lo que cambia de un jefe de esta pelea a otro. Por defecto, el de
+  // Miami; Chad pasa el suyo y no toca nada mas.
+  constructor(escena, x, y, direccion = -1, suyo = LO_DE_MARTIN_MALVADO) {
     super(escena, x, y, {
-      textura: TEXTURAS.malvadoVigila,
-      texturaHerida: TEXTURAS.malvadoGolpe,
-      vidas: 8, // pelea larga, pero con corazones cayendo
+      textura: suyo.vigila,
+      texturaHerida: suyo.golpe,
+      vidas: suyo.vidas,
       direccion,
     });
 
+    this.suyo = suyo;
+    this.municion = suyo.municion;
+
     // La escena la usa al derrotarlo, para que se le vea desinflarse.
-    this.texturaDeDerrota = TEXTURAS.malvadoDerrotado;
+    this.texturaDeDerrota = suyo.derrotado;
 
     // No anda por el suelo: va de torre en torre, asi que se mueve a mano.
     this.body.setAllowGravity(false);
@@ -70,12 +98,12 @@ export class MartinMalvado extends JefeBase {
   }
 
   texturaDeAhora() {
-    if (this.estado === 'tira') return TEXTURAS.malvadoTira;
+    if (this.estado === 'tira') return this.suyo.tira;
     // en el aire, entre una torre y otra, va encogido
-    if (this.estado === 'baja' || this.estado === 'sube') return TEXTURAS.malvadoSalta;
+    if (this.estado === 'baja' || this.estado === 'sube') return this.suyo.salta;
     // abajo se queda burlandose, que es cuando toca darle
-    if (this.estado === 'suelo') return TEXTURAS.malvadoBaja;
-    return TEXTURAS.malvadoVigila;
+    if (this.estado === 'suelo') return this.suyo.baja;
+    return this.suyo.vigila;
   }
 
   // Se le pone la pose que le toque, si no esta parpadeando por un golpe.

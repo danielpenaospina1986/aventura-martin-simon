@@ -543,6 +543,157 @@ const PERSONAJES = [
     ],
   },
   {
+    // CHAD, el guardian del bano de Lake Lanier: un chef fanfarron con gafas
+    // oscuras, sartre en mano y una torre de panqueques bajo el brazo.
+    //
+    // Pelea como Martin Malvado: se pasa la pelea subido a las torres tirando
+    // panqueques y solo baja cada dos tiros, que es la unica ventana. Por eso
+    // su hoja trae las mismas seis poses y en el mismo orden.
+    //
+    // Su hoja viene en CUATRO arriba y DOS abajo, no en dos filas de tres. Da
+    // igual: las zonas se miden sobre la lamina.
+    //
+    // NADA de limpiarBolsas: el gris de la sarten queda a 163 del turquesa y el
+    // filtro de las bolsas encerradas corta en 198 (tolerancia x 2,2). Es la
+    // misma trampa de siempre.
+    nombre: 'chad',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    lienzo: { ancho: 520, alto: 520 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/chad',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'chad',
+        nombres: ['vigila', 'tira', 'salta', 'baja', 'golpe', 'derrotado'],
+        zonas: [
+          { x: 86, y: 10, ancho: 170, alto: 376 },   // de brazos cruzados, sobrado
+          { x: 338, y: 31, ancho: 345, alto: 356 },  // el sartenazo (sin panqueque)
+          { x: 715, y: 31, ancho: 323, alto: 320 },  // saltando de torre en torre
+          { x: 1057, y: 39, ancho: 263, alto: 350 }, // abajo, burlandose
+          { x: 167, y: 391, ancho: 447, alto: 349 }, // encajando el golpe
+          { x: 824, y: 448, ancho: 402, alto: 291 }, // sentado, con el panqueque encima
+        ],
+      },
+    ],
+  },
+  {
+    // El panqueque que tira Chad. En SU PROPIA entrada, como los demas
+    // proyectiles: la altura se reparte por grupos.
+    nombre: 'panqueque',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/chad',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'panqueque',
+        nombres: ['panqueque', 'panqueque-gira', 'panqueque-splat'],
+        zonas: [
+          { x: 80, y: 161, ancho: 355, alto: 346 },  // entero, con su mantequilla
+          { x: 509, y: 168, ancho: 397, alto: 315 }, // girando por el aire
+          { x: 907, y: 323, ancho: 406, alto: 217 }, // aplastado, en su charco de miel
+        ],
+      },
+    ],
+  },
+  {
+    // SIMON MALVADO, el guardian del bano de La finca: un nino regordete con el
+    // pelo largo y cara y cuerpo de muneco de piezas de armar.
+    //
+    // Pelea como Papa Inodoro: tira juguetes en arco, se enoja, embiste de lado
+    // a lado y se estampa; el aturdimiento es la unica ventana. Por eso su hoja
+    // trae OCHO poses, y no seis como los demas.
+    //
+    // La pose del BRINCO trae dibujada una sombra ovalada debajo, que es justo
+    // lo que no queremos (los adornos y los bichos se apoyan solos). El muneco
+    // acaba en y=352 y la sombra va de 364 para abajo, asi que esa zona corta en
+    // 357 y la deja fuera.
+    //
+    // TOLERANCIA 25, la mas baja de todo el proyecto, y con limpiarBolsas. La
+    // razon es su pose de ATURDIDO: el mareo viene dibujado como un disco
+    // RELLENO del mismo turquesa del fondo, encerrado por su aro de tinta. El
+    // relleno entra por los bordes y ahi no llega, asi que quedaba un plato
+    // teal clavado sobre su cabeza.
+    //
+    // Es una bolsa encerrada de manual, pero la cuenta de siempre no vale: el
+    // azul CLARO de sus jeans queda a solo 66 del turquesa, y el filtro de las
+    // bolsas corta en tolerancia x 2,2. Con cualquier tolerancia normal se los
+    // habria comido enteros.
+    //
+    // La ventana es estrecha pero existe: el disco esta a 6-20, el fondo no se
+    // desvia mas de 20 de su propia muestra, y los jeans estan a 66. O sea que
+    // la tolerancia tiene que caer entre 20 y 30 para quitar fondo, pillar el
+    // disco (25 x 2,2 = 55) y no tocar los jeans. Se elige 25, en el centro.
+    nombre: 'simon-malvado',
+    colorExacto: true,
+    limpiarBolsas: true,
+    tolerancia: 25,
+    lienzo: { ancho: 520, alto: 520 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/simonmalvado',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'simon-malvado',
+        nombres: [
+          'quieto',
+          'brinco',
+          'escupe',
+          'enojado',
+          'embiste',
+          'aturdido',
+          'golpe',
+          'derrotado',
+        ],
+        zonas: [
+          { x: 85, y: 33, ancho: 210, alto: 340 },   // quieto, cara de sobrado
+          { x: 363, y: 21, ancho: 317, alto: 336 },  // el brinco, SIN su sombra
+          { x: 715, y: 34, ancho: 320, alto: 337 },  // tirando (sin el juguete)
+          { x: 1072, y: 38, ancho: 265, alto: 336 }, // enojado, con el vapor
+          { x: 20, y: 434, ancho: 350, alto: 302 },  // embistiendo, con su polvareda
+          { x: 423, y: 400, ancho: 241, alto: 341 }, // aturdido, con las estrellas
+          { x: 734, y: 410, ancho: 283, alto: 328 }, // encajando el golpe
+          { x: 1031, y: 460, ancho: 316, alto: 281 }, // desarmado en el suelo
+        ],
+      },
+    ],
+  },
+  {
+    // El juguete que tira Simon Malvado: un robot de cuerda. En SU PROPIA
+    // entrada, como los demas proyectiles.
+    //
+    // Tolerancia 50, la mas baja de todas: el azul del robot queda a 101 del
+    // turquesa, que es MUY cerca, y con la de casa el filtro de residuos (que
+    // corta en tolerancia x 1,7) le habria mordido los bordes. Con 50 corta en
+    // 85 y lo deja en paz. El fondo es liso y no se desvia ni 11, asi que
+    // bajarla no cuesta nada.
+    nombre: 'juguete',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 50,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/simonmalvado',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'juguete',
+        nombres: ['juguete1', 'juguete2', 'juguete-splat'],
+        zonas: [
+          { x: 38, y: 168, ancho: 427, alto: 364 },  // de punta, volando
+          { x: 505, y: 200, ancho: 389, alto: 384 }, // dando tumbos
+          { x: 922, y: 372, ancho: 411, alto: 296 }, // reventado, con sus muelles
+        ],
+      },
+    ],
+  },
+  {
     // El balon en llamas que tira el Tio Camilo. En SU PROPIA entrada, como los
     // demas proyectiles: la altura se reparte por grupos.
     //
