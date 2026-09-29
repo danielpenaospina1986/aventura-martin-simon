@@ -153,14 +153,14 @@ delante y de detras.
 
 | # | Ciudad | Que es para ellos |
 |---|---|---|
-| 1 | Space Coast | Donde nacieron los dos |
-| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **el Abuelo** |
+| 1 | Space Coast | Donde nacieron los dos. Aqui les sale al paso **Simon Malvado** |
+| 2 | Medellin | La ciudad de sus papas, donde se criaron hasta los 5 y los 6 anos. Aqui les sale al paso **Papa Inodoro** |
 | 3 | Atlanta | Donde viven ahora. Aqui les sale al paso **Dona Zully** |
 | 4 | Miami | Las vacaciones de siempre, y la casa de la tia. Aqui les sale al paso **Martin Malvado** |
 | 5 | Cartagena | El paseo que no se les olvida. Aqui les sale al paso **Jean Luke** |
 | 6 | Orlando | El viaje de los parques. Aqui les sale al paso **el Tio Camilo** |
 | 7 | Lake Lanier | El lago de los fines de semana. Aqui les sale al paso **Chad**, el chef |
-| 8 | La finca | **El Refugio**, la finca ganadera de los abuelos en el Magdalena Medio. Aqui les sale al paso **Simon Malvado** |
+| 8 | La finca | **El Refugio**, la finca ganadera de los abuelos en el Magdalena Medio. Aqui les sale al paso **el Abuelo** |
 
 ### Como se cuenta
 
@@ -630,14 +630,26 @@ despues del personaje, y tambien desde la pantalla de victoria ("Elegir otro
 mundo"), que **se lleva el marcador**: asi se puede seguir jugando despues de
 pasarselos todos.
 
-Cada tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
+Se ensena **UNO SOLO, grande**, y se pasa de uno a otro de tres maneras: las
+**flechas de los lados**, **deslizando el dedo** o las **flechas del teclado**.
+Arriba dice por cual se va (**"Mundo 4 de 8"**) y abajo hay una fila de
+**puntitos**, uno por mundo, para saber donde se esta sin tener que leer. Se
+entra **tocando la tarjeta** (o con Enter).
+
+Antes salian los ocho a la vez, en rejilla de cuatro por fila. Con cinco mundos
+aquello se leia; con ocho, cada tarjeta se quedaba en 104 x 68 px y en un
+telefono no habia forma ni de verlas ni de acertarles con el dedo. **Mas vale
+ver uno bien que ocho mal.**
+
+La tarjeta es la **ilustracion de fondo de esa ciudad**, recortada al trozo de
 en medio, con el nombre en su cinta, **lo que paga su jefe** en una chapita
 arriba —que es lo que invita a meterse en los dificiles— y de quien es la arena
-debajo. Los mundos en obra lo dicen ahi mismo.
+debajo.
 
-Van en **rejilla de cuatro por fila**, no en una tirada: con cinco cabian, con
-ocho no, y encogerlas hasta que quepan las deja ilegibles y sin sitio donde
-poner el dedo.
+Deslizar y tocar se deciden **al levantar el dedo**, no al apoyarlo: hasta
+entonces no se sabe si aquello era un toque o un arrastre. Se pide ademas que el
+gesto sea **mas horizontal que vertical**, o bajar el dedo por la pantalla
+cambiaria de mundo sin querer.
 
 Ojo: el recorte se hace con **`setCrop`, no con una mascara**. En Phaser 4
 `setMask` no funciona con WebGL: avisa por consola y dibuja la lamina entera,
@@ -1869,11 +1881,31 @@ baja.
 - **2026-09-28** — Las tarjetas de mundo pasan a **rejilla de cuatro por fila**.
   Con cinco cabian de una tirada; con ocho no, y encogerlas hasta que quepan las
   deja ilegibles y sin sitio donde poner el dedo en un telefono.
+  *(Se volvio atras el 2026-09-29: ahora se ensena una sola, grande.)*
 - **2026-09-28** — Lo que recorre "todos los mundos" deja de contar hasta cinco
   y pregunta `TOTAL_NIVELES`: tres pruebas y el validador daban por hecho que
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
 - **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
   mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-29** — La pantalla de mundos pasa a **ensenar uno solo, grande**,
+  con flechas a los lados, deslizamiento con el dedo, "Mundo 4 de 8" arriba y
+  una fila de puntitos abajo. Lo pidio Daniel despues de probarlo en el
+  telefono: en rejilla, con ocho, cada tarjeta se quedaba en 104 x 68 px y no
+  habia forma ni de verlas ni de acertarles. Mas vale ver uno bien que ocho mal.
+- **2026-09-29** — Deslizar y tocar **se deciden al LEVANTAR el dedo**, no al
+  apoyarlo: hasta entonces no se sabe si era un toque (que juega) o un arrastre
+  (que cambia de mundo). Y se le pide al gesto que sea **mas horizontal que
+  vertical**, que si no bajar el dedo por la pantalla cambiaba de mundo sin
+  querer.
+- **2026-09-29** — Los jefes **se reordenan por donde vive cada uno**, no por el
+  orden en que se fueron dibujando: **Simon Malvado** a Space Coast, que es de
+  donde son los ninos; **Papa Inodoro** a Medellin, que es de donde sale su
+  "berriondo"; y **el Abuelo** a la finca, que es donde vive —ya no baja a la
+  ciudad, ahora los espera en su tierra con la camioneta y las canastillas.
+  Ojo con esto: el NOMBRE y las FRASES de un jefe viven en `historia.js` y van
+  por **ciudad**, no por clase, asi que hay que mudarlos con el. Si no, la
+  ciudad enseña el dibujo de uno con el nombre de otro, y no da ningun error.
+  Hay una prueba que lo vigila en los ocho mundos.
 - **2026-09-28** — **Lake Lanier y La finca salen de la obra, y con eso los
   ocho mundos quedan terminados.** Lake Lanier estrena su lago con el muelle y
   la marina, y a **Chad**, el chef que tira panqueques desde la torre. La finca

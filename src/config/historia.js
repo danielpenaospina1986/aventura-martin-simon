@@ -37,8 +37,6 @@ export const CIUDADES = {
     frase: 'El paseo que no se les olvida.\nY donde los espera quien ustedes ya saben.',
   },
 
-  // Los tres de abajo son mundos NUEVOS, todavia sin arte propio: van con el
-  // fondo en obra y con jefes prestados hasta que lleguen sus dibujos.
   orlando: {
     titulo: 'Orlando',
     frase: 'El viaje de los parques.\nAquí manda el Tío Camilo.',
@@ -49,24 +47,26 @@ export const CIUDADES = {
   },
   finca: {
     titulo: 'La finca',
-    frase: 'El Refugio: los abuelos, el lago y la vaca.\nY aquí Simón se pone malvado.',
+    frase: 'El Refugio: los abuelos, el lago y la vaca.\nY el abuelo, con la camioneta lista.',
   },
 };
 
 // Lo que dice cada guardian del bano al empezar la pelea y al perderla.
 //
-// Se escriben los cinco de una vez aunque los jefes se hagan de uno en uno: son
-// texto, y asi el cuento se lee entero desde aqui.
+// Va por CIUDAD, no por clase de jefe. Es comodo para escribir el cuento —se
+// lee entero desde aqui— pero tiene su trampa: al mudar un jefe de ciudad hay
+// que mudar tambien su entrada, o la ciudad acaba enseñando el dibujo de uno
+// con el nombre y las frases de otro.
 export const JEFES = {
   'space-coast': {
+    nombre: 'Simón Malvado',
+    saludo: '—¡Yo también sé jugar sucio!',
+    derrota: '—¡Me desarmaron! ¡No vale!',
+  },
+  medellin: {
     nombre: 'Papá Inodoro',
     saludo: '—¡NO TAPES EL BAÑO, BERRIONDO!',
     derrota: '—¡ME VOY POR EL SIFÓN, CARAJO!',
-  },
-  medellin: {
-    nombre: 'el Abuelo',
-    saludo: '—¡Súbanse, que los llevo… derechito a la ducha!',
-    derrota: '—¡Me varé, y enterrado en fruta!',
   },
   atlanta: {
     nombre: 'Doña Zully',
@@ -94,9 +94,9 @@ export const JEFES = {
     derrota: '—¡Se me quemaron los panqueques!',
   },
   finca: {
-    nombre: 'Simón Malvado',
-    saludo: '—¡Yo también sé jugar sucio!',
-    derrota: '—¡Me desarmaron! ¡No vale!',
+    nombre: 'el Abuelo',
+    saludo: '—¡Súbanse, que los llevo… derechito a la ducha!',
+    derrota: '—¡Me varé, y enterrado en fruta!',
   },
 };
 
