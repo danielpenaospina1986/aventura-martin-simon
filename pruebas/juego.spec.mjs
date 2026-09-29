@@ -1914,6 +1914,54 @@ test('una sola pulsacion mueve UN mundo, no cuatro', async ({ page }) => {
   expect(tras.indice).toBe(1);
 });
 
+test('se puede volver a elegir mundo una segunda vez, sin quedarse colgado', async ({ page }) => {
+  // El bug que conto Daniel: jugaba, pausaba, se salia a "Cambiar personaje",
+  // elegia mundo... y la pantalla no respondia. No entraba a ninguno.
+  //
+  // La culpa era de `yendo`, la bandera que evita que un doble clic arranque dos
+  // partidas: Phaser REUTILIZA la instancia de la escena, y el `init` no la
+  // volvia a poner en false. Asi que la primera vez funcionaba y de la segunda
+  // en adelante `empezar()` se salia por la primera linea, en silencio.
+  await abrirJuego(page);
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'nombre');
+  await page.keyboard.type('Prueba', { delay: 20 });
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+
+  // --- PRIMERA vez: se entra a un mundo ---
+  await esperarEscena(page, 'mundos');
+  await page.keyboard.press('Enter');
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Escape');
+  await esperarEscena(page, 'nivel');
+
+  // --- se pausa y se sale a cambiar personaje ---
+  await page.evaluate(() => window.juego.scene.getScene('nivel').pausar());
+  await esperarEscena(page, 'pausa');
+  await page.evaluate(() => window.juego.scene.getScene('pausa').salirA('seleccion'));
+  await esperarEscena(page, 'seleccion');
+  await page.keyboard.press('Enter');
+
+  // --- SEGUNDA vez: tiene que dejar entrar igual ---
+  await esperarEscena(page, 'mundos');
+  const alVolver = await page.evaluate(() => window.juego.scene.getScene('mundos').yendo);
+  expect(alVolver).toBe(false); // la bandera se rearma al volver a entrar
+
+  await page.keyboard.press('Enter');
+  // si la pantalla se quedo muerta, esto se queda esperando y falla
+  await esperarEscena(page, 'relato');
+  await page.keyboard.press('Escape');
+  await esperarEscena(page, 'nivel');
+
+  const jugando = await page.evaluate(() => {
+    const n = window.juego.scene.getScene('nivel');
+    return Boolean(n && n.jugadores && n.jugadores[0]);
+  });
+  expect(jugando).toBe(true);
+});
+
 test('las flechas de los lados cambian de mundo con un clic', async ({ page }) => {
   await abrirJuego(page);
   await page.keyboard.press('Enter');
