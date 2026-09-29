@@ -133,11 +133,35 @@ export const CIUDADES = {
 // Si un nivel no dice de que ciudad es, o trae una que no esta, se usa esta.
 export const CIUDAD_POR_DEFECTO = 'space-coast';
 
-// Los tres mundos NUEVOS. Todavia no tienen nada propio: se les presta el
-// pavimento y el decorado de la ciudad a la que mas se parecen, que es lo que
-// se ha hecho siempre aqui con lo que falta. Su FONDO, en cambio, es la obra:
-// eso si se ve a la primera y dice "este mundo esta a medias".
-CIUDADES.orlando = { ...CIUDADES.miami };
+// Orlando ya tiene fondo y jefe propios, asi que se le da tambien su calle: un
+// paseo de parque, de baldosa clara y gastada, con la cornisa en el mismo verde
+// azulado que el cielo de su ilustracion.
+//
+// Los ADORNOS siguen prestados, pero ya no de Medellin: un guayacan en flor y
+// una chiva delante de una montana rusa se leian fatal. Se le presta lo de
+// Space Coast, que tambien es Florida: palmeras delante y, por detras, la casa
+// y el jeep.
+//
+// Lo que NO se le presta es el letrero del muelle, que pone "Cocoa Beach Pier"
+// con todas sus letras. Un adorno generico se perdona; uno que nombra otra
+// ciudad, no.
+CIUDADES.orlando = {
+  pais: 'us',
+  frente: [
+    { textura: TEXTURAS.frentePalmera, desde: 'abajo', alto: 152, cada: 820, desfase: 340 },
+    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 184, cada: 1240, desfase: 760, detras: true },
+    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600, detras: true },
+    { textura: TEXTURAS.frenteCasaFlorida, desde: 'abajo', alto: 206, cada: 1180, desfase: 340, detras: true },
+  ],
+  pavimento: { patron: 'baldosa', claro: 0xd9c8b4, medio: 0xbfac96, oscuro: 0x968573 },
+  subsuelo: { patron: 'estratos', claro: 0xa89a88, medio: 0x8e8171, oscuro: 0x6b6156 },
+  cornisa: { cuerpo: 0x8fb6c4, borde: 0x40646f },
+};
+
+// Los dos que SIGUEN en obra. No tienen nada propio: se les presta el pavimento
+// y el decorado de la ciudad a la que mas se parecen, que es lo que se ha hecho
+// siempre aqui con lo que falta. Su FONDO, en cambio, es la obra: eso si se ve a
+// la primera y dice "este mundo esta a medias".
 CIUDADES['lake-lanier'] = { ...CIUDADES.atlanta };
 CIUDADES.finca = { ...CIUDADES.medellin };
 

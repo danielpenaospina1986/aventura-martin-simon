@@ -12,8 +12,13 @@
 //      El mecanismo se conserva por si algun dia hiciera falta: cada parche
 //      dice su zona y de que tipo es ('paloma' posa una bandada encima, 'sol'
 //      dibuja un sol art deco, y sin tipo rellena con un color de muestra).
-//   2. La deja como esta. No se le toca ni el color ni el enfoque: lo que la
-//      manda al fondo es que se mueve despacio.
+//   2. Le quita el MARCO, si la lamina viene con uno. Las ilustraciones que
+//      salen con aire de cartel a veces traen un margen de papel alrededor, y
+//      en el juego eso se ve como una franja clara pegada al borde de la
+//      pantalla, que canta muchisimo cuando el fondo se mueve. Se recorta al
+//      mismo formato de la lamina, asi que no se deforma nada.
+//   3. Y ya. No se le toca ni el color ni el enfoque: lo que la manda al fondo
+//      es que se mueve despacio.
 //
 //   node herramientas/preparar-fondos.mjs
 // ---------------------------------------------------------------------------
@@ -50,6 +55,10 @@ const CIUDADES = [
   //   [905,220,130,120] y [1030,225,90,60]
   { nombre: 'miami', parches: [] },
   { nombre: 'cartagena', parches: [] },
+  // Orlando vino con marco de cartel: un margen de papel crema de 13 px arriba
+  // y abajo y 17 a los lados. Se le quitan con tres de propina, que el borde
+  // del marco va difuminado.
+  { nombre: 'orlando', parches: [], recorte: { arriba: 16, abajo: 16, izquierda: 20, derecha: 20 } },
 ];
 
 if (!existsSync('src/assets/fondos')) mkdirSync('src/assets/fondos', { recursive: true });
@@ -225,7 +234,32 @@ for (const ciudad of CIUDADES) {
       salida.height = lienzo.height;
       const sctx = salida.getContext('2d');
       sctx.filter = filtro;
-      sctx.drawImage(lienzo, 0, 0);
+
+      if (ciudad.recorte) {
+        // Fuera el marco de cartel. Lo que queda se recorta al MISMO formato
+        // que la lamina y se estira a su tamano, asi que sale con las mismas
+        // medidas que las demas ciudades y sin deformar nada: solo se ve un
+        // pelin mas de cerca.
+        const m = ciudad.recorte;
+        let sx = m.izquierda;
+        let sy = m.arriba;
+        let sw = lienzo.width - m.izquierda - m.derecha;
+        let sh = lienzo.height - m.arriba - m.abajo;
+
+        const forma = lienzo.width / lienzo.height;
+        if (sw / sh > forma) {
+          const cabe = Math.round(sh * forma);
+          sx += Math.round((sw - cabe) / 2);
+          sw = cabe;
+        } else {
+          const cabe = Math.round(sw / forma);
+          sy += Math.round((sh - cabe) / 2);
+          sh = cabe;
+        }
+        sctx.drawImage(lienzo, sx, sy, sw, sh, 0, 0, salida.width, salida.height);
+      } else {
+        sctx.drawImage(lienzo, 0, 0);
+      }
 
       return salida.toDataURL('image/jpeg', calidad);
     },

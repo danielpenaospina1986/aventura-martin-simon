@@ -487,6 +487,92 @@ const PERSONAJES = [
     ],
   },
   {
+    // EL TIO CAMILO, el guardian del bano de Orlando: un diablo colorado y
+    // barrigon con la cara de Camilo, cachos, rabo de punta de flecha y el
+    // escudo de su equipo en la barriga. Pelea como Jean Luke —marcha, tira, y
+    // cuando se le acaban se agacha de espaldas a rebuscar en su costal—, asi
+    // que su hoja trae las mismas seis poses y en el mismo orden.
+    //
+    // Su hoja viene limpia: turquesa liso, sin nombres escritos debajo y sin
+    // linea de suelo dibujada, asi que las zonas salen de medir la lamina y no
+    // de pelearse con ella. Se le deja 5 px de margen a cada caja, que los
+    // bordes del dibujo vienen suavizados por el JPG.
+    //
+    // SI lleva limpiarBolsas, pero con la tolerancia BAJADA a 80. En la pose de
+    // recarga, el hueco entre su brazo y la boca del costal es una bolsa de
+    // fondo encerrada: el relleno entra por los bordes de la lamina y ahi no
+    // llega, asi que quedaba un parche turquesa pegado al cuerpo.
+    //
+    // La cuenta es la de siempre: el filtro de las bolsas corta en tolerancia
+    // x 2,2. Y aqui hay DOS cosas del dibujo que se le arriman: el crema del
+    // costal, a 194 del turquesa, y —la que casi se cuela— sus LAGRIMAS y el
+    // charco de la pose de derrotado, que son celestes y se quedan a 170.
+    //
+    // Con la tolerancia de casa (90) el filtro cortaria en 198 y se llevaria
+    // las dos por delante, que es la trampa de la camioneta del Abuelo, la
+    // barriga de Martin Malvado y la camiseta de Jean Luke. Con 80 cortaria en
+    // 176, que sigue por encima de las lagrimas: se salvarian de milagro, solo
+    // porque ninguna queda encerrada por tinta. Con 70 corta en 154 y las dos
+    // quedan con margen de verdad.
+    //
+    // Bajar tanto la tolerancia no cuesta nada aqui: este fondo es turquesa
+    // liso y no se desvia mas de 11 de su propia muestra.
+    nombre: 'tio-camilo',
+    colorExacto: true,
+    limpiarBolsas: true,
+    tolerancia: 70,
+    // Se ve a 172 px y a densidad 3 eso son 516 pixeles de verdad.
+    lienzo: { ancho: 520, alto: 520 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/camilo',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'tio-camilo',
+        nombres: ['marcha', 'apunta', 'tira', 'recarga', 'golpe', 'derrotado'],
+        zonas: [
+          { x: 79, y: 23, ancho: 299, alto: 361 },   // andando con su costal al hombro
+          { x: 523, y: 34, ancho: 317, alto: 347 },  // tomando impulso, balon en alto
+          { x: 912, y: 28, ancho: 377, alto: 357 },  // acaba de tirarlo, mano vacia
+          { x: 87, y: 444, ancho: 346, alto: 297 },  // de espaldas, hurgando en el costal
+          { x: 522, y: 391, ancho: 352, alto: 356 }, // encajando el golpe
+          { x: 906, y: 442, ancho: 453, alto: 309 }, // sentado, llorando
+        ],
+      },
+    ],
+  },
+  {
+    // El balon en llamas que tira el Tio Camilo. En SU PROPIA entrada, como los
+    // demas proyectiles: la altura se reparte por grupos.
+    //
+    // Tampoco lleva limpiarBolsas, y aqui menos todavia: las caras cremas del
+    // balon quedan a 151 del turquesa, muy por dentro del corte de 198, asi que
+    // el filtro se habria comido medio balon.
+    //
+    // La tercera zona se alarga hasta x=1279 a proposito: la lamina deja una
+    // brasa suelta a la derecha del balon apagado, y recortando justo por el
+    // dibujo se quedaria fuera.
+    nombre: 'balon-fuego',
+    colorExacto: true,
+    limpiarBolsas: false,
+    tolerancia: 90,
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/jefes/camilo',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'balon-fuego',
+        nombres: ['balon', 'balon-vuela', 'balon-revienta'],
+        zonas: [
+          { x: 95, y: 172, ancho: 290, alto: 337 },  // entero, envuelto en llamas
+          { x: 453, y: 221, ancho: 405, alto: 292 }, // volando, con su cola de fuego
+          { x: 940, y: 227, ancho: 340, alto: 289 }, // apagado, chamuscado y con humo
+        ],
+      },
+    ],
+  },
+  {
     // MARTIN MALVADO, el guardian del bano de Miami: la version mala de
     // Martain, metido en un disfraz de oso de peluche roto por el que se le
     // sale el relleno amarillo.

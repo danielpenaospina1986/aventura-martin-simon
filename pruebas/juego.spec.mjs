@@ -1711,7 +1711,7 @@ test('con carrerilla se le puede caer encima al jefe de cada ciudad', async ({ p
         // Se despeja lo que el jefe haya dejado por el suelo: un pegote de
         // relleno rodando por la carrerilla congela al nino a media zancada
         // y se pierde el salto.
-        [n.rellenos, n.globos, n.heladitos, n.chorros, n.peligros].forEach((g) => {
+        [n.rellenos, n.tirosDeJefe, n.heladitos, n.chorros, n.peligros].forEach((g) => {
           g.getChildren().slice().forEach((cosa) => cosa.active && cosa.destroy());
         });
         j.setPosition(n.jefe.x - salida, n.jefe.body.bottom - 30);
@@ -1780,37 +1780,185 @@ test('se elige a que mundo ir, y se entra a ese', async ({ page }) => {
   expect(donde.ciudad).toBe('miami');
 });
 
-test('los mundos nuevos cargan, con su jefe prestado y su fondo en obra', async ({ page }) => {
+// Va a un mundo por su numero y espera a que ESTE montado, mirando que el
+// tablero que hay puesto sea de verdad el suyo. No vale esperar un tiempo de
+// reloj: con la maquina cargada el tablero no ha llegado a montarse.
+async function irAlMundo(page, indice, ciudad) {
+  await page.evaluate((i) => {
+    window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+  }, indice);
+  await page.waitForFunction(
+    (c) => {
+      const n = window.juego.scene.getScene('nivel');
+      return Boolean(
+        n && n.datosNivel && n.datosNivel.fondo === c && n.sys.settings.status === 5 && n.jefe,
+      );
+    },
+    ciudad,
+    { timeout: 20000 },
+  );
+}
+
+test('los tres mundos nuevos cargan, cada uno con el jefe que le toca', async ({ page }) => {
   const errores = vigilarErrores(page);
   await entrarAlNivel(page, 'martin');
 
-  const nuevos = await page.evaluate(async () => {
-    const { TEXTURAS } = await import('/src/config/estilo.js');
-    const salida = [];
-    for (const i of [5, 6, 7]) {
-      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
-      await new Promise((r) => setTimeout(r, 1400));
+  const mirar = async (indice, ciudad) => {
+    await irAlMundo(page, indice, ciudad);
+    return page.evaluate(async () => {
+      const { TEXTURAS } = await import('/src/config/estilo.js');
       const n = window.juego.scene.getScene('nivel');
-      salida.push({
+      return {
         ciudad: n.datosNivel.fondo,
-        nombre: n.datosNivel.nombre,
-        // el jefe es prestado, pero el nombre que dice es el suyo
         jefe: Boolean(n.jefe && n.jefe.active),
-        seLlama: (await import('/src/config/historia.js')).jefeDelCuento(n.datosNivel.fondo).nombre,
-        // y su fondo es la obra, que es la que se pinta cuando no hay propia
+        seLlama: (await import('/src/config/historia.js')).jefeDelCuento(n.datosNivel.fondo)
+          .nombre,
+        // en obra = no tiene fondo propio, asi que se le pinta la obra
         enObra: !window.juego.textures.exists(TEXTURAS.fondoDe(n.datosNivel.fondo)),
-      });
-    }
-    return salida;
-  });
+      };
+    });
+  };
 
-  expect(nuevos.map((m) => m.ciudad)).toEqual(['orlando', 'lake-lanier', 'finca']);
-  expect(nuevos.map((m) => m.seLlama)).toEqual(['el Tío Camilo', 'Chad', 'Simón Malvado']);
-  nuevos.forEach((m) => {
+  const orlando = await mirar(5, 'orlando');
+  const lanier = await mirar(6, 'lake-lanier');
+  const finca = await mirar(7, 'finca');
+
+  // Orlando ya salio de la obra: tiene su fondo y su jefe propios.
+  expect(orlando.seLlama).toBe('el Tío Camilo');
+  expect(orlando.enObra).toBe(false);
+  expect(orlando.jefe).toBe(true);
+
+  // Los otros dos siguen en obra, con jefe prestado y nombre propio.
+  expect(lanier.seLlama).toBe('Chad');
+  expect(finca.seLlama).toBe('Simón Malvado');
+  [lanier, finca].forEach((m) => {
     expect(m.jefe).toBe(true);
     expect(m.enObra).toBe(true);
   });
+
   expect(errores).toEqual([]);
+});
+
+test('el Tío Camilo es suyo: sus dibujos, sus balones y seis golpes', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+  await irAlMundo(page, 5, 'orlando');
+
+  const camilo = await page.evaluate(async () => {
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+
+    // se le pone el nino delante, que si no no pelea
+    const j = n.jugadores[0];
+    j.setPosition(jefe.x - 200, jefe.y);
+    j.body.setVelocity(0, 0);
+
+    // y se le hace tirar uno a mano, para ver con que lo dibuja
+    const tiro = n.lanzarTiroDeJefe(jefe);
+
+    return {
+      clase: jefe.constructor.name,
+      vidas: jefe.vidasMaximas,
+      // los puntitos de la barra tienen que ser tantos como golpes aguanta
+      puntos: jefe.puntos.length,
+      suDibujo: jefe.texture.key,
+      esElSuyo: jefe.texture.key === TEXTURAS.tioCamiloMarcha,
+      // y el proyectil, un balon y no un globo de agua
+      tira: tiro.texture.key,
+      esBalon: tiro.texture.key === TEXTURAS.balon,
+      seRompeCon: tiro.seRompeCon === TEXTURAS.balonRevienta,
+      echaChispas: tiro.echaChispas,
+      derrotaConLaSuya: jefe.texturaDeDerrota === TEXTURAS.tioCamiloDerrotado,
+    };
+  });
+
+  expect(camilo.clase).toBe('TioCamilo');
+  expect(camilo.esElSuyo).toBe(true);
+  expect(camilo.derrotaConLaSuya).toBe(true);
+  // aguanta uno mas que Jean Luke, y la barra lo dice
+  expect(camilo.vidas).toBe(6);
+  expect(camilo.puntos).toBe(6);
+  // tira balones en llamas, no globos de agua
+  expect(camilo.esBalon).toBe(true);
+  expect(camilo.seRompeCon).toBe(true);
+  expect(camilo.echaChispas).toBe(true);
+  expect(errores).toEqual([]);
+});
+
+test('lo que tira un jefe VUELA: no es un bloque de los de Samaon', async ({ page }) => {
+  // Esto se rompio de verdad, y en silencio. Al sacar el proyectil del jefe a
+  // su propio grupo se le puso de nombre `proyectiles`... que ya eran los
+  // BLOQUES que lanza Samaon. El segundo pisaba al primero, asi que lo que
+  // tiraba el jefe nacia con gravedad y con el choque contra el suelo puesto:
+  // se estrellaba en el sitio sin volar un pixel. Y como el sprite salia con su
+  // dibujo correcto, por una captura no se notaba.
+  await entrarAlNivel(page, 'martin');
+  await irAlMundo(page, 5, 'orlando');
+
+  const vuelo = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    // lejos del jefe, que si le da al nino se rompe y no se mide nada
+    j.setPosition(n.jefe.x - 520, j.y);
+    j.body.setVelocity(0, 0);
+
+    const tiro = n.lanzarTiroDeJefe(n.jefe);
+    const salioEn = { x: tiro.x, y: tiro.y };
+    const suGrupo = n.tirosDeJefe.contains(tiro);
+    const enLosBloques = n.proyectiles.contains(tiro);
+
+    await new Promise((r) => setTimeout(r, 500));
+    return {
+      suGrupo,
+      enLosBloques,
+      // ha recorrido camino de lado
+      avanzo: Math.abs(tiro.x - salioEn.x),
+      // y NO se ha caido: va por el aire
+      cayo: tiro.y - salioEn.y,
+      sigueVivo: tiro.active,
+      seEstiro: tiro.texture.key,
+    };
+  });
+
+  // va en SU grupo, no en el de los bloques
+  expect(vuelo.suGrupo).toBe(true);
+  expect(vuelo.enLosBloques).toBe(false);
+  // cruza de verdad (a 220 px/s, en medio segundo son mas de 80)
+  expect(vuelo.avanzo).toBeGreaterThan(80);
+  // y no le tira la gravedad
+  expect(Math.abs(vuelo.cayo)).toBeLessThan(4);
+  expect(vuelo.sigueVivo).toBe(true);
+  // en cuanto sale se pone la pose de volar
+  expect(vuelo.seEstiro).toContain('vuela');
+});
+
+test('a Jean Luke no se le cambio la municion al compartir pelea', async ({ page }) => {
+  // El Tio Camilo hereda de Jean Luke, asi que lo que hay que vigilar es que no
+  // se le haya llevado nada por delante al de Cartagena.
+  await entrarAlNivel(page, 'martin');
+  await irAlMundo(page, 4, 'cartagena');
+
+  const luke = await page.evaluate(async () => {
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const n = window.juego.scene.getScene('nivel');
+    const jefe = n.jefe;
+    const tiro = n.lanzarTiroDeJefe(jefe);
+    return {
+      clase: jefe.constructor.name,
+      vidas: jefe.vidasMaximas,
+      esElSuyo: jefe.texture.key === TEXTURAS.jeanLukeMarcha,
+      esGlobo: tiro.texture.key === TEXTURAS.globo,
+      // el globo suelta burbujas, no chispas
+      echaChispas: Boolean(tiro.echaChispas),
+    };
+  });
+
+  expect(luke.clase).toBe('JeanLuke');
+  expect(luke.vidas).toBe(5);
+  expect(luke.esElSuyo).toBe(true);
+  expect(luke.esGlobo).toBe(true);
+  expect(luke.echaChispas).toBe(false);
 });
 
 test('cada jefe paga segun lo dificil que sea su mundo', async ({ page }) => {

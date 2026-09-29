@@ -12,7 +12,7 @@ import Phaser from 'phaser';
 import { COLORES, FONDO, PLANOS, TEXTURAS, TINTA } from '../config/estilo.js';
 import { CIUDADES, ciudadDe } from '../config/ciudades.js';
 import { PERSONAJES } from '../config/personajes.js';
-import { GLOBO, ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
+import { ENEMIGO, JEFE, MUNDO, RENDER, TORRE } from '../config/ajustes.js';
 
 // Las texturas se dibujan a la densidad del render, no al tamano del juego: si
 // una moneda de 18 px se generase con 18 pixeles y luego la camara la ampliase,

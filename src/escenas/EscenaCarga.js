@@ -59,6 +59,17 @@ import jeanLukeDerrotado from '../assets/jefes/jeanluke/derrotado.webp';
 import globo from '../assets/jefes/jeanluke/globo.png';
 import globoVuela from '../assets/jefes/jeanluke/globo-vuela.png';
 import globoRevienta from '../assets/jefes/jeanluke/globo-revienta.png';
+
+// Orlando: el Tio Camilo, con sus balones en llamas
+import tioCamiloMarcha from '../assets/jefes/camilo/marcha.webp';
+import tioCamiloApunta from '../assets/jefes/camilo/apunta.webp';
+import tioCamiloTira from '../assets/jefes/camilo/tira.webp';
+import tioCamiloRecarga from '../assets/jefes/camilo/recarga.webp';
+import tioCamiloGolpe from '../assets/jefes/camilo/golpe.webp';
+import tioCamiloDerrotado from '../assets/jefes/camilo/derrotado.webp';
+import balon from '../assets/jefes/camilo/balon.png';
+import balonVuela from '../assets/jefes/camilo/balon-vuela.png';
+import balonRevienta from '../assets/jefes/camilo/balon-revienta.png';
 import zullyQuieta from '../assets/jefes/zully/quieta.png';
 import zullyMirada from '../assets/jefes/zully/mirada.png';
 import zullyEmpapada from '../assets/jefes/zully/empapada.png';
@@ -84,6 +95,7 @@ import fondoMedellin from '../assets/fondos/medellin.jpg';
 import fondoAtlanta from '../assets/fondos/atlanta.jpg';
 import fondoMiami from '../assets/fondos/miami.jpg';
 import fondoCartagena from '../assets/fondos/cartagena.jpg';
+import fondoOrlando from '../assets/fondos/orlando.jpg';
 
 // Un fondo por ciudad. La clave la arma TEXTURAS.fondoDe con el mismo nombre
 // que lleva cada nivel en su campo "fondo".
@@ -93,6 +105,7 @@ const FONDOS_CIUDAD = {
   atlanta: fondoAtlanta,
   miami: fondoMiami,
   cartagena: fondoCartagena,
+  orlando: fondoOrlando,
 };
 import caraMartin from '../assets/cara-martin.png';
 import caraSimon from '../assets/cara-simon.png';
@@ -187,6 +200,15 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.globo, globo);
     this.load.image(TEXTURAS.globoVuela, globoVuela);
     this.load.image(TEXTURAS.globoRevienta, globoRevienta);
+    this.load.image(TEXTURAS.tioCamiloMarcha, tioCamiloMarcha);
+    this.load.image(TEXTURAS.tioCamiloApunta, tioCamiloApunta);
+    this.load.image(TEXTURAS.tioCamiloTira, tioCamiloTira);
+    this.load.image(TEXTURAS.tioCamiloRecarga, tioCamiloRecarga);
+    this.load.image(TEXTURAS.tioCamiloGolpe, tioCamiloGolpe);
+    this.load.image(TEXTURAS.tioCamiloDerrotado, tioCamiloDerrotado);
+    this.load.image(TEXTURAS.balon, balon);
+    this.load.image(TEXTURAS.balonVuela, balonVuela);
+    this.load.image(TEXTURAS.balonRevienta, balonRevienta);
     this.load.image(TEXTURAS.zullyQuieta, zullyQuieta);
     this.load.image(TEXTURAS.zullyMirada, zullyMirada);
     this.load.image(TEXTURAS.zullyEmpapada, zullyEmpapada);

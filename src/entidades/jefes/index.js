@@ -13,6 +13,7 @@ import { Abuelo } from './Abuelo.js';
 import { DonaZully } from './DonaZully.js';
 import { MartinMalvado } from './MartinMalvado.js';
 import { JeanLuke } from './JeanLuke.js';
+import { TioCamilo } from './TioCamilo.js';
 import { Provisional } from './Provisional.js';
 
 const POR_CIUDAD = {
@@ -22,16 +23,18 @@ const POR_CIUDAD = {
   miami: MartinMalvado,
   cartagena: JeanLuke,
 
-  // Los tres mundos NUEVOS, con jefes prestados hasta que lleguen sus dibujos.
-  // Se le da uno distinto a cada uno para que no se jueguen los tres igual:
+  // Orlando ya tiene el suyo, con sus dibujos: el Tio Camilo. Pelea como Jean
+  // Luke (lo pidio Daniel), pero es suyo todo lo que se ve.
+  orlando: TioCamilo,
+
+  // Los dos que SIGUEN en obra, con jefes prestados hasta que lleguen sus
+  // dibujos. Se le da uno distinto a cada uno para que no se jueguen igual:
   //
-  //   Orlando      el Tio Camilo, con la pelea de Jean Luke (lo pidio Daniel)
   //   Lake Lanier  Chad, con la del que tira cosas desde arriba
   //   La finca     Simon Malvado, con la del que escupe y embiste
   //
-  // El NOMBRE y las frases de cada uno si son suyos: salen de historia.js, que
+  // El NOMBRE y las frases de los dos si son suyos: salen de historia.js, que
   // va por ciudad y no por clase.
-  orlando: JeanLuke,
   'lake-lanier': MartinMalvado,
   finca: PapaInodoro,
 };
