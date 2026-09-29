@@ -239,51 +239,54 @@ test('el jugador corre y salta con la altura prevista', async ({ page }) => {
   const inicio = await estadoJugador(page);
   expect(inicio.enSuelo).toBe(true);
 
-  // Correr a la derecha. Se mira la velocidad que alcanza, no cuanto recorre en
-  // un tiempo de reloj: en una maquina lenta el juego va a menos fotogramas por
-  // segundo y recorreria menos, y la prueba fallaria sin que el juego este mal.
-  await page.keyboard.down('ArrowRight');
-  await page.waitForTimeout(500);
-  const corriendo = await page.evaluate(() => {
-    const j = window.juego.scene.getScene('nivel').jugadores[0];
-    return { x: Math.round(j.x), velocidad: Math.round(j.body.velocity.x) };
-  });
-  expect(corriendo.velocidad).toBe(210); // la velocidad de ajustes.js
-  expect(corriendo.x).toBeGreaterThan(inicio.x);
+  // Se juega DESDE DENTRO. Pedirle a Playwright que pulse o suelte una tecla
+  // cuesta un viaje de ida y vuelta, y con la maquina cargada ese viaje dura
+  // varios fotogramas: se leia la velocidad cuando el nino ya habia frenado, o
+  // se soltaba el salto mucho despues de lo pedido. `tocar` es la misma puerta
+  // por la que entran los mandos tactiles, asi que al juego le da exactamente
+  // igual de donde le llegue.
+  const medido = await page.evaluate(async () => {
+    const n = window.juego.scene.getScene('nivel');
+    const j = n.jugadores[0];
+    const c = j.controles;
+    const espera = () => new Promise((r) => setTimeout(r, 8));
 
-  await page.keyboard.up('ArrowRight');
-  await page.waitForTimeout(300);
-
-  // Saltar sin soltar: se sigue la subida hasta el punto mas alto, en vez de
-  // mirar la altura en un instante fijo.
-  await page.keyboard.down('Space');
-  const altura = await page.evaluate(async () => {
-    const j = window.juego.scene.getScene('nivel').jugadores[0];
-    const partida = j.y;
-    let masAlto = j.y;
-    // margen largo a proposito: en una maquina lenta el salto tarda mas en
-      // tiempo de reloj, y si el bucle se corta antes se mide una altura falsa
-      for (let i = 0; i < 400 && !(j.body.velocity.y >= 0 && j.y < partida - 10); i += 1) {
-      masAlto = Math.min(masAlto, j.y);
-      await new Promise((r) => setTimeout(r, 10));
+    // Correr. Se mira la velocidad que ALCANZA, no cuanto recorre en un tiempo
+    // de reloj: en una maquina lenta el juego va a menos fotogramas por segundo
+    // y recorreria menos, y la prueba fallaria sin que el juego este mal.
+    const partidaX = j.x;
+    c.tocar('derecha', true);
+    let velocidad = 0;
+    for (let i = 0; i < 600 && velocidad < 210; i += 1) {
+      velocidad = Math.max(velocidad, Math.round(j.body.velocity.x));
+      await espera();
     }
-    return partida - masAlto;
+    const avanzo = j.x - partidaX;
+    c.tocar('derecha', false);
+    for (let i = 0; i < 600 && Math.abs(j.body.velocity.x) > 1; i += 1) await espera();
+
+    // Saltar sin soltar: se sigue la subida hasta el punto mas alto, en vez de
+    // mirar la altura en un instante fijo.
+    const partidaY = j.y;
+    let masAlto = j.y;
+    c.tocar('saltar', true);
+    for (let i = 0; i < 1200; i += 1) {
+      masAlto = Math.min(masAlto, j.y);
+      if (j.body.velocity.y >= 0 && partidaY - j.y > 10) break;
+      await espera();
+    }
+    const altura = partidaY - masAlto;
+    c.tocar('saltar', false);
+    for (let i = 0; i < 1200 && !j.body.blocked.down; i += 1) await espera();
+
+    return { velocidad, avanzo, altura, enSuelo: j.body.blocked.down };
   });
-  await page.keyboard.up('Space');
 
-  expect(altura).toBeGreaterThan(95);
-  expect(altura).toBeLessThan(130);
-
-  // Se espera a que TOQUE suelo, no 1200 ms de reloj: con la maquina cargada el
-  // juego va a menos fotogramas, pasa menos tiempo de juego en el mismo tiempo
-  // de reloj y el nino seguia por el aire cuando se le preguntaba.
-  await page.waitForFunction(
-    () => window.juego.scene.getScene('nivel').jugadores[0].body.blocked.down,
-    null,
-    { timeout: 15000 },
-  );
-  const alAterrizar = await estadoJugador(page);
-  expect(alAterrizar.enSuelo).toBe(true);
+  expect(medido.velocidad).toBe(210); // la velocidad de ajustes.js
+  expect(medido.avanzo).toBeGreaterThan(0);
+  expect(medido.altura).toBeGreaterThan(95);
+  expect(medido.altura).toBeLessThan(130);
+  expect(medido.enSuelo).toBe(true);
 
   expect(errores).toEqual([]);
 });
@@ -291,33 +294,46 @@ test('el jugador corre y salta con la altura prevista', async ({ page }) => {
 test('el salto corto sube menos que el salto largo', async ({ page }) => {
   await entrarAlNivel(page, 'martin');
 
-  const medir = async (ms) => {
-    await page.keyboard.down('Space');
-    const alturaPromesa = page.evaluate(async () => {
+  // Igual que el de arriba, y aqui el viaje de ida y vuelta era MORTAL: el
+  // juego no recorta el salto en el mismo fotograma en que se salta
+  // (`puedeRecortar`), para que un toque cortisimo de un saltito de verdad. Si
+  // la orden de soltar tarda varios fotogramas en llegar, el salto "corto" se
+  // soltaba ya llegando arriba y median los dos lo mismo.
+  const medir = (subidaAntesDeSoltar) =>
+    page.evaluate(async (umbral) => {
       const j = window.juego.scene.getScene('nivel').jugadores[0];
+      const c = j.controles;
+      const espera = () => new Promise((r) => setTimeout(r, 8));
       const partida = j.y;
       let masAlto = j.y;
-      for (let i = 0; i < 400 && !(j.body.velocity.y >= 0 && j.y < partida - 5); i += 1) {
-        masAlto = Math.min(masAlto, j.y);
-        await new Promise((r) => setTimeout(r, 10));
-      }
-      return partida - masAlto;
-    });
-    await page.waitForTimeout(ms);
-    await page.keyboard.up('Space');
-    const altura = await alturaPromesa;
-    // A tierra antes del siguiente salto, esperando el suceso y no el reloj: si
-    // el segundo salto sale con el nino todavia en el aire, no se mide un salto.
-    await page.waitForFunction(
-      () => window.juego.scene.getScene('nivel').jugadores[0].body.blocked.down,
-      null,
-      { timeout: 15000 },
-    );
-    return altura;
-  };
+      let soltado = false;
 
-  const corto = await medir(70);
-  const largo = await medir(330);
+      c.tocar('saltar', true);
+      for (let i = 0; i < 1200; i += 1) {
+        masAlto = Math.min(masAlto, j.y);
+        const subido = partida - j.y;
+        // Se suelta cuando ha SUBIDO lo que se le pide. Lo de "o ya va bajando"
+        // le exige haber despegado: de pie la velocidad vertical tambien es
+        // cero, y sin eso soltaria antes de empezar a subir.
+        if (!soltado && (subido >= umbral || (subido > 6 && j.body.velocity.y >= 0))) {
+          c.tocar('saltar', false);
+          soltado = true;
+        }
+        if (soltado && subido > 6 && j.body.velocity.y >= 0) break;
+        await espera();
+      }
+      c.tocar('saltar', false);
+
+      // A tierra antes del siguiente salto: si el segundo sale con el nino
+      // todavia en el aire, no se mide un salto.
+      for (let i = 0; i < 1200 && !j.body.blocked.down; i += 1) await espera();
+      return partida - masAlto;
+    }, subidaAntesDeSoltar);
+
+  // El corto se suelta en cuanto ha despegado; el largo se aguanta hasta
+  // arriba, que es lo que de verdad se quiere comparar.
+  const corto = await medir(10);
+  const largo = await medir(9999);
   expect(largo).toBeGreaterThan(corto + 20);
 });
 
@@ -851,19 +867,26 @@ test('la bañera se agacha, salta y lanza agua con jabón', async ({ page }) => 
     banera.direccion = -1;
     banera.proximoAtaque = 0;
 
-    await new Promise((r) => setTimeout(r, 250));
-    const agachada = banera.estado;
-
-    await new Promise((r) => setTimeout(r, 600));
-    return {
-      agachada,
-      despues: banera.estado,
-      peligros: n.peligros.getChildren().filter((p) => p.active).length,
-    };
+    // Se apunta POR QUE ESTADOS PASA, en vez de mirar el que tenga en dos
+    // instantes fijos de reloj. La banera hace carga, lanza y vuelve a andar:
+    // con la maquina cargada, a los 850 ms ya habia terminado y se la pillaba
+    // en 'anda'. Eso no es un fallo del juego, es haber llegado tarde a mirar.
+    const pasoPor = new Set();
+    let peligros = 0;
+    for (let i = 0; i < 400; i += 1) {
+      pasoPor.add(banera.estado);
+      peligros = Math.max(
+        peligros,
+        n.peligros.getChildren().filter((p) => p.active).length,
+      );
+      if (pasoPor.has('carga') && pasoPor.has('lanza') && peligros >= 1) break;
+      await new Promise((r) => setTimeout(r, 15));
+    }
+    return { pasoPor: [...pasoPor], peligros };
   });
 
-  expect(resultado.agachada).toBe('carga');
-  expect(resultado.despues).toBe('lanza');
+  expect(resultado.pasoPor).toContain('carga');
+  expect(resultado.pasoPor).toContain('lanza');
   expect(resultado.peligros).toBeGreaterThanOrEqual(1);
   expect(errores).toEqual([]);
 });
@@ -2146,6 +2169,58 @@ test('los ocho mundos tienen su fondo y su jefe propios, sin obra ninguna', asyn
   expect(errores).toEqual([]);
 });
 
+test('ningun jefe usa un dibujo que no sea suyo, en ninguna pose', async ({ page }) => {
+  test.setTimeout(180000); // ocho ciudades, y a cada jefe hay que dejarle pelear
+  // El fallo que conto Daniel: en Space Coast sale Simon Malvado, pero en
+  // varias poses se veia a Papa Inodoro. `texturaDeAhora()` si estaba
+  // parametrizada, pero habia CUATRO `setTexture` escritos a mano dentro de los
+  // metodos que cambian de estado (escupir, enojarse, embestir, aturdirse), y
+  // esos se quedaron apuntando al jefe original. Como los dos comparten pelea,
+  // no daba ningun error: solo salia el muneco equivocado.
+  //
+  // Todos los dibujos de un jefe se llaman `tex-FAMILIA-pose`, asi que la regla
+  // es facil de comprobar: se le deja pelear de verdad y TODO lo que se ponga
+  // tiene que ser de UNA sola familia.
+  await entrarAlNivel(page, 'martin');
+
+  const revoltijo = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const familiaDe = (clave) => String(clave).split('-')[1] || String(clave);
+    const malos = [];
+
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      for (let v = 0; v < 200; v += 1) {
+        const e = window.juego.scene.getScene('nivel');
+        if (e && e.indiceNivel === i && e.jefe) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+      const jefe = n.jefe;
+      if (!jefe) continue;
+
+      // se le planta el nino delante, que si no el jefe no pelea
+      const j = n.jugadores[0];
+      j.setPosition(jefe.x - 170, jefe.y);
+      j.body.setVelocity(0, 0);
+
+      const vistos = new Set();
+      for (let k = 0; k < 240; k += 1) {
+        if (jefe.active && jefe.texture) vistos.add(jefe.texture.key);
+        await new Promise((r) => setTimeout(r, 40));
+      }
+
+      const familias = [...new Set([...vistos].map(familiaDe))];
+      if (familias.length > 1) {
+        malos.push({ ciudad: n.datosNivel.fondo, jefe: jefe.constructor.name, familias });
+      }
+    }
+    return malos;
+  });
+
+  expect(revoltijo).toEqual([]);
+});
+
 test('los tres jefes nuevos tiran lo suyo, no lo del jefe del que heredan', async ({ page }) => {
   // Los tres heredan la pelea de otro, asi que lo que hay que vigilar es que no
   // se les haya quedado la municion del original.
@@ -2289,14 +2364,25 @@ test('lo que tira un jefe VUELA: no es un bloque de los de Samaon', async ({ pag
     const suGrupo = n.tirosDeJefe.contains(tiro);
     const enLosBloques = n.proyectiles.contains(tiro);
 
-    await new Promise((r) => setTimeout(r, 500));
+    // Se espera a que RECORRA, no a que pasen 500 ms de reloj: con la maquina
+    // cargada pasa menos tiempo de juego en el mismo tiempo de reloj y el tiro
+    // no habia llegado a los 80 px que se le piden. Si de verdad estuviera roto
+    // —naciendo con gravedad, como cuando el grupo se llamaba igual que el de
+    // los bloques— no se movera, el bucle se agotara y `avanzo` seguira en
+    // cero, que es lo que tiene que cazar.
+    let cayo = 0;
+    for (let i = 0; i < 600 && tiro.active && Math.abs(tiro.x - salioEn.x) < 90; i += 1) {
+      cayo = Math.max(cayo, Math.abs(tiro.y - salioEn.y));
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    cayo = Math.max(cayo, Math.abs(tiro.y - salioEn.y));
     return {
       suGrupo,
       enLosBloques,
       // ha recorrido camino de lado
       avanzo: Math.abs(tiro.x - salioEn.x),
-      // y NO se ha caido: va por el aire
-      cayo: tiro.y - salioEn.y,
+      // y NO se ha caido en todo el camino: va por el aire
+      cayo,
       sigueVivo: tiro.active,
       seEstiro: tiro.texture.key,
     };
@@ -2737,12 +2823,12 @@ test('todas las ciudades traen decorado de fondo y algo por delante', async ({ p
   });
 });
 
-test('al salir una vaca sale su cartel de aviso', async ({ page }) => {
+test('al salir una vaca sale su cartel de aviso, y dice lo que es', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
   const resultado = await page.evaluate(async () => {
     const n = window.juego.scene.getScene('nivel');
-    const { AVISOS } = await import('/src/config/historia.js');
+    const { avisoDeBicho } = await import('/src/config/historia.js');
     const antes = !!n.cartelDeVaca;
 
     // se le fuerza la salida: el nino en medio del tablero, para que haya
@@ -2758,13 +2844,98 @@ test('al salir una vaca sale su cartel de aviso', async ({ page }) => {
       await new Promise((r) => setTimeout(r, 80));
       salio = n.vacas.getChildren().some((v) => v.active);
     }
-    return { antes, salio, cartel: !!n.cartelDeVaca, texto: AVISOS.vaca };
+    const bicho = n.vacas.getChildren().find((v) => v.active);
+    const letrero = (n.cartelDeVaca || []).find((pieza) => pieza && pieza.text);
+    return {
+      antes,
+      salio,
+      cartel: !!n.cartelDeVaca,
+      dice: letrero ? letrero.text : null,
+      tocaba: bicho ? avisoDeBicho(bicho.piel) : null,
+    };
   });
 
   expect(resultado.antes).toBe(false); // sin vacas, sin cartel
   expect(resultado.salio).toBe(true);
   expect(resultado.cartel).toBe(true);
-  expect(resultado.texto).toBe('¡CUIDADO CON LA BERRIONDA VACA!');
+  expect(resultado.dice).toBe(resultado.tocaba);
+});
+
+test('el cartel dice lo que viene, y en ningun mundo avisa de una vaca que no hay', async ({
+  page,
+}) => {
+  // Lo conto Daniel: en Atlanta viene Alma, la pastora alemana, y el cartel
+  // seguia diciendo "¡CUIDADO CON LA BERRIONDA VACA!". El cartel va por PIEL,
+  // no por ciudad, porque Medellin tiene dos buses y Cartagena tres carros.
+  await entrarAlNivel(page, 'simon');
+
+  const porMundo = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const { avisoDeBicho } = await import('/src/config/historia.js');
+    const { pielesDeCiudad } = await import('/src/config/bichos.js');
+    const fuera = [];
+
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'simon', indiceNivel: i });
+      for (let v = 0; v < 200; v += 1) {
+        const e = window.juego.scene.getScene('nivel');
+        if (e && e.indiceNivel === i && e.nivel) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+      const ciudad = n.datosNivel.fondo;
+
+      // se prueban TODAS las pieles de la ciudad, que donde hay varias se
+      // sortea y si no se fijan saldria siempre la misma
+      const suyas = pielesDeCiudad(ciudad);
+      for (let k = 0; k < suyas.length; k += 1) {
+        n.pielDeLosBichos = k;
+        // El PRIMERO de cada mundo no se limpia a mano a proposito: asi se
+        // comprueba de paso que al cambiar de tablero el cartel vuelve a salir.
+        // Se quita solo al acabar su tween, y ese tween muere al reiniciar la
+        // escena, con lo que se quedaba puesto para siempre y el aviso no
+        // volvia a aparecer. Entre pieles de una misma ciudad si hay que
+        // quitarlo, que si no el segundo bicho no traeria el suyo.
+        if (k > 0 && n.cartelDeVaca) {
+          // hay que matarle el tween ANTES: se va solo con un yoyo y, si se le
+          // destruyen las piezas por debajo, su onComplete revienta
+          n.tweens.killTweensOf(n.cartelDeVaca);
+          n.cartelDeVaca.forEach((pieza) => pieza.destroy());
+          n.cartelDeVaca = null;
+        }
+        n.vacas.getChildren().forEach((v) => v.destroy());
+
+        let bicho = null;
+        for (let t = 0; t < 20 && !bicho; t += 1) {
+          n.proximaVaca = 0;
+          n.gestionarVacas(1);
+          const hijos = n.vacas.getChildren();
+          bicho = hijos[hijos.length - 1] || null;
+          await new Promise((r) => setTimeout(r, 15));
+        }
+        const letrero = (n.cartelDeVaca || []).find((pieza) => pieza && pieza.text);
+        fuera.push({
+          ciudad,
+          piel: bicho ? bicho.piel : null,
+          dice: letrero ? letrero.text : null,
+          tocaba: bicho ? avisoDeBicho(bicho.piel) : null,
+        });
+      }
+    }
+    return fuera;
+  });
+
+  expect(porMundo.length).toBeGreaterThanOrEqual(8);
+  porMundo.forEach((m) => {
+    expect(m.piel, `${m.ciudad} no saco bicho`).not.toBeNull();
+    expect(m.dice, `${m.ciudad} no saco cartel`).not.toBeNull();
+    // dice lo que toca
+    expect(m.dice, `${m.ciudad} (${m.piel})`).toBe(m.tocaba);
+    // y no llama vaca a lo que no lo es
+    if (!String(m.piel).includes('vaca')) {
+      expect(m.dice, `${m.ciudad} (${m.piel}) llama vaca a lo que no lo es`).not.toContain('VACA');
+    }
+  });
 });
 
 test('los textos se dibujan a la densidad del render, no a 1x', async ({ page }) => {

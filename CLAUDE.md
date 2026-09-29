@@ -264,9 +264,9 @@ delante, **baja la cabeza y embiste**.
 
 > **De donde sale.** A Martin lo persiguio una vaca en la finca de los abuelos y
 > casi se lo lleva por delante. Por eso, cuando entra una, sale en pantalla el
-> cartel de **"¡CUIDADO CON LA BERRIONDA VACA!"** (`AVISOS.vaca`), en la caja
-> art deco de la casa y clavado en pantalla, no en el mundo: es un aviso, tiene
-> que poder leerse aunque la vaca ya venga lanzada.
+> cartel de **"¡CUIDADO CON LA BERRIONDA VACA!"**, en la caja art deco de la
+> casa y clavado en pantalla, no en el mundo: es un aviso, tiene que poder
+> leerse aunque la vaca ya venga lanzada.
 
 Es una **Holstein de manchas amarillas** con cara de pocos amigos, dibujada por
 Daniel. Seis poses (`src/assets/bichos/vaca/`): dos de trote, una de aviso, dos
@@ -315,6 +315,13 @@ Cada juego de dibujos es una **piel**: seis poses con los mismos nombres
 Una ciudad puede tener **varias y se sortean** (Medellin dos, Cartagena tres):
 asi el tablero no se hace previsible sin dibujar una pelea nueva. Las pruebas
 fijan cual sale (`escena.pielDeLosBichos`) para no medir a cara o cruz.
+
+**Y cada piel trae SU cartel** (`AVISOS_DE_BICHO`, en `historia.js`): en Atlanta
+viene Alma y dice "¡CUIDADO CON ALMA, QUE ESTA LOCA!", en Orlando "¡CUIDADO CON
+LA MONTANA RUSA!". Avisar de una vaca cuando lo que viene es un perro no tiene
+ninguna gracia. Va por **piel** y no por ciudad, porque una ciudad puede tener
+varias. La caja se mide sobre el texto: con el ancho clavado en 400, al de Melo
+—el mas largo— le quedaban dos letras fuera.
 
 Las pieles **no se importan una a una**: `EscenaCarga` las recoge con
 `import.meta.glob`, asi que anadir una es dejar su carpeta ahi y nombrarla en
@@ -2131,3 +2138,100 @@ baja.
   delante el bloque no habia salido cuando se le preguntaba. Ahora espera a que
   el grupo tenga uno, y luego a que se quede vacio. **Cuando una prueba falla
   solo en la suite, lo primero es buscarle el `waitForTimeout`.**
+- **2026-09-29** — En Space Coast salia **Simon Malvado con varios fotogramas de
+  Papa Inodoro**: los de escupir, enojarse, embestir y quedarse aturdido. Al
+  parametrizar a `PapaInodoro` para que Simon heredara su pelea se convirtio
+  `texturaDeAhora()`, pero se quedaron **cuatro `setTexture` escritos a mano**
+  dentro de los metodos que cambian de estado, apuntando todavia al jefe
+  original. Como los dos comparten pelea, no daba ningun error: solo salia el
+  muneco equivocado. Los otros dos jefes parametrizados (Chad y el Tio Camilo)
+  estaban limpios.
+
+  Todos los dibujos de un jefe se llaman `tex-FAMILIA-pose`, asi que la prueba
+  que lo vigila es facil y dura: se le deja pelear de verdad en las ocho
+  ciudades y **todo lo que se ponga tiene que ser de UNA sola familia**. La regla
+  que deja: **al parametrizar una clase para que otra la herede, no basta con el
+  metodo que elige la pose; hay que buscar todos los `setTexture` sueltos.**
+- **2026-09-29** — El cartel del bicho que embiste decia **"¡CUIDADO CON LA
+  BERRIONDA VACA!" en los ocho mundos**, aunque en Atlanta viniera una pastora
+  alemana y en Orlando un vagon de montana rusa. Ahora cada piel trae el suyo
+  (`AVISOS_DE_BICHO`). Va por **piel** y no por ciudad, porque Medellin tiene dos
+  buses y Cartagena tres carros. La caja del cartel se mide sobre el texto: con
+  el ancho clavado en 400 px, al de Melo le quedaban dos letras fuera.
+- **2026-09-29** — **Quinta vez con la trampa de `limpiarBolsas`, y la peor.** Los
+  tres carros de Cartagena y la vagoneta de Orlando salian como garabatos
+  negros: se les habian comido los cromados, las llantas de banda blanca, los
+  parabrisas y la cara de los ninos. Medido, entre el **30 y el 46 por ciento**
+  del dibujo caia por debajo del corte de las bolsas (tolerancia 120 x 2,2 =
+  **264**). La vaca, que es de donde se copio la receta, solo tiene el 4 por
+  ciento en riesgo, porque su turquesa es mucho mas saturado.
+
+  Esta vez no se arregla apagando el filtro —sin el quedaban parches turquesa
+  encerrados debajo de los carros y en la puerta de la camioneta—, sino
+  **estrechandolo**: el ensanchado pasa a ser una perilla de cada hoja
+  (`holguraBolsa`, 1,2 por defecto) y estas van con **0**, con lo que solo se van
+  las bolsas que ya son del color del fondo pelado. La regla de siempre, ahora
+  con herramienta para cumplirla: **antes de copiar una receta de recorte hay que
+  medir los colores de ESE dibujo.**
+- **2026-09-29** — Las zonas de las hojas de bichos dejan de estar puestas a ojo
+  y pasan a estar **medidas**: bandas de tinta en vertical y, dentro de cada
+  banda, grupos en horizontal. Las de `alma` y `melo` cortaban orejas, hocicos y
+  patas. Dos cuidados que hacen falta y que no son evidentes:
+
+  - Lo que va **suelto** (el soplido, las estrellitas) se junta con su pose: es
+    parte de ella, aunque no la toque.
+  - Cuando dos poses **se tocan** —a Alma le pasa en las dos ultimas y a Melo en
+    las tres de abajo— se parte por la columna con **menos tinta**, y en ese
+    lado **no se da margen**. Con margen, el recuadro se metia en el vecino y el
+    recorte salia con un trocito del otro perro al lado.
+
+  La **vaca sigue con las suyas a mano**, y ahi la medicion automatica no vale:
+  su hoja trae DIBUJADA una linea de suelo bajo las dos poses de embestida, como
+  la del Abuelo, y medida a la silueta la vaca salia con un palo negro debajo.
+- **2026-09-29** — El cartel del bicho **no volvia a salir al cambiar de mundo**.
+  Se quita solo al acabar su tween, y al reiniciar la escena ese tween muere sin
+  llegar al final: `cartelDeVaca` se quedaba apuntando a unos objetos ya
+  destruidos y, como `avisarDeLaVaca` se calla si ya hay uno puesto, no salia
+  ninguno mas en toda la sesion. Se rearma en `init()`, que es donde va lo que
+  Phaser NO limpia al reutilizar la escena. Es exactamente lo mismo que le paso
+  a `yendo` en la pantalla de mundos, asi que ya van dos: **cuando una escena se
+  reutiliza, todo estado que no viva en `init()` se arrastra del tablero
+  anterior.**
+- **2026-09-29** — Dos pruebas que llevaban tiempo cayendo con la suite cargada
+  eran, otra vez, esperas de reloj, y una de las dos escondia una razon de
+  verdad:
+
+  - La del **salto corto** aguantaba el boton 70 ms de reloj. El juego, a
+    proposito, NO recorta el salto en el mismo fotograma en que se salta
+    (`puedeRecortar`), para que un toque cortisimo de un saltito de verdad; con
+    la maquina cargada un fotograma dura mas de 70 ms, asi que pulsar y soltar
+    caian dentro del mismo y el salto "corto" salia ENTERO. Ojo con la condicion
+    de apice: de pie la velocidad vertical tambien es cero, asi que hay que
+    exigirle haber despegado o suelta antes de empezar.
+  - La de la **banera** miraba su estado en dos instantes fijos (250 y 850 ms).
+    La banera hace carga, lanza y vuelve a andar, asi que con la maquina lenta
+    se la pillaba ya en `anda`. Ahora se apunta por que estados PASA.
+- **2026-09-29** — Y la otra mitad de por que fallaban: **habia DOS servidores de
+  Vite corriendo a la vez.** Uno se habia dejado a mano para mirar una captura y
+  el otro lo levanta la propia suite, que al encontrar el puerto ocupado se va
+  al siguiente. Con los dos vigilando el proyecto, la suite pasaba de 6,7 a 13
+  minutos, y a la mitad de fotogramas por segundo caen justo las pruebas que
+  esperan el reloj. Las esperas malas eran reales y se arreglaron; la maquina
+  cargada era **culpa nuestra**, no del equipo. Antes de decir "va lento", mirar
+  si hay un `npm run dev` suelto (`netstat -ano | findstr 517`).
+- **2026-09-29** — Y con esperar el suceso **no bastaba**: las dos pruebas del
+  salto seguian cayendo. Lo que quedaba era el **viaje de ida y vuelta**.
+  Pedirle a Playwright que pulse o suelte una tecla, o leer un valor, es una
+  llamada al navegador, y con la maquina cargada esa llamada dura VARIOS
+  fotogramas: la orden de soltar el salto llegaba cuando el nino ya iba llegando
+  arriba, y los dos saltos median lo mismo. Ahora esas dos pruebas se juegan
+  **desde dentro**, en un solo `page.evaluate`, apretando con
+  `controles.tocar()`, que es la misma puerta por la que entran los mandos
+  tactiles: al juego le da igual de donde le llegue.
+
+  La regla, ampliada: **si lo que se mide depende de CUANDO se suelta un boton,
+  no se suelta desde fuera.** Y para comprobarlo no hace falta esperar a que la
+  maquina se cargue sola: se le frena la CPU al navegador
+  (`Emulation.setCPUThrottlingRate`, con un `newCDPSession`) y se mira si la
+  prueba aguanta. A 6x, estas dos aguantan.
+

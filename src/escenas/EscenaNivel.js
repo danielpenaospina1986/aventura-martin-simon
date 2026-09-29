@@ -20,7 +20,7 @@ import { hayTactil, MandosTactiles } from '../sistemas/tactil.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
 import { pielDeCiudad } from '../config/bichos.js';
-import { AVISOS, jefeDelCuento } from '../config/historia.js';
+import { AVISOS, avisoDeBicho, jefeDelCuento } from '../config/historia.js';
 import { anotarPuntaje, nuevaPartida } from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
 import { brilloMoneda, burbujas, estrellitas, polvo, textoFlotante } from '../sistemas/efectos.js';
@@ -64,6 +64,14 @@ export class EscenaNivel extends Phaser.Scene {
 
     // Las vidas son de la partida entera; los corazones, de cada tablero.
     this.vidas = d.vidas === undefined ? VIDA.vidasIniciales : d.vidas;
+
+    // Phaser REUTILIZA la escena, asi que lo que no se rearme aqui se arrastra
+    // del tablero anterior. El cartel del bicho se quita solo al acabar su
+    // tween, y al cambiar de mundo ese tween muere sin llegar al final: se
+    // quedaba apuntando a unos objetos ya destruidos y, como `avisarDeLaVaca`
+    // se calla si ya hay uno puesto, el aviso NO volvia a salir en toda la
+    // sesion. Es lo mismo que le paso a `yendo` en la pantalla de mundos.
+    this.cartelDeVaca = null;
 
     // El identificador de esta partida, para el tablero de puntajes. Se crea
     // aqui si no viene de fuera (por ejemplo al entrar a un tablero desde las
@@ -1546,7 +1554,7 @@ export class EscenaNivel extends Phaser.Scene {
     );
     this.vacas.add(vaca);
     // el cartel sale con ella, no cuando ya la tienes encima
-    this.avisarDeLaVaca();
+    this.avisarDeLaVaca(vaca.piel);
   }
 
   tocarVaca(jugador, vaca) {
@@ -1586,18 +1594,22 @@ export class EscenaNivel extends Phaser.Scene {
   // El cartel que sale cuando una vaca baja la cabeza. Va clavado en pantalla,
   // no en el mundo: es un aviso, tiene que poderse leer aunque la vaca ya venga
   // lanzada.
-  avisarDeLaVaca() {
+  avisarDeLaVaca(piel) {
     if (this.cartelDeVaca) return; // ya hay uno puesto
-    const ancho = 400;
     const y = 74;
-    const panel = panelDeco(this, MUNDO.ancho / 2, y, ancho, 40, { escalon: 10 });
+    // El texto PRIMERO, porque cada piel dice lo suyo y no todas ocupan igual:
+    // "¡QUE SE VIENE EL BUS!" son veintiuna letras y "¡CUIDADO CON MELO, QUE
+    // VIENE LOCO!" treinta y cuatro. Con el ancho clavado en 400, al de Melo le
+    // quedaban dos letras fuera de la caja.
     const texto = this.add
-      .text(MUNDO.ancho / 2, y, AVISOS.vaca, {
+      .text(MUNDO.ancho / 2, y, avisoDeBicho(piel), {
         fontFamily: FUENTE.familia,
         fontSize: '15px',
         color: COLORES.textoAcento,
       })
       .setOrigin(0.5);
+    const ancho = Math.max(260, texto.width + 48);
+    const panel = panelDeco(this, MUNDO.ancho / 2, y, ancho, 40, { escalon: 10 });
     panel.setDepth(40);
     texto.setDepth(41);
 
