@@ -290,6 +290,36 @@ de galope y una tumbada.
 Vive en `entidades/Vaca.js` y en su propio grupo (`escena.vacas`), no en el de
 los bichos: asi lo que cuenta enemigos en pantalla sigue contando baneras.
 
+### Y en cada mundo es otra cosa
+
+La vaca es de **la finca**, que es de donde salio el cuento. En los demas
+mundos el bicho **se comporta exactamente igual** —entra por un lado, se
+planta, avisa, embiste y se derriba igual— pero es lo que de verdad te
+atropellaria alli:
+
+| Mundo | Que embiste |
+|---|---|
+| Space Coast | una **vaca marciana**, de tres ojos y antenas |
+| Medellin | un **bus**: el blanco de *Comercial Hotelera* o el verde de *Circular Sur 303* |
+| Atlanta | **Alma**, la pastora alemana de los ninos, que esta loca |
+| Miami | **Melo**, el pastor australiano de un ojo azul y otro cafe |
+| Cartagena | un **clasico de La Habana**: el descapotable, el sedan o la camioneta |
+| Orlando | un **vagon de montana rusa** desbocado, con sus ninos dentro |
+| Lake Lanier | **Alma** otra vez, que los fines de semana se va con ellos |
+| La finca | la **vaca berrionda** de siempre |
+
+Cada juego de dibujos es una **piel**: seis poses con los mismos nombres
+(`anda1`, `anda2`, `avisa`, `embiste1`, `embiste2`, `tumbada`), en su carpeta de
+`src/assets/bichos/`. Quien guarda cual va en `config/bichos.js`.
+
+Una ciudad puede tener **varias y se sortean** (Medellin dos, Cartagena tres):
+asi el tablero no se hace previsible sin dibujar una pelea nueva. Las pruebas
+fijan cual sale (`escena.pielDeLosBichos`) para no medir a cara o cruz.
+
+Las pieles **no se importan una a una**: `EscenaCarga` las recoge con
+`import.meta.glob`, asi que anadir una es dejar su carpeta ahi y nombrarla en
+`bichos.js`. Sesenta lineas de import a mano no las mantiene nadie.
+
 ### Los jefes
 
 Al final de cada tablero espera un **guardian del bano**: mide **172 x 172**, el
@@ -1887,6 +1917,29 @@ baja.
   eran cinco, y con ocho se quedaban probando la mitad sin quejarse.
 - **2026-09-28** — El cartel de Cartagena decia **"¡El jefe final!"**. Con ocho
   mundos, el ultimo ya no es ese: ahora dice su nombre, como los demas.
+- **2026-09-29** — El bicho que embiste **cambia de dibujo segun el mundo**: una
+  vaca marciana en Space Coast, un bus en Medellin, Alma en Atlanta, Melo en
+  Miami, un clasico de La Habana en Cartagena, un vagon de montana rusa en
+  Orlando y la vaca de siempre en la finca. La PELEA no cambia ni un pixel: es
+  el mismo bicho con otra piel. Donde hay varias (dos buses, tres clasicos) se
+  sortea, para que el tablero no se haga previsible sin dibujar una pelea nueva.
+- **2026-09-29** — Las pieles se cargan con **`import.meta.glob`** y sus claves
+  se arman con `TEXTURAS.bichoDe(piel, pose)`, como ya se hacia con los fondos.
+  Diez pieles por seis poses son sesenta archivos: ni sesenta lineas de import
+  ni sesenta constantes sueltas las mantiene nadie, y asi anadir una es dejar su
+  carpeta ahi y nombrarla en `bichos.js`.
+- **2026-09-29** — **Cuarta vez con la trampa de `limpiarBolsas`**, y esta vez
+  en tres hojas a la vez. Se les copio la receta de la vaca (tolerancia 120) sin
+  mirar sus colores, y el filtro de las bolsas —que corta en tolerancia x 2,2,
+  o sea 264— se comio el crema del bus verde (a 234 del fondo), el cafe de Melo
+  (212) y el lila de la vaca marciana (156): los tres salieron en **puro
+  contorno**. Van sin ese filtro y con la tolerancia bajada a 100, 95 y 70. La
+  regla, otra vez: **antes de copiar una receta de recorte hay que medir los
+  colores de ESE dibujo**.
+- **2026-09-29** — Las otras seis hojas SI llevan el filtro, y lo necesitan:
+  varias traen una **sombra ovalada dibujada**, que es el mismo turquesa mas
+  oscuro (a unos 115 del fondo), y con la tolerancia de casa se quedaba pegada
+  debajo como un halo gris. Es lo mismo que ya le pasaba a la vaca original.
 - **2026-09-29** — La pantalla de mundos pasa a **ensenar uno solo, grande**,
   con flechas a los lados, deslizamiento con el dedo, "Mundo 4 de 8" arriba y
   una fila de puntitos abajo. Lo pidio Daniel despues de probarlo en el
@@ -2072,3 +2125,9 @@ baja.
   contrario durante varias sesiones y se perdio tiempo mirando al sitio
   equivocado. La maquina solo explica lo LENTO; lo que decide si una prueba pasa
   o no es que espere lo que de verdad tiene que esperar.
+- **2026-09-29** — La regla de arriba se aplico otra vez y volvio a acertar: la
+  prueba del bloque que se deshace contra el suelo esperaba **100 ms de reloj** a
+  que el bloque saliera y 1200 a que se rompiera. Con la suite entera por
+  delante el bloque no habia salido cuando se le preguntaba. Ahora espera a que
+  el grupo tenga uno, y luego a que se quede vacio. **Cuando una prueba falla
+  solo en la suite, lo primero es buscarle el `waitForTimeout`.**

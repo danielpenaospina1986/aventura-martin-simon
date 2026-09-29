@@ -120,6 +120,16 @@ import fondoAtlanta from '../assets/fondos/atlanta.jpg';
 import fondoMiami from '../assets/fondos/miami.jpg';
 import fondoCartagena from '../assets/fondos/cartagena.jpg';
 import fondoOrlando from '../assets/fondos/orlando.jpg';
+
+// Los bichos que embisten: DIEZ pieles por seis poses, una por mundo (ver
+// config/bichos.js). Se traen de un tiron con import.meta.glob, que es lo que
+// evita escribir sesenta lineas de import a mano y, sobre todo, lo que hace que
+// anadir una piel nueva sea dejar su carpeta ahi y nada mas.
+const FOTOGRAMAS_DE_BICHOS = import.meta.glob('../assets/bichos/*/*.webp', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
 import fondoLakeLanier from '../assets/fondos/lake-lanier.jpg';
 import fondoFinca from '../assets/fondos/finca.jpg';
 
@@ -315,12 +325,12 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.palomaCae2, palomaCae2);
     this.load.image(TEXTURAS.palomaCae3, palomaCae3);
     this.load.image(TEXTURAS.palomaSuelo, palomaSuelo);
-    this.load.image(TEXTURAS.vacaAnda1, vacaAnda1);
-    this.load.image(TEXTURAS.vacaAnda2, vacaAnda2);
-    this.load.image(TEXTURAS.vacaAvisa, vacaAvisa);
-    this.load.image(TEXTURAS.vacaEmbiste1, vacaEmbiste1);
-    this.load.image(TEXTURAS.vacaEmbiste2, vacaEmbiste2);
-    this.load.image(TEXTURAS.vacaTumbada, vacaTumbada);
+    // Todas las pieles del bicho que embiste, de un tiron: la clave la arma
+    // TEXTURAS.bichoDe con la carpeta (la piel) y el archivo (la pose).
+    Object.entries(FOTOGRAMAS_DE_BICHOS).forEach(([ruta, url]) => {
+      const donde = ruta.match(/bichos\/([^/]+)\/([^/]+)\.webp$/);
+      if (donde) this.load.image(TEXTURAS.bichoDe(donde[1], donde[2]), url);
+    });
   }
 
   create() {

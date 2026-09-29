@@ -133,6 +133,297 @@ const PERSONAJES = [
     ],
   },
   {
+    // el bus blanco de COMERCIAL HOTELERA, el que amenaza en Medellin.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'bus-hotelera',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
+    // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
+    // de casa se quedaba pegada como un halo gris debajo.
+    tolerancia: 120,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/bus-hotelera',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'bus-hotelera',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 47, y: 87, ancho: 388, alto: 249 },        // trota, fase A
+          { x: 489, y: 86, ancho: 393, alto: 250 },       // trota, fase B
+          { x: 935, y: 87, ancho: 385, alto: 249 },       // se planta y avisa
+          { x: 52, y: 459, ancho: 379, alto: 253 },       // embiste, fase A
+          { x: 494, y: 459, ancho: 387, alto: 253 },      // embiste, fase B
+          { x: 933, y: 399, ancho: 380, alto: 310 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // el bus verde de CIRCULAR SUR 303, la otra linea de Medellin.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'bus-circular',
+    colorExacto: true,
+    // NADA de limpiarBolsas, y la tolerancia baja: a esta hoja se le
+    // arrima el crema de su carroceria, a solo 234 del turquesa. El filtro de las bolsas
+    // encerradas corta en tolerancia x 2,2, asi que con la receta de la vaca
+    // (120) cortaba en 264 y se comia el bicho entero: salia en puro
+    // contorno. Es la misma trampa de la camioneta del Abuelo.
+    limpiarBolsas: false,
+    tolerancia: 100,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/bus-circular',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'bus-circular',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 48, y: 87, ancho: 387, alto: 249 },        // trota, fase A
+          { x: 490, y: 86, ancho: 392, alto: 250 },       // trota, fase B
+          { x: 935, y: 87, ancho: 385, alto: 249 },       // se planta y avisa
+          { x: 52, y: 459, ancho: 379, alto: 253 },       // embiste, fase A
+          { x: 494, y: 459, ancho: 387, alto: 253 },      // embiste, fase B
+          { x: 933, y: 399, ancho: 380, alto: 310 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // el descapotable coral de Cartagena, con sus aletas.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'clasico-cadillac',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
+    // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
+    // de casa se quedaba pegada como un halo gris debajo.
+    tolerancia: 120,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/clasico-cadillac',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'clasico-cadillac',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 45, y: 145, ancho: 408, alto: 202 },       // trota, fase A
+          { x: 495, y: 119, ancho: 392, alto: 228 },      // trota, fase B
+          { x: 907, y: 160, ancho: 440, alto: 189 },      // se planta y avisa
+          { x: 20, y: 511, ancho: 455, alto: 197 },       // embiste, fase A
+          { x: 507, y: 464, ancho: 388, alto: 241 },      // embiste, fase B
+          { x: 949, y: 445, ancho: 386, alto: 266 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // el sedan mostaza de Cartagena.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'clasico-buick',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
+    // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
+    // de casa se quedaba pegada como un halo gris debajo.
+    tolerancia: 120,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/clasico-buick',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'clasico-buick',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 48, y: 138, ancho: 405, alto: 209 },       // trota, fase A
+          { x: 499, y: 115, ancho: 388, alto: 232 },      // trota, fase B
+          { x: 907, y: 137, ancho: 439, alto: 212 },      // se planta y avisa
+          { x: 20, y: 501, ancho: 455, alto: 207 },       // embiste, fase A
+          { x: 514, y: 460, ancho: 381, alto: 245 },      // embiste, fase B
+          { x: 949, y: 445, ancho: 386, alto: 276 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // la camioneta naranja remendada de Cartagena.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'clasico-camioneta',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
+    // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
+    // de casa se quedaba pegada como un halo gris debajo.
+    tolerancia: 120,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/clasico-camioneta',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'clasico-camioneta',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 58, y: 90, ancho: 390, alto: 219 },        // trota, fase A
+          { x: 499, y: 81, ancho: 385, alto: 230 },       // trota, fase B
+          { x: 904, y: 113, ancho: 419, alto: 198 },      // se planta y avisa
+          { x: 29, y: 465, ancho: 462, alto: 218 },       // embiste, fase A
+          { x: 521, y: 427, ancho: 392, alto: 256 },      // embiste, fase B
+          { x: 948, y: 408, ancho: 378, alto: 276 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // ALMA, la pastora alemana de los ninos: Atlanta y Lake Lanier.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'alma',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
+    // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
+    // de casa se quedaba pegada como un halo gris debajo.
+    tolerancia: 120,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/alma',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'alma',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 42, y: 38, ancho: 391, alto: 314 },        // trota, fase A
+          { x: 488, y: 57, ancho: 389, alto: 301 },       // trota, fase B
+          { x: 910, y: 42, ancho: 406, alto: 316 },       // se planta y avisa
+          { x: 25, y: 435, ancho: 449, alto: 262 },       // embiste, fase A
+          { x: 488, y: 431, ancho: 423, alto: 269 },      // embiste, fase B
+          { x: 903, y: 453, ancho: 442, alto: 262 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // MELO, el pastor australiano de un ojo azul y otro cafe: Miami.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'melo',
+    colorExacto: true,
+    // NADA de limpiarBolsas, y la tolerancia baja: a esta hoja se le
+    // arrima el cafe claro de sus manchas, a solo 212 del turquesa. El filtro de las bolsas
+    // encerradas corta en tolerancia x 2,2, asi que con la receta de la vaca
+    // (120) cortaba en 264 y se comia el bicho entero: salia en puro
+    // contorno. Es la misma trampa de la camioneta del Abuelo.
+    limpiarBolsas: false,
+    tolerancia: 95,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/melo',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'melo',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 55, y: 50, ancho: 387, alto: 303 },        // trota, fase A
+          { x: 494, y: 38, ancho: 385, alto: 315 },       // trota, fase B
+          { x: 917, y: 27, ancho: 414, alto: 338 },       // se planta y avisa
+          { x: 21, y: 422, ancho: 491, alto: 280 },       // embiste, fase A
+          { x: 504, y: 416, ancho: 432, alto: 285 },      // embiste, fase B
+          { x: 928, y: 411, ancho: 426, alto: 310 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // el vagon de montana rusa con los ninos dentro: Orlando.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'vagoneta',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 40,
+    // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
+    // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
+    // de casa se quedaba pegada como un halo gris debajo.
+    tolerancia: 120,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/vagoneta',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'vagoneta',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 36, y: 30, ancho: 412, alto: 311 },        // trota, fase A
+          { x: 515, y: 30, ancho: 342, alto: 311 },       // trota, fase B
+          { x: 920, y: 74, ancho: 375, alto: 267 },       // se planta y avisa
+          { x: 48, y: 424, ancho: 417, alto: 273 },       // embiste, fase A
+          { x: 483, y: 391, ancho: 414, alto: 285 },      // embiste, fase B
+          { x: 932, y: 405, ancho: 382, alto: 295 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
+    // la vaca marciana de tres ojos y antenas: Space Coast.
+    //
+    // Mismas medidas que la vaca: es el mismo bicho, solo cambia el dibujo.
+    nombre: 'vaca-marciana',
+    colorExacto: true,
+    // NADA de limpiarBolsas, y la tolerancia baja: a esta hoja se le
+    // arrima el lila de su cuerpo, a solo 156 del turquesa. El filtro de las bolsas
+    // encerradas corta en tolerancia x 2,2, asi que con la receta de la vaca
+    // (120) cortaba en 264 y se comia el bicho entero: salia en puro
+    // contorno. Es la misma trampa de la camioneta del Abuelo.
+    limpiarBolsas: false,
+    tolerancia: 70,
+    lienzo: { ancho: 480, alto: 312 },
+    salida: 'webp',
+    origen: 'src/assets/bichos-origen',
+    destino: 'src/assets/bichos/vaca-marciana',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'vaca-marciana',
+        nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
+        zonas: [
+          { x: 38, y: 24, ancho: 402, alto: 321 },        // trota, fase A
+          { x: 473, y: 24, ancho: 402, alto: 321 },       // trota, fase B
+          { x: 921, y: 86, ancho: 424, alto: 259 },       // se planta y avisa
+          { x: 31, y: 411, ancho: 442, alto: 293 },       // embiste, fase A
+          { x: 504, y: 410, ancho: 414, alto: 280 },      // embiste, fase B
+          { x: 954, y: 426, ancho: 384, alto: 276 },      // tumbado, con sus estrellas
+        ],
+      },
+    ],
+  },
+  {
     nombre: 'objetos',
     origen: 'src/assets/objetos-origen',
     destino: 'src/assets/objetos',

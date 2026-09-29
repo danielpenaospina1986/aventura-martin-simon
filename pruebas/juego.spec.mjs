@@ -474,12 +474,22 @@ test('no puede haber más de tres bloques volando a la vez', async ({ page }) =>
 test('el bloque lanzado se deshace al chocar contra el suelo', async ({ page }) => {
   await entrarAlNivel(page, 'simon');
 
-  await page.keyboard.press('KeyX');
-  await page.waitForTimeout(100);
-  expect((await estadoJugador(page)).proyectiles).toBe(1);
+  // Se esperan los SUCESOS: que el bloque salga y que se deshaga. Esperar 100
+  // ms de reloj a que salga y 1200 a que se rompa es echarlo a suertes: con la
+  // suite entera por delante el navegador va lento, y el bloque no habia salido
+  // todavia cuando se le preguntaba.
+  const cuantosBloques = (cuantos) =>
+    page.waitForFunction(
+      (n) => window.juego.scene.getScene('nivel').proyectiles.getChildren().length === n,
+      cuantos,
+      { timeout: 15000 },
+    );
 
-  await page.waitForTimeout(1200);
-  expect((await estadoJugador(page)).proyectiles).toBe(0);
+  await page.keyboard.press('KeyX');
+  await cuantosBloques(1);
+
+  // y solo se va cuando toca el suelo, no antes
+  await cuantosBloques(0);
 });
 
 test('la meta está cerrada mientras el jefe siga vivo', async ({ page }) => {
@@ -1944,6 +1954,68 @@ test('las flechas de los lados cambian de mundo con un clic', async ({ page }) =
   await esperarMundo(0);
 });
 
+test('cada mundo tiene SU bicho embistiendo, con sus propios dibujos', async ({ page }) => {
+  const errores = vigilarErrores(page);
+  await entrarAlNivel(page, 'martin');
+
+  const salio = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const { TEXTURAS } = await import('/src/config/estilo.js');
+    const fuera = [];
+
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      for (let v = 0; v < 150; v += 1) {
+        const e = window.juego.scene.getScene('nivel');
+        if (e && e.indiceNivel === i && e.nivel) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+
+      // se sueltan varios, que donde hay variantes se echa a suertes
+      const pieles = new Set();
+      let dibujoBueno = true;
+      for (let k = 0; k < 10; k += 1) {
+        n.proximaVaca = 0;
+        n.gestionarVacas(1);
+        const hijos = n.vacas.getChildren();
+        const ultima = hijos[hijos.length - 1];
+        if (ultima) {
+          pieles.add(ultima.piel);
+          // y sale con SU dibujo, no con el de la vaca
+          if (ultima.texture.key !== TEXTURAS.bichoDe(ultima.piel, 'anda1')) dibujoBueno = false;
+          ultima.destroy();
+        }
+        await new Promise((r) => setTimeout(r, 15));
+      }
+      fuera.push({ ciudad: n.datosNivel.fondo, pieles: [...pieles].sort(), dibujoBueno });
+    }
+    return fuera;
+  });
+
+  const porCiudad = Object.fromEntries(salio.map((s) => [s.ciudad, s.pieles]));
+
+  // Cada mundo, el suyo. La vaca de siempre se queda SOLO en la finca, que es
+  // de donde salio el cuento.
+  expect(porCiudad['space-coast']).toEqual(['vaca-marciana']);
+  expect(porCiudad.atlanta).toEqual(['alma']);
+  expect(porCiudad.miami).toEqual(['melo']);
+  expect(porCiudad.orlando).toEqual(['vagoneta']);
+  expect(porCiudad['lake-lanier']).toEqual(['alma']);
+  expect(porCiudad.finca).toEqual(['vaca']);
+
+  // Medellin y Cartagena tienen varias y las sortean: en diez tiradas tienen
+  // que haber salido por lo menos dos distintas.
+  expect(porCiudad.medellin.length).toBeGreaterThan(1);
+  porCiudad.medellin.forEach((p) => expect(p).toMatch(/^bus-/));
+  expect(porCiudad.cartagena.length).toBeGreaterThan(1);
+  porCiudad.cartagena.forEach((p) => expect(p).toMatch(/^clasico-/));
+
+  // y ninguno sale con el dibujo de otro
+  salio.forEach((s) => expect(s.dibujoBueno).toBe(true));
+  expect(errores).toEqual([]);
+});
+
 // Va a un mundo por su numero y espera a que ESTE montado, mirando que el
 // tablero que hay puesto sea de verdad el suyo. No vale esperar un tiempo de
 // reloj: con la maquina cargada el tablero no ha llegado a montarse.
@@ -2430,6 +2502,7 @@ test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ pag
     return {
       estados: [...estados],
       texturas: [...texturas],
+      piel: vaca.piel,
       vencidosAntes: antes,
       vencidosDespues: j.enemigosVencidos,
       derribada: vaca.derribada,
@@ -2441,12 +2514,16 @@ test('la vaca entra corriendo, avisa, embiste y se le puede pisar', async ({ pag
   expect(resultado.estados).toContain('trota');
   expect(resultado.estados).toContain('avisa');
   expect(resultado.estados).toContain('embiste');
-  // el trote se anima: las dos poses de andar salen
-  expect(resultado.texturas).toContain('tex-vaca-anda1');
-  expect(resultado.texturas).toContain('tex-vaca-anda2');
-  expect(resultado.texturas).toContain('tex-vaca-avisa');
+  // El trote se anima: las dos poses de andar salen. Las claves se piden por
+  // el nombre de la POSE, no escritas a mano: ahora hay una piel por mundo y
+  // la clave la arma TEXTURAS.bichoDe, asi que escribirlas aqui era atarse a
+  // como se llaman hoy.
+  const suya = (pose) => `tex-bicho-${resultado.piel}-${pose}`;
+  expect(resultado.texturas).toContain(suya('anda1'));
+  expect(resultado.texturas).toContain(suya('anda2'));
+  expect(resultado.texturas).toContain(suya('avisa'));
   expect(resultado.derribada).toBe(true);
-  expect(resultado.texturaFinal).toBe('tex-vaca-tumbada');
+  expect(resultado.texturaFinal).toBe(suya('tumbada'));
   expect(resultado.apoyada).toBe(true);
   expect(resultado.vencidosDespues).toBe(resultado.vencidosAntes + 1);
   expect(errores).toEqual([]);

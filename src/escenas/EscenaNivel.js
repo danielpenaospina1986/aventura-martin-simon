@@ -19,6 +19,7 @@ import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
 import { hayTactil, MandosTactiles } from '../sistemas/tactil.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
+import { pielDeCiudad } from '../config/bichos.js';
 import { AVISOS, jefeDelCuento } from '../config/historia.js';
 import { anotarPuntaje, nuevaPartida } from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
@@ -1533,7 +1534,16 @@ export class EscenaNivel extends Phaser.Scene {
     if (!sitio) return;
 
     this.proximaVaca = this.esperaDeVaca();
-    const vaca = new Vaca(this, sitio.x, suelo - VACA.alto / 2, sitio.porLaDerecha ? -1 : 1);
+    // Cada mundo tiene SU bicho: una vaca en la finca, un bus en Medellin, Alma
+    // en Atlanta... Donde hay varios se echa a suertes, salvo que la escena
+    // diga cual (las pruebas lo fijan para no medir a cara o cruz).
+    const vaca = new Vaca(
+      this,
+      sitio.x,
+      suelo - VACA.alto / 2,
+      sitio.porLaDerecha ? -1 : 1,
+      pielDeCiudad(this.datosNivel.fondo || '', this.pielDeLosBichos),
+    );
     this.vacas.add(vaca);
     // el cartel sale con ella, no cuando ya la tienes encima
     this.avisarDeLaVaca();
