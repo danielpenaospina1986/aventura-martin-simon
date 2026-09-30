@@ -289,6 +289,12 @@ export const TEXTURAS = {
   frenteCachorroNegro: 'tex-frente-cachorro-negro',
   frenteCachorroPinto: 'tex-frente-cachorro-pinto',
   frenteCachorroBlanco: 'tex-frente-cachorro-blanco',
+  // los de Lake Lanier
+  frenteCasaVictoriana: 'tex-frente-casa-victoriana',
+  frenteRoble: 'tex-frente-roble',
+  frentePino: 'tex-frente-pino',
+  frenteGata: 'tex-frente-gata',
+  frenteEufonio: 'tex-frente-eufonio',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',

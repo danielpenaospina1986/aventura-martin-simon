@@ -756,6 +756,9 @@ const PERSONAJES = [
     nombre: 'abuelo-caballo',
     colorExacto: true,
     limpiarBolsas: true,
+    // Lo que queda encerrado aqui son las rendijas entre las patas del caballo
+    // y las de las vacas.
+    bolsaMinima: 20,
     lienzo: { ancho: 760, alto: 420 },
     contornoRelativo: 0.5,
     salida: 'webp',
@@ -895,6 +898,138 @@ const PERSONAJES = [
           { x: 470, y: 66, ancho: 448, alto: 635 },   // negro, pecho y pata blancos
           { x: 906, y: 66, ancho: 450, alto: 635 },   // blanco, con el ojo tapado
         ],
+      },
+    ],
+  },
+  // --- LO DE LAKE LANIER ----------------------------------------------------
+  //
+  // Tambien sobre magenta, como los de la finca. Georgia: casa victoriana de
+  // suburbio, roble con barbas de musgo espanol y pino alto por detras; la gata
+  // negra y el eufonio parlanchin por delante.
+  {
+    // La casa victoriana. Va DETRAS.
+    nombre: 'casa-victoriana',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    // Su crema se queda a 190 del magenta, que es lo mas cerca de esta tanda
+    // (el mismo caso que el cachorro blanco de la finca). Con la holgura de
+    // casa el filtro de las bolsas cortaria en 176 y le rozaria las paredes,
+    // asi que va con holgura CERO: solo se van las bolsas que ya son del color
+    // del fondo, que aqui son las ventanas y los huecos de la baranda.
+    holguraBolsa: 0,
+    lienzo: { ancho: 560, alto: 560 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'casa-victoriana',
+        porPieza: true,
+        nombres: ['casa-victoriana'],
+        zonas: [{ x: 67, y: 57, ancho: 890, alto: 835 }],
+      },
+    ],
+  },
+  {
+    // El roble de Savannah, con sus barbas de musgo espanol. Va DETRAS, y es
+    // muy apaisado: se extiende a lo ancho mucho mas de lo que sube.
+    nombre: 'roble',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 440 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'roble',
+        porPieza: true,
+        nombres: ['roble'],
+        zonas: [{ x: 30, y: 36, ancho: 1316, alto: 696 }],
+      },
+    ],
+  },
+  {
+    // El pino de Georgia, alto y flaco. Va DETRAS: por delante, un arbol de
+    // este tamano tapa al nino entero, que es lo que ya nos enseno el mango.
+    nombre: 'pino',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 300, alto: 760 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'pino',
+        porPieza: true,
+        nombres: ['pino'],
+        zonas: [{ x: 183, y: 68, ancho: 402, alto: 1248 }],
+      },
+    ],
+  },
+  {
+    // La gata negra del lago. Va DELANTE, asi que lleva el contorno entero.
+    //
+    // La tolerancia va ALTA (110) y puede: es toda negra, y lo mas cerca del
+    // fondo que tiene son sus brillos azulados, a 420. Hace falta asi de alta
+    // porque contra un bicho negro el magenta que desparrama el JPG contra la
+    // tinta se ve muchisimo, que es lo que les paso a los cachorros de la finca.
+    nombre: 'gata',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 300, alto: 480 },
+    salida: 'webp',
+    tolerancia: 110,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'gata',
+        porPieza: true,
+        nombres: ['gata'],
+        zonas: [{ x: 35, y: 117, ancho: 705, alto: 1168 }],
+      },
+    ],
+  },
+  {
+    // El eufonio con cara de travieso, y lo que dice. Va DELANTE, con su
+    // bocadillo dentro del mismo dibujo, como el gato de Medellin y la abuelita
+    // de la finca.
+    nombre: 'eufonio',
+    colorExacto: true,
+    // Lo pide de verdad: la tuberia del instrumento se enrosca sobre si misma y
+    // deja bolsas de fondo encerradas en cada vuelta.
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 360, alto: 620 },
+    salida: 'webp',
+    // 80 y no 90: el crema del bocadillo esta a 220, y con 90 el filtro de las
+    // bolsas cortaria en 198 y se le acercaria demasiado.
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'eufonio',
+        porPieza: true,
+        nombres: ['eufonio'],
+        zonas: [{ x: 76, y: 154, ancho: 616, alto: 1072 }],
       },
     ],
   },
@@ -1657,7 +1792,7 @@ for (const personaje of aTrabajar) {
 
   // Lo minimo que tiene que medir una bolsa de fondo encerrada para que se
   // borre. Ver el comentario de limpiarBolsas, mas abajo.
-  const bolsaMinimaDeEste = personaje.bolsaMinima === undefined ? 120 : personaje.bolsaMinima;
+  const bolsaMinimaDeEste = personaje.bolsaMinima;
 
   // CONTORNO va en pixeles del lienzo de 260, asi que en un lienzo mayor la
   // misma cifra se lee mas fina: hay que escalarla con el. Encima,
@@ -2102,9 +2237,17 @@ async function recortarPose(pagina, opciones) {
           // (`bolsaMinima`) cuando el dibujo no tenga NADA del color del fondo:
           // en la vaca, sobre turquesa, las bolsas entre las patas son de unos
           // 60 pixeles y con el minimo de casa se quedaban puestas.
+          //
+          // Lo que diga la hoja MANDA, y antes no mandaba: el minimo se sacaba
+          // con un `Math.max` contra el 0,02% del area, y en una lamina grande
+          // ese segundo termino se comia lo pedido. El eufonio de Lake Lanier
+          // pedia 20 y le tocaban 132, asi que los hilos de fondo que se le
+          // cuelan entre los pistones se quedaban puestos. La proporcion sigue,
+          // pero solo como valor POR DEFECTO, para la hoja que no dice nada.
           const cuantos = ancho * alto;
           const mirado = new Uint8Array(cuantos);
-          const minimo = Math.max(bolsaMinima, Math.round(cuantos * 0.0002));
+          const minimo =
+            bolsaMinima === undefined ? Math.max(120, Math.round(cuantos * 0.0002)) : bolsaMinima;
           for (let inicio = 0; inicio < cuantos; inicio += 1) {
             if (mirado[inicio] || p[inicio * 4 + 3] === 0 || !esBolsa(inicio * 4)) continue;
             const bolsa = [];

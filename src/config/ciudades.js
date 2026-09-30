@@ -168,28 +168,31 @@ CIUDADES.orlando = {
 // Lake Lanier: la orilla del lago, de tierra y grava claras, con la cornisa en
 // el verde de sus pinos.
 //
-// De DETRAS se le presta lo de Space Coast, que al menos es del mismo pais: el
-// jeep (que en un lago pega, que es con lo que se remolcan las lanchas) y la
-// casa. De DELANTE no se le presta nada: se queda con los provisionales (una
-// rama que cuelga, un farol y una mata), que son genericos.
+// **Ya tiene los suyos**, dibujados por Daniel, asi que se le va lo prestado de
+// Space Coast (el jeep y la casa de Florida) y los adornos provisionales. Por
+// DETRAS, Georgia de verdad: la casa victoriana de suburbio, el roble con sus
+// barbas de musgo espanol —de los de Savannah— y el pino alto. Por DELANTE, la
+// gata negra y el eufonio parlanchin, con su bocadillo.
 //
-// Lo que NO se le pone son las PALMERAS. Esto es un lago de Georgia, de pinos y
-// robles, y unas palmeras delante se lo llevaban a otro clima de un vistazo.
-// Eran lo unico que cantaba de verdad: son grandes y van en primer plano. Es la
-// misma lecccion que Orlando con la chiva de Medellin, y el letrero del muelle
-// sigue fuera por lo de siempre, que nombra Cocoa Beach.
+// Lo que NO se le pone son las PALMERAS, y eso no cambia: esto es un lago de
+// Georgia, de pinos y robles, y unas palmeras delante se lo llevaban a otro
+// clima de un vistazo.
 //
-// Se intento dejarlo sin nada detras y no vale: una ciudad sin decorado de
-// fondo se ve vacia, y hay una prueba que lo vigila en las ocho.
+// El pino y el roble van DETRAS por lo mismo que el mango de la finca: miden
+// mas que el nino y por delante lo taparian entero.
 //
 // Su dibujo acaba al 67% de la lamina (por debajo es agua lisa), asi que se
 // sube para que la orilla caiga sobre el suelo del juego.
 CIUDADES['lake-lanier'] = {
   pais: 'us',
   frente: [
-    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 176, cada: 1180, desfase: 640, detras: true },
-    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 140, cada: 1340, desfase: 1520, detras: true },
-    { textura: TEXTURAS.frenteCasaFlorida, desde: 'abajo', alto: 200, cada: 1420, desfase: 1060, detras: true },
+    // la gata del lago y el eufonio, que va diciendo lo suyo
+    { textura: TEXTURAS.frenteGata, desde: 'abajo', alto: 96, cada: 1080, desfase: 420 },
+    { textura: TEXTURAS.frenteEufonio, desde: 'abajo', alto: 172, cada: 1580, desfase: 1240 },
+    // y por detras, Georgia: la casa victoriana, el roble y el pino
+    { textura: TEXTURAS.frenteCasaVictoriana, desde: 'abajo', alto: 212, cada: 1520, desfase: 980, detras: true },
+    { textura: TEXTURAS.frenteRoble, desde: 'abajo', alto: 168, cada: 1280, desfase: 340, detras: true },
+    { textura: TEXTURAS.frentePino, desde: 'abajo', alto: 268, cada: 1160, desfase: 1720, detras: true },
   ],
   pavimento: { patron: 'arena', claro: 0xded0b4, medio: 0xc3b394, oscuro: 0x9b8d72 },
   subsuelo: { patron: 'estratos', claro: 0xa89c86, medio: 0x8d8270, oscuro: 0x6a6153 },
