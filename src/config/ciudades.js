@@ -216,7 +216,17 @@ CIUDADES['lake-lanier'] = {
 // El mango va DETRAS y no delante a proposito, por lo mismo: un arbol de 250 px
 // cruzando por delante tapa al nino entero.
 //
-// Su dibujo acaba al 71% (por debajo es un liso), asi que se sube bastante.
+// Su encuadre vertical va en CERO, y eso es a proposito. Su dibujo acaba al 71%
+// y por debajo es un liso: subiendolo (iba en -0,14) ese liso entraba en cuadro
+// y se veia como una franja tostada cruzando justo por encima del suelo, una
+// linea paralela al piso por donde camina el nino. Lo conto Daniel.
+//
+// Y se deja en cero y no en un negativo pequeno porque en cero el encuadre NO
+// depende de cuanto se amplie la lamina: el desplazamiento se multiplica por lo
+// que sobra de alto, asi que con cualquier otro valor una pantalla mas ancha
+// —un telefono, que se lleva MUNDO.ancho hasta 800— amplia mas, sobra mas alto
+// y la franja volveria a asomar. En cero, la lamina queda centrada y se ve
+// igual en todas las pantallas.
 CIUDADES.finca = {
   pais: 'co',
   frente: [
@@ -238,7 +248,7 @@ CIUDADES.finca = {
   pavimento: { patron: 'arena', claro: 0xd9c096, medio: 0xbfa478, oscuro: 0x95805a },
   subsuelo: { patron: 'estratos', claro: 0xa98f6a, medio: 0x8d7757, oscuro: 0x6b5a41 },
   cornisa: { cuerpo: 0xc4734f, borde: 0x7a3f28 },
-  fondoBajada: -0.14,
+  fondoBajada: 0,
 };
 
 export function ciudadDe(nombre) {
