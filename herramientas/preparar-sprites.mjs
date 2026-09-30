@@ -743,6 +743,161 @@ const PERSONAJES = [
       },
     ],
   },
+  // --- LO DE LA FINCA -------------------------------------------------------
+  //
+  // Los adornos de El Refugio. Vienen sobre MAGENTA y no sobre el turquesa de
+  // siempre, y es a proposito: el turquesa se parece a los cremas, los grises y
+  // los verdes, y de ahi salian casi todos los destrozos de recorte que hemos
+  // tenido. Del magenta no se parece nada de lo que se dibuja aqui, asi que el
+  // recorte sale limpio y las tolerancias pueden ir bajas.
+  {
+    // El abuelo arriando ganado, a caballo y con su sombrero vueltiao. Va
+    // DETRAS, de decorado, asi que lleva el contorno a la mitad.
+    nombre: 'abuelo-caballo',
+    colorExacto: true,
+    limpiarBolsas: true,
+    lienzo: { ancho: 760, alto: 420 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    // El fondo se desvia hasta 12 de su propia muestra y trae un magenta mas
+    // oscuro por los bordes; lo de verdad dibujado empieza a 250, asi que con
+    // 90 hay sitio de sobra por los dos lados.
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'abuelo-caballo',
+        porPieza: true,
+        nombres: ['abuelo-caballo'],
+        zonas: [{ x: 63, y: 63, ancho: 1251, alto: 652 }],
+      },
+    ],
+  },
+  {
+    // El corral de ganado, lleno de cebues. Tambien va DETRAS.
+    nombre: 'corral',
+    colorExacto: true,
+    limpiarBolsas: true,
+    // Bajo por lo mismo que en los cachorros: aqui lo que queda encerrado son
+    // las rendijas entre los tablones de la cerca.
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 440 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'corral',
+        porPieza: true,
+        nombres: ['corral'],
+        // El techo llega casi al borde de arriba de la lamina: no hay margen
+        // que darle, viene asi de origen.
+        zonas: [{ x: 22, y: 2, ancho: 1326, alto: 741 }],
+      },
+    ],
+  },
+  {
+    // El palo de mango. Va DETRAS, que es un arbol de la finca, no algo que
+    // cruce por delante de la camara.
+    nombre: 'mango',
+    colorExacto: true,
+    limpiarBolsas: true,
+    lienzo: { ancho: 460, alto: 660 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'mango',
+        porPieza: true,
+        nombres: ['mango'],
+        zonas: [{ x: 11, y: 109, ancho: 747, alto: 1159 }],
+      },
+    ],
+  },
+  {
+    // La abuelita cocinando frijoles, con su bocadillo. Va DELANTE, asi que
+    // lleva el contorno entero, como el gato de Medellin.
+    //
+    // Esta es la unica de las cinco que dio guerra: le vino DIBUJADA una sombra
+    // ovalada bajo los pies y bajo la olla, que es un magenta mas oscuro
+    // (164,53,155). Quitarla subiendo la tolerancia no vale, porque su vestido
+    // blanco se queda a 170 del fondo y la sombra a 150: no caben las dos. Se
+    // le declara la sombra como OTRO fondo, con su propia tolerancia, y la zona
+    // corta por encima de lo que sobra.
+    nombre: 'abuelita',
+    colorExacto: true,
+    fondosExtra: [{ color: [164, 53, 155], tolerancia: 70 }],
+    limpiarBolsas: true,
+    // Con la holgura de casa el filtro de las bolsas cortaria en 198 y se
+    // llevaria el vestido por delante. Con 0 solo se van las bolsas que ya son
+    // del color del fondo.
+    holguraBolsa: 0,
+    lienzo: { ancho: 440, alto: 660 },
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'abuelita',
+        porPieza: true,
+        nombres: ['abuelita'],
+        // El dibujo entero, bocadillo incluido, como el gato: el chiste es lo
+        // que dice.
+        zonas: [{ x: 73, y: 72, ancho: 722, alto: 1110 }],
+      },
+    ],
+  },
+  {
+    // Los tres cachorros de la finca. Van DELANTE, sueltos por el tablero, asi
+    // que salen de una sola hoja en tres dibujos.
+    //
+    // SIN porPieza: los tres comparten escala, que para eso son de la misma
+    // camada; a cada uno por su lado, el blanco saldria de otro tamano.
+    nombre: 'cachorros',
+    colorExacto: true,
+    limpiarBolsas: true,
+    // Muy bajo: lo que queda encerrado aqui son HILOS, el magenta que se cuela
+    // entre dos deditos de una pata. Con el minimo de casa (120 puntos) no
+    // llegaban a contar como bolsa y se quedaban puestos, y un hilo magenta
+    // sobre un cachorro negro canta.
+    bolsaMinima: 20,
+    lienzo: { ancho: 320, alto: 440 },
+    salida: 'webp',
+    // El cachorro BLANCO se queda a 190 del magenta, que es lo mas cerca que
+    // hay en toda la finca, asi que esta tolerancia es la que menos sitio tiene
+    // de todo el proyecto: por arriba la topa el filtro de las bolsas, que
+    // corta en tolerancia x 2,2 y no puede pasar de 190. Con 60 quedaba corta
+    // por abajo y los dos cachorros negros salian con un HALO MORADO alrededor
+    // del contorno, que es el magenta que el JPG desparrama contra la tinta.
+    // Con 80, el filtro de residuos llega a 136 y el de bolsas a 176: se lleva
+    // el halo y el blanco se salva por catorce.
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'cachorros',
+        nombres: ['cachorro-negro', 'cachorro-pinto', 'cachorro-blanco'],
+        zonas: [
+          { x: 34, y: 66, ancho: 448, alto: 635 },    // todo negro
+          { x: 470, y: 66, ancho: 448, alto: 635 },   // negro, pecho y pata blancos
+          { x: 906, y: 66, ancho: 450, alto: 635 },   // blanco, con el ojo tapado
+        ],
+      },
+    ],
+  },
   {
     // PAPA INODORO, el guardian del bano de Space Coast: una cabeza saliendo de
     // un retrete, con la cara de Daniel.

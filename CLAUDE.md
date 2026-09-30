@@ -1055,6 +1055,13 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   Medellin de prestado** hasta que llegue el suyo, que es lo que se ha hecho
   siempre aqui con lo que falta.
 
+  **La finca ya tiene el suyo entero**, y es la primera que lo tiene por los dos
+  lados: por detras el abuelo arriando ganado a caballo con su sombrero
+  vueltiao, el corral lleno de cebues y el palo de mango; por delante la
+  abuelita cocinando frijoles —con su bocadillo, como el gato de Medellin— y los
+  tres cachorros (el negro, el negro de pecho y pata blancos, y el blanco del
+  ojo tapado). Con eso se le va lo prestado de Medellin.
+
   **Orlando** no usa el de Medellin: un guayacan en flor y una chiva delante de
   una montana rusa se leian fatal. Se le presta el de Space Coast, que tambien
   es Florida —palmeras delante y, por detras, la casa y el jeep—, pero **sin el
@@ -2234,4 +2241,40 @@ baja.
   maquina se cargue sola: se le frena la CPU al navegador
   (`Emulation.setCPUThrottlingRate`, con un `newCDPSession`) y se mira si la
   prueba aguanta. A 6x, estas dos aguantan.
+- **2026-09-29** — **Los adornos nuevos vienen sobre MAGENTA, no sobre
+  turquesa**, y esto vale para todo lo que se pida de aqui en adelante. El
+  turquesa se parece a los cremas, a los grises y a los verdes, y de ahi salian
+  casi todos los destrozos de recorte que hemos tenido —los carros, la
+  camioneta del Abuelo, el oso de Martin Malvado, los buses—. Del magenta no se
+  parece nada de lo que dibujamos, asi que las tolerancias pueden ir bajas y el
+  recorte sale limpio a la primera. De las cinco laminas de la finca, cuatro
+  salieron bien de un tiron.
+
+  Al prompt se le pide ademas, siempre: un solo elemento, de cuerpo entero,
+  **sin sombra en el suelo, sin linea de suelo, sin marco y sin texto**, y con
+  margen de aire alrededor. Cada una de esas cosas nos ha costado una sesion
+  alguna vez.
+- **2026-09-29** — La finca estrena **su decorado propio**, siete piezas, y se le
+  va lo prestado de Medellin. Tres cosas que dejo la faena:
+
+  - **La abuelita vino con una sombra ovalada dibujada** bajo los pies y bajo la
+    olla, a pesar de pedir que no. Subir la tolerancia para comersela no valia:
+    su vestido blanco esta a 170 del fondo y la sombra a 150, y no caben las
+    dos. Se resuelve con `fondosExtra`, declarando el magenta oscuro de la
+    sombra como OTRO fondo con su propia tolerancia. Es el mismo mecanismo que
+    se invento para el cielo pintado dentro de la casita de Florida.
+  - **El cachorro blanco es lo mas apretado del proyecto**: queda a 190 del
+    magenta, y el filtro de las bolsas corta en tolerancia x 2,2, asi que la
+    tolerancia no puede pasar de 86. Pero con 60 quedaba corta por abajo y los
+    dos cachorros negros salian con un **halo morado** pegado al contorno. Se
+    queda en 80, que deja el halo fuera y salva el blanco por catorce.
+  - `bolsaMinima` baja a **20** en los cachorros y en el corral. Lo que quedaba
+    encerrado ahi no eran manchas sino **hilos**: el magenta que se cuela entre
+    dos deditos de una pata o por la rendija entre dos tablones. Con el minimo
+    de casa (120 puntos) no llegaban a contar como bolsa y se quedaban puestos,
+    y un hilo magenta sobre un cachorro negro canta.
+- **2026-09-29** — El **palo de mango va DETRAS**, no delante, aunque sea un
+  arbol como las palmeras. Mide 252 px y por delante taparia al nino entero; por
+  detras hace de finca sin estorbar. La regla que ya valia para el guayacan de
+  la finca, dicha al derecho: **lo que mide mas que el nino, detras.**
 
