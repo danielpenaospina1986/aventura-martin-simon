@@ -87,6 +87,11 @@ const PERSONAJES = [
         archivo: 'vaca',
         // SIN porPieza: las seis comparten escala, que es lo que hace que la
         // vaca no encoja ni crezca al cambiar de pose.
+        //
+        // Y sus zonas van A MANO, no medidas: esta hoja trae DIBUJADA una linea
+        // de suelo bajo las dos poses de embestida, como la del Abuelo. Medidas
+        // a la silueta, la linea entra en el recuadro y la vaca sale con un
+        // palo negro debajo.
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
           { x: 40, y: 60, ancho: 400, alto: 285 },   // trota, fase A
@@ -140,9 +145,20 @@ const PERSONAJES = [
     colorExacto: true,
     limpiarBolsas: true,
     bolsaMinima: 40,
+    holguraBolsa: 0,
     // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
     // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
     // de casa se quedaba pegada como un halo gris debajo.
+    //
+    // Y las bolsas encerradas se limpian con holgura CERO, que es lo que las
+    // tenia destrozadas: con la de casa el filtro corta en tolerancia x 2,2 (o
+    // sea 264) y aqui eso se lleva por delante entre el 30 y el 46 por ciento
+    // del dibujo. Se comia los cromados, las llantas de banda blanca y los
+    // parabrisas de los carros, y la cara de los ninos de la vagoneta, dejando
+    // solo el contorno. Con holgura 0 se van las bolsas (que son del color del
+    // fondo pelado) y no se toca el dibujo. La vaca lleva la holgura de casa
+    // porque su fondo es un turquesa mucho mas saturado y solo tiene el 4 por
+    // ciento en riesgo.
     tolerancia: 120,
     lienzo: { ancho: 480, alto: 312 },
     salida: 'webp',
@@ -154,12 +170,12 @@ const PERSONAJES = [
         archivo: 'bus-hotelera',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 47, y: 87, ancho: 388, alto: 249 },        // trota, fase A
-          { x: 489, y: 86, ancho: 393, alto: 250 },       // trota, fase B
-          { x: 935, y: 87, ancho: 385, alto: 249 },       // se planta y avisa
-          { x: 52, y: 459, ancho: 379, alto: 253 },       // embiste, fase A
-          { x: 494, y: 459, ancho: 387, alto: 253 },      // embiste, fase B
-          { x: 933, y: 399, ancho: 380, alto: 310 },      // tumbado, con sus estrellas
+          { x: 44, y: 83, ancho: 395, alto: 257 },      // trota, fase A
+          { x: 486, y: 83, ancho: 400, alto: 256 },     // trota, fase B
+          { x: 931, y: 83, ancho: 393, alto: 257 },     // se planta y avisa
+          { x: 48, y: 455, ancho: 387, alto: 261 },     // embiste, fase A
+          { x: 490, y: 455, ancho: 395, alto: 261 },    // embiste, fase B
+          { x: 929, y: 400, ancho: 388, alto: 313 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -187,12 +203,12 @@ const PERSONAJES = [
         archivo: 'bus-circular',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 48, y: 87, ancho: 387, alto: 249 },        // trota, fase A
-          { x: 490, y: 86, ancho: 392, alto: 250 },       // trota, fase B
-          { x: 935, y: 87, ancho: 385, alto: 249 },       // se planta y avisa
-          { x: 52, y: 459, ancho: 379, alto: 253 },       // embiste, fase A
-          { x: 494, y: 459, ancho: 387, alto: 253 },      // embiste, fase B
-          { x: 933, y: 399, ancho: 380, alto: 310 },      // tumbado, con sus estrellas
+          { x: 44, y: 83, ancho: 395, alto: 257 },      // trota, fase A
+          { x: 486, y: 82, ancho: 400, alto: 258 },     // trota, fase B
+          { x: 931, y: 83, ancho: 393, alto: 257 },     // se planta y avisa
+          { x: 48, y: 455, ancho: 387, alto: 261 },     // embiste, fase A
+          { x: 490, y: 455, ancho: 395, alto: 261 },    // embiste, fase B
+          { x: 929, y: 400, ancho: 388, alto: 313 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -205,9 +221,20 @@ const PERSONAJES = [
     colorExacto: true,
     limpiarBolsas: true,
     bolsaMinima: 40,
+    holguraBolsa: 0,
     // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
     // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
     // de casa se quedaba pegada como un halo gris debajo.
+    //
+    // Y las bolsas encerradas se limpian con holgura CERO, que es lo que las
+    // tenia destrozadas: con la de casa el filtro corta en tolerancia x 2,2 (o
+    // sea 264) y aqui eso se lleva por delante entre el 30 y el 46 por ciento
+    // del dibujo. Se comia los cromados, las llantas de banda blanca y los
+    // parabrisas de los carros, y la cara de los ninos de la vagoneta, dejando
+    // solo el contorno. Con holgura 0 se van las bolsas (que son del color del
+    // fondo pelado) y no se toca el dibujo. La vaca lleva la holgura de casa
+    // porque su fondo es un turquesa mucho mas saturado y solo tiene el 4 por
+    // ciento en riesgo.
     tolerancia: 120,
     lienzo: { ancho: 480, alto: 312 },
     salida: 'webp',
@@ -219,12 +246,12 @@ const PERSONAJES = [
         archivo: 'clasico-cadillac',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 45, y: 145, ancho: 408, alto: 202 },       // trota, fase A
-          { x: 495, y: 119, ancho: 392, alto: 228 },      // trota, fase B
-          { x: 907, y: 160, ancho: 440, alto: 189 },      // se planta y avisa
-          { x: 20, y: 511, ancho: 455, alto: 197 },       // embiste, fase A
-          { x: 507, y: 464, ancho: 388, alto: 241 },      // embiste, fase B
-          { x: 949, y: 445, ancho: 386, alto: 266 },      // tumbado, con sus estrellas
+          { x: 41, y: 141, ancho: 416, alto: 210 },     // trota, fase A
+          { x: 491, y: 116, ancho: 400, alto: 234 },    // trota, fase B
+          { x: 903, y: 156, ancho: 447, alto: 197 },    // se planta y avisa
+          { x: 17, y: 507, ancho: 462, alto: 205 },     // embiste, fase A
+          { x: 503, y: 460, ancho: 396, alto: 249 },    // embiste, fase B
+          { x: 945, y: 442, ancho: 393, alto: 273 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -237,9 +264,20 @@ const PERSONAJES = [
     colorExacto: true,
     limpiarBolsas: true,
     bolsaMinima: 40,
+    holguraBolsa: 0,
     // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
     // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
     // de casa se quedaba pegada como un halo gris debajo.
+    //
+    // Y las bolsas encerradas se limpian con holgura CERO, que es lo que las
+    // tenia destrozadas: con la de casa el filtro corta en tolerancia x 2,2 (o
+    // sea 264) y aqui eso se lleva por delante entre el 30 y el 46 por ciento
+    // del dibujo. Se comia los cromados, las llantas de banda blanca y los
+    // parabrisas de los carros, y la cara de los ninos de la vagoneta, dejando
+    // solo el contorno. Con holgura 0 se van las bolsas (que son del color del
+    // fondo pelado) y no se toca el dibujo. La vaca lleva la holgura de casa
+    // porque su fondo es un turquesa mucho mas saturado y solo tiene el 4 por
+    // ciento en riesgo.
     tolerancia: 120,
     lienzo: { ancho: 480, alto: 312 },
     salida: 'webp',
@@ -251,12 +289,12 @@ const PERSONAJES = [
         archivo: 'clasico-buick',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 48, y: 138, ancho: 405, alto: 209 },       // trota, fase A
-          { x: 499, y: 115, ancho: 388, alto: 232 },      // trota, fase B
-          { x: 907, y: 137, ancho: 439, alto: 212 },      // se planta y avisa
-          { x: 20, y: 501, ancho: 455, alto: 207 },       // embiste, fase A
-          { x: 514, y: 460, ancho: 381, alto: 245 },      // embiste, fase B
-          { x: 949, y: 445, ancho: 386, alto: 276 },      // tumbado, con sus estrellas
+          { x: 44, y: 134, ancho: 413, alto: 217 },     // trota, fase A
+          { x: 495, y: 111, ancho: 396, alto: 239 },    // trota, fase B
+          { x: 903, y: 133, ancho: 447, alto: 220 },    // se planta y avisa
+          { x: 17, y: 497, ancho: 462, alto: 215 },     // embiste, fase A
+          { x: 510, y: 456, ancho: 389, alto: 253 },    // embiste, fase B
+          { x: 945, y: 441, ancho: 393, alto: 284 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -269,9 +307,20 @@ const PERSONAJES = [
     colorExacto: true,
     limpiarBolsas: true,
     bolsaMinima: 40,
+    holguraBolsa: 0,
     // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
     // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
     // de casa se quedaba pegada como un halo gris debajo.
+    //
+    // Y las bolsas encerradas se limpian con holgura CERO, que es lo que las
+    // tenia destrozadas: con la de casa el filtro corta en tolerancia x 2,2 (o
+    // sea 264) y aqui eso se lleva por delante entre el 30 y el 46 por ciento
+    // del dibujo. Se comia los cromados, las llantas de banda blanca y los
+    // parabrisas de los carros, y la cara de los ninos de la vagoneta, dejando
+    // solo el contorno. Con holgura 0 se van las bolsas (que son del color del
+    // fondo pelado) y no se toca el dibujo. La vaca lleva la holgura de casa
+    // porque su fondo es un turquesa mucho mas saturado y solo tiene el 4 por
+    // ciento en riesgo.
     tolerancia: 120,
     lienzo: { ancho: 480, alto: 312 },
     salida: 'webp',
@@ -283,12 +332,12 @@ const PERSONAJES = [
         archivo: 'clasico-camioneta',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 58, y: 90, ancho: 390, alto: 219 },        // trota, fase A
-          { x: 499, y: 81, ancho: 385, alto: 230 },       // trota, fase B
-          { x: 904, y: 113, ancho: 419, alto: 198 },      // se planta y avisa
-          { x: 29, y: 465, ancho: 462, alto: 218 },       // embiste, fase A
-          { x: 521, y: 427, ancho: 392, alto: 256 },      // embiste, fase B
-          { x: 948, y: 408, ancho: 378, alto: 276 },      // tumbado, con sus estrellas
+          { x: 54, y: 87, ancho: 397, alto: 226 },      // trota, fase A
+          { x: 495, y: 77, ancho: 393, alto: 238 },     // trota, fase B
+          { x: 900, y: 110, ancho: 427, alto: 205 },    // se planta y avisa
+          { x: 25, y: 461, ancho: 470, alto: 226 },     // embiste, fase A
+          { x: 517, y: 423, ancho: 400, alto: 264 },    // embiste, fase B
+          { x: 944, y: 406, ancho: 386, alto: 282 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -301,9 +350,20 @@ const PERSONAJES = [
     colorExacto: true,
     limpiarBolsas: true,
     bolsaMinima: 40,
+    holguraBolsa: 0,
     // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
     // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
     // de casa se quedaba pegada como un halo gris debajo.
+    //
+    // Y las bolsas encerradas se limpian con holgura CERO, que es lo que las
+    // tenia destrozadas: con la de casa el filtro corta en tolerancia x 2,2 (o
+    // sea 264) y aqui eso se lleva por delante entre el 30 y el 46 por ciento
+    // del dibujo. Se comia los cromados, las llantas de banda blanca y los
+    // parabrisas de los carros, y la cara de los ninos de la vagoneta, dejando
+    // solo el contorno. Con holgura 0 se van las bolsas (que son del color del
+    // fondo pelado) y no se toca el dibujo. La vaca lleva la holgura de casa
+    // porque su fondo es un turquesa mucho mas saturado y solo tiene el 4 por
+    // ciento en riesgo.
     tolerancia: 120,
     lienzo: { ancho: 480, alto: 312 },
     salida: 'webp',
@@ -315,12 +375,12 @@ const PERSONAJES = [
         archivo: 'alma',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 42, y: 38, ancho: 391, alto: 314 },        // trota, fase A
-          { x: 488, y: 57, ancho: 389, alto: 301 },       // trota, fase B
-          { x: 910, y: 42, ancho: 406, alto: 316 },       // se planta y avisa
-          { x: 25, y: 435, ancho: 449, alto: 262 },       // embiste, fase A
-          { x: 488, y: 431, ancho: 423, alto: 269 },      // embiste, fase B
-          { x: 903, y: 453, ancho: 442, alto: 262 },      // tumbado, con sus estrellas
+          { x: 38, y: 36, ancho: 399, alto: 320 },      // trota, fase A
+          { x: 484, y: 53, ancho: 397, alto: 309 },     // trota, fase B
+          { x: 906, y: 38, ancho: 414, alto: 324 },     // se planta y avisa
+          { x: 21, y: 431, ancho: 457, alto: 270 },     // embiste, fase A
+          { x: 484, y: 428, ancho: 423, alto: 276 },    // embiste, fase B
+          { x: 908, y: 449, ancho: 441, alto: 270 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -348,12 +408,12 @@ const PERSONAJES = [
         archivo: 'melo',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 55, y: 50, ancho: 387, alto: 303 },        // trota, fase A
-          { x: 494, y: 38, ancho: 385, alto: 315 },       // trota, fase B
-          { x: 917, y: 27, ancho: 414, alto: 338 },       // se planta y avisa
-          { x: 21, y: 422, ancho: 491, alto: 280 },       // embiste, fase A
-          { x: 504, y: 416, ancho: 432, alto: 285 },      // embiste, fase B
-          { x: 928, y: 411, ancho: 426, alto: 310 },      // tumbado, con sus estrellas
+          { x: 51, y: 46, ancho: 395, alto: 311 },      // trota, fase A
+          { x: 490, y: 34, ancho: 393, alto: 323 },     // trota, fase B
+          { x: 913, y: 24, ancho: 422, alto: 345 },     // se planta y avisa
+          { x: 17, y: 418, ancho: 491, alto: 288 },     // embiste, fase A
+          { x: 509, y: 412, ancho: 423, alto: 293 },    // embiste, fase B
+          { x: 933, y: 412, ancho: 425, alto: 313 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -366,9 +426,20 @@ const PERSONAJES = [
     colorExacto: true,
     limpiarBolsas: true,
     bolsaMinima: 40,
+    holguraBolsa: 0,
     // Alta como la de la vaca: varias hojas traen una SOMBRA dibujada, que es
     // el mismo turquesa mas oscuro (a unos 115 del fondo). Con la tolerancia
     // de casa se quedaba pegada como un halo gris debajo.
+    //
+    // Y las bolsas encerradas se limpian con holgura CERO, que es lo que las
+    // tenia destrozadas: con la de casa el filtro corta en tolerancia x 2,2 (o
+    // sea 264) y aqui eso se lleva por delante entre el 30 y el 46 por ciento
+    // del dibujo. Se comia los cromados, las llantas de banda blanca y los
+    // parabrisas de los carros, y la cara de los ninos de la vagoneta, dejando
+    // solo el contorno. Con holgura 0 se van las bolsas (que son del color del
+    // fondo pelado) y no se toca el dibujo. La vaca lleva la holgura de casa
+    // porque su fondo es un turquesa mucho mas saturado y solo tiene el 4 por
+    // ciento en riesgo.
     tolerancia: 120,
     lienzo: { ancho: 480, alto: 312 },
     salida: 'webp',
@@ -380,12 +451,12 @@ const PERSONAJES = [
         archivo: 'vagoneta',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 36, y: 30, ancho: 412, alto: 311 },        // trota, fase A
-          { x: 515, y: 30, ancho: 342, alto: 311 },       // trota, fase B
-          { x: 920, y: 74, ancho: 375, alto: 267 },       // se planta y avisa
-          { x: 48, y: 424, ancho: 417, alto: 273 },       // embiste, fase A
-          { x: 483, y: 391, ancho: 414, alto: 285 },      // embiste, fase B
-          { x: 932, y: 405, ancho: 382, alto: 295 },      // tumbado, con sus estrellas
+          { x: 32, y: 26, ancho: 420, alto: 318 },      // trota, fase A
+          { x: 511, y: 26, ancho: 350, alto: 319 },     // trota, fase B
+          { x: 916, y: 70, ancho: 383, alto: 275 },     // se planta y avisa
+          { x: 44, y: 420, ancho: 425, alto: 281 },     // embiste, fase A
+          { x: 479, y: 389, ancho: 421, alto: 291 },    // embiste, fase B
+          { x: 928, y: 401, ancho: 390, alto: 303 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -413,12 +484,12 @@ const PERSONAJES = [
         archivo: 'vaca-marciana',
         nombres: ['anda1', 'anda2', 'avisa', 'embiste1', 'embiste2', 'tumbada'],
         zonas: [
-          { x: 38, y: 24, ancho: 402, alto: 321 },        // trota, fase A
-          { x: 473, y: 24, ancho: 402, alto: 321 },       // trota, fase B
-          { x: 921, y: 86, ancho: 424, alto: 259 },       // se planta y avisa
-          { x: 31, y: 411, ancho: 442, alto: 293 },       // embiste, fase A
-          { x: 504, y: 410, ancho: 414, alto: 280 },      // embiste, fase B
-          { x: 954, y: 426, ancho: 384, alto: 276 },      // tumbado, con sus estrellas
+          { x: 34, y: 20, ancho: 410, alto: 332 },      // trota, fase A
+          { x: 469, y: 20, ancho: 410, alto: 332 },     // trota, fase B
+          { x: 917, y: 80, ancho: 434, alto: 274 },     // se planta y avisa
+          { x: 27, y: 405, ancho: 451, alto: 302 },     // embiste, fase A
+          { x: 500, y: 405, ancho: 422, alto: 289 },    // embiste, fase B
+          { x: 950, y: 422, ancho: 392, alto: 284 },    // tumbado, con sus estrellas
         ],
       },
     ],
@@ -1285,7 +1356,7 @@ await pagina.evaluate(() => {
   // el dibujo tiene partes del MISMO color que el fondo (las hojas verdes de
   // una palmera sobre una lamina verde): por tono se las come, y por color solo
   // se va el verde plano del fondo, que es uniforme.
-  window.detectorDeFondo = (p, ancho, alto, tolerancia, colorExacto, fondosExtra) => {
+  window.detectorDeFondo = (p, ancho, alto, tolerancia, colorExacto, fondosExtra, holguraBolsa) => {
     const en = (x, y) => {
       const i = (y * ancho + x) * 4;
       return [p[i], p[i + 1], p[i + 2]];
@@ -1319,12 +1390,19 @@ await pagina.evaluate(() => {
       return {
         esFondo: (i) => cerca(i, 0),
         esResiduo: (i) => cerca(i, margen * 0.7),
-        // Para las BOLSAS encerradas se es mucho mas ancho. Un hueco entre dos
-        // patas es casi todo halo del contorno: el JPG deja ahi un turquesa
-        // bastante mas oscuro que el del borde de la lamina, y con la
-        // tolerancia normal se quedaba puesto. Solo hace falta con fondo de
-        // color saturado; en damero y en fondo por tono, esBolsa es esFondo.
-        esBolsa: (i) => cerca(i, margen * 1.2),
+        // Para las BOLSAS encerradas se es mas ancho. Un hueco entre dos patas
+        // es casi todo halo del contorno: el JPG deja ahi un turquesa bastante
+        // mas oscuro que el del borde de la lamina, y con la tolerancia normal
+        // se quedaba puesto. Solo hace falta con fondo de color saturado; en
+        // damero y en fondo por tono, esBolsa es esFondo.
+        //
+        // CUANTO mas ancho lo dice la hoja (`holguraBolsa`), porque ensanchar
+        // no sale gratis: el de casa corta en margen x 2,2 y eso, en las hojas
+        // de los carros clasicos y la vagoneta, se llevaba por delante los
+        // cromados, las llantas de banda blanca y la cara de los ninos. Una
+        // hoja cuyo dibujo tenga colores cerca del fondo pide holgura 0, y
+        // entonces solo se van las bolsas que ya son del color del fondo.
+        esBolsa: (i) => cerca(i, margen * (holguraBolsa === undefined ? 1.2 : holguraBolsa)),
       };
     }
 
@@ -1518,6 +1596,7 @@ for (const personaje of aTrabajar) {
       fondosExtra: personaje.fondosExtra,
       limpiarBolsas: personaje.limpiarBolsas || false,
       bolsaMinima: bolsaMinimaDeEste,
+      holguraBolsa: personaje.holguraBolsa,
     });
     medidas.push(m);
   }
@@ -1569,6 +1648,7 @@ for (const personaje of aTrabajar) {
       fondosExtra: personaje.fondosExtra,
       limpiarBolsas: personaje.limpiarBolsas || false,
       bolsaMinima: bolsaMinimaDeEste,
+      holguraBolsa: personaje.holguraBolsa,
       soloElCuerpo: trabajo.soloElCuerpo || false,
       formato: salida,
     });
@@ -1793,6 +1873,7 @@ async function recortarPose(pagina, opciones) {
         fondosExtra,
         limpiarBolsas,
         bolsaMinima,
+        holguraBolsa,
         soloElCuerpo,
         formato,
       }) => {
@@ -1824,7 +1905,8 @@ async function recortarPose(pagina, opciones) {
         const datos = ctx.getImageData(0, 0, ancho, alto);
         const p = datos.data;
         const visto = new Uint8Array(ancho * alto);
-        const { esFondo, esResiduo, esBolsa } = window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto, fondosExtra);
+        const { esFondo, esResiduo, esBolsa } =
+          window.detectorDeFondo(p, ancho, alto, tolerancia, colorExacto, fondosExtra, holguraBolsa);
 
         const pila = [];
         for (let x = 0; x < ancho; x += 1) pila.push([x, 0], [x, alto - 1]);

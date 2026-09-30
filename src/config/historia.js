@@ -110,9 +110,34 @@ export const AVISOS = {
   metaAbierta: '¡La salida está libre!',
   checkpoint: '¡Escondite seguro!',
   // La vaca que persiguió a Martín en la finca de los abuelos, y que por poco
-  // se lo lleva por delante. Ahora se la encuentran por todos los tableros.
+  // se lo lleva por delante. Es el aviso del bicho que embiste cuando la ciudad
+  // no dice otra cosa (ver AVISOS_DE_BICHO, aquí abajo).
   vaca: '¡CUIDADO CON LA BERRIONDA VACA!',
 };
+
+// El bicho que embiste es el mismo en los ocho mundos, pero NO es lo mismo: en
+// Atlanta es Alma, en Miami es Melo y en Orlando es un vagón de montaña rusa.
+// Avisar de una vaca cuando lo que viene es un perro no tiene ninguna gracia,
+// así que cada piel trae su cartel. Van por PIEL y no por ciudad, porque una
+// ciudad puede tener varias (Medellín dos buses, Cartagena tres carros).
+export const AVISOS_DE_BICHO = {
+  vaca: AVISOS.vaca,
+  'vaca-marciana': '¡CUIDADO CON LA VACA MARCIANA!',
+  'bus-hotelera': '¡QUE SE VIENE EL BUS!',
+  'bus-circular': '¡QUE SE VIENE EL BUS!',
+  alma: '¡CUIDADO CON ALMA, QUE ESTÁ LOCA!',
+  melo: '¡CUIDADO CON MELO, QUE VIENE LOCO!',
+  'clasico-cadillac': '¡CUIDADO CON EL CARRO LOCO!',
+  'clasico-buick': '¡CUIDADO CON EL CARRO LOCO!',
+  'clasico-camioneta': '¡CUIDADO CON EL CARRO LOCO!',
+  vagoneta: '¡CUIDADO CON LA MONTAÑA RUSA!',
+};
+
+// El cartel de una piel. Si a alguna se le olvida el suyo, el de la vaca, que
+// es de donde salió el cuento.
+export function avisoDeBicho(piel) {
+  return AVISOS_DE_BICHO[piel] || AVISOS.vaca;
+}
 
 export function ciudadDelCuento(nombre) {
   return CIUDADES[nombre] || null;
@@ -122,4 +147,4 @@ export function jefeDelCuento(nombre) {
   return JEFES[nombre] || null;
 }
 
-export default { CIUDADES, JEFES, AVISOS };
+export default { CIUDADES, JEFES, AVISOS, AVISOS_DE_BICHO };

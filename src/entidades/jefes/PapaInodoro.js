@@ -182,7 +182,7 @@ export class PapaInodoro extends JefeBase {
     this.cambio = this.reloj + TIEMPOS.avisoEscupeMs;
     this.body.velocity.x = 0;
     this.miraAlNino();
-    this.setTexture(TEXTURAS.inodoroEscupe);
+    this.setTexture(this.suyo.escupe);
     this.avisar(TIEMPOS.avisoEscupeMs);
   }
 
@@ -191,14 +191,14 @@ export class PapaInodoro extends JefeBase {
     this.cambio = this.reloj + TIEMPOS.avisoEmbisteMs;
     this.body.velocity.x = 0;
     this.miraAlNino();
-    this.setTexture(TEXTURAS.inodoroEnojado);
+    this.setTexture(this.suyo.enojado);
     // el aviso va en rojo: este es el golpe que duele
     this.avisar(TIEMPOS.avisoEmbisteMs, 0xff6b5a);
   }
 
   embestir() {
     this.estado = 'embiste';
-    this.setTexture(TEXTURAS.inodoroEmbiste);
+    this.setTexture(this.suyo.embiste);
   }
 
   // Se para al chocar con una pared o al llegar al borde de su arena: si no, se
@@ -216,7 +216,7 @@ export class PapaInodoro extends JefeBase {
     this.estado = 'aturdido';
     this.cambio = this.reloj + TIEMPOS.aturdidoMs;
     this.body.velocity.x = 0;
-    this.setTexture(TEXTURAS.inodoroAturdido);
+    this.setTexture(this.suyo.aturdido);
     // se da la vuelta para la proxima, que si no embiste contra la misma pared
     this.girar(-this.direccion);
 
