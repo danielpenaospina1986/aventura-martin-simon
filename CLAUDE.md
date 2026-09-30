@@ -1062,6 +1062,13 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   tres cachorros (el negro, el negro de pecho y pata blancos, y el blanco del
   ojo tapado). Con eso se le va lo prestado de Medellin.
 
+  **Y Lake Lanier tambien**: por detras la casa victoriana de suburbio de
+  Georgia, el roble con sus barbas de musgo espanol —de los de Savannah— y el
+  pino alto; por delante la gata negra y el eufonio con cara de travieso, que va
+  diciendo "¡MOFONGO!". Con eso se le va lo prestado de Space Coast (el jeep y
+  la casa de Florida) y los adornos provisionales. Las palmeras siguen fuera,
+  que es un lago de Georgia.
+
   **Orlando** no usa el de Medellin: un guayacan en flor y una chiva delante de
   una montana rusa se leian fatal. Se le presta el de Space Coast, que tambien
   es Florida —palmeras delante y, por detras, la casa y el jeep—, pero **sin el
@@ -2277,4 +2284,32 @@ baja.
   arbol como las palmeras. Mide 252 px y por delante taparia al nino entero; por
   detras hace de finca sin estorbar. La regla que ya valia para el guayacan de
   la finca, dicha al derecho: **lo que mide mas que el nino, detras.**
+- **2026-09-29** — Lake Lanier estrena **su decorado propio**, cinco piezas, y
+  con eso son dos las ciudades vestidas de lo suyo por los dos lados. El magenta
+  volvio a funcionar: las cinco laminas salieron a la primera, sin una sola
+  receta que tocar por color.
+- **2026-09-29** — **`bolsaMinima` no se podia bajar de verdad.** El minimo de
+  una bolsa encerrada se sacaba con `Math.max(bolsaMinima, 0,02% del area)`, asi
+  que en una lamina grande mandaba la proporcion y lo que pedia la hoja se
+  ignoraba: el eufonio pedia 20 y le tocaban 132, el corral 20 y le tocaban 197.
+  Por eso se quedaban puestos los HILOS de fondo —el magenta que se cuela entre
+  dos pistones o por la rendija entre dos tablones—, y por eso hubo que
+  perseguirlos a mano en la finca. Ahora **lo que diga la hoja manda**, y la
+  proporcion se queda solo como valor por defecto para la hoja que no dice nada.
+
+  Se comprobo que esto no toca nada de lo que ya estaba: de las diecinueve hojas
+  que piden `bolsaMinima`, en once la proporcion ya era menor que lo pedido, asi
+  que salen identicas. Las ocho que cambian son justo las nuevas, las del
+  magenta. El eufonio paso de 204 restos de fondo a 8, y el corral de 152 a 0.
+- **2026-09-29** — La finca tenia el **encuadre de su fondo en -0,14** y se veia
+  una franja tostada lisa cruzando justo por encima del suelo, una linea
+  paralela al piso por donde camina el nino: su dibujo acaba al 71% y por debajo
+  es un liso, y subirlo tanto metia ese liso en cuadro. Lo conto Daniel.
+
+  Se deja en **cero**, y no en un negativo pequeno (con -0,06 ya no se veia),
+  porque en cero el encuadre **no depende de cuanto se amplie la lamina**: el
+  desplazamiento se multiplica por lo que sobra de alto, asi que con cualquier
+  otro valor una pantalla mas ancha —un telefono, que se lleva `MUNDO.ancho`
+  hasta 800— amplia mas, sobra mas alto y la franja volveria a asomar. En cero
+  la lamina queda centrada y se ve igual en todas las pantallas.
 
