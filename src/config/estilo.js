@@ -281,6 +281,14 @@ export const TEXTURAS = {
   frenteJeep: 'tex-frente-jeep',
   frenteLetrero: 'tex-frente-letrero',
   frenteGato: 'tex-frente-gato',
+  // los de la finca (El Refugio)
+  frenteAbueloCaballo: 'tex-frente-abuelo-caballo',
+  frenteCorral: 'tex-frente-corral',
+  frenteMango: 'tex-frente-mango',
+  frenteAbuelita: 'tex-frente-abuelita',
+  frenteCachorroNegro: 'tex-frente-cachorro-negro',
+  frenteCachorroPinto: 'tex-frente-cachorro-pinto',
+  frenteCachorroBlanco: 'tex-frente-cachorro-blanco',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',

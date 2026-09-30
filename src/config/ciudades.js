@@ -200,23 +200,40 @@ CIUDADES['lake-lanier'] = {
 // La finca (El Refugio): tierra apisonada del Magdalena Medio, con la cornisa
 // en el teja de su techo.
 //
-// Aqui SI pega lo de Medellin, y es el unico de los tres mundos nuevos donde lo
-// prestado no chirria: la chiva y la casa de pueblo son colombianas, que es
-// justo lo que es esta finca.
+// **Ya tiene los suyos**, dibujados por Daniel, y con eso se le va lo prestado
+// de Medellin (la chiva y la casa de pueblo). Por DETRAS, la finca de verdad:
+// el abuelo arriando ganado a caballo con su sombrero vueltiao, el corral lleno
+// de cebues y el palo de mango. Por DELANTE, la abuelita cocinando frijoles
+// —con su bocadillo, como el gato de Medellin— y los tres cachorros: el negro,
+// el negro de pecho y pata blancos, y el blanco del ojo tapado.
 //
 // Lo que NO se le pone es un guayacan delante, aunque lo tengamos: su
 // ilustracion ya viene llena de arboles en flor, y anadiendo los nuestros el
-// tablero se convertia en una pared amarilla por la que no se veia jugar. De
-// delante se le deja solo la palmera alta, que es vertical y deja ver.
+// tablero se convertia en una pared amarilla por la que no se veia jugar. La
+// palmera alta se queda, que es vertical y deja ver, y en el Magdalena Medio
+// pega.
+//
+// El mango va DETRAS y no delante a proposito, por lo mismo: un arbol de 250 px
+// cruzando por delante tapa al nino entero.
 //
 // Su dibujo acaba al 71% (por debajo es un liso), asi que se sube bastante.
 CIUDADES.finca = {
   pais: 'co',
   frente: [
     { textura: TEXTURAS.frentePalmeraAlta, desde: 'abajo', alto: 210, cada: 1180, desfase: 520 },
-    // por detras del nino, la chiva camino de la finca y la casa de pueblo
-    { textura: TEXTURAS.frenteChiva, desde: 'abajo', alto: 170, cada: 1460, desfase: 820, detras: true },
-    { textura: TEXTURAS.frenteCasa, desde: 'abajo', alto: 210, cada: 1560, desfase: 1620, detras: true },
+    // la abuelita, con lo que dice. Va mas baja que el gato de Medellin en
+    // proporcion: su bocadillo se lleva el tercio de arriba del dibujo, asi que
+    // ella sola queda a la altura de un nino y no lo tapa al pasar.
+    { textura: TEXTURAS.frenteAbuelita, desde: 'abajo', alto: 178, cada: 1640, desfase: 1180 },
+    // los tres cachorros, sueltos por el tablero y a distinto paso, para que no
+    // se lean como los mismos tres calcados
+    { textura: TEXTURAS.frenteCachorroNegro, desde: 'abajo', alto: 78, cada: 980, desfase: 300 },
+    { textura: TEXTURAS.frenteCachorroPinto, desde: 'abajo', alto: 74, cada: 1120, desfase: 760 },
+    { textura: TEXTURAS.frenteCachorroBlanco, desde: 'abajo', alto: 80, cada: 1060, desfase: 1500 },
+    // y por detras, la finca: el abuelo arriando, el corral y el palo de mango
+    { textura: TEXTURAS.frenteAbueloCaballo, desde: 'abajo', alto: 150, cada: 1420, desfase: 880, detras: true },
+    { textura: TEXTURAS.frenteCorral, desde: 'abajo', alto: 178, cada: 1520, desfase: 1680, detras: true },
+    { textura: TEXTURAS.frenteMango, desde: 'abajo', alto: 252, cada: 1240, desfase: 360, detras: true },
   ],
   pavimento: { patron: 'arena', claro: 0xd9c096, medio: 0xbfa478, oscuro: 0x95805a },
   subsuelo: { patron: 'estratos', claro: 0xa98f6a, medio: 0x8d7757, oscuro: 0x6b5a41 },
