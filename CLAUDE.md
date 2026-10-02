@@ -1069,11 +1069,13 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   la casa de Florida) y los adornos provisionales. Las palmeras siguen fuera,
   que es un lago de Georgia.
 
-  **Orlando** no usa el de Medellin: un guayacan en flor y una chiva delante de
-  una montana rusa se leian fatal. Se le presta el de Space Coast, que tambien
-  es Florida —palmeras delante y, por detras, la casa y el jeep—, pero **sin el
-  letrero del muelle**, que pone "Cocoa Beach Pier" con todas sus letras. Un
-  adorno generico se perdona; uno que nombra otra ciudad, no.
+  **Y Orlando tambien**: por detras la noria panoramica, la casa puesta boca
+  abajo y el letrero de la entrada de Disney Springs; por delante las tres
+  primas de los ninos, el raton malvado de 1928 y el villano desenmascarado con
+  su bocadillo. De lo prestado solo le sobrevive **la palmera**, y a proposito:
+  Orlando es Florida, asi que ahi no chirria —es justo lo contrario de Lake
+  Lanier, donde las palmeras se lo llevaban a otro clima— y da el ritmo vertical
+  que si no pondria solo la noria.
 
   Sus medidas (lienzos de 480-660 px, contorno a la mitad, opaco, apoyado en la
   linea del suelo) **estan probadas y valen de patron** para lo que venga: un
@@ -2312,4 +2314,39 @@ baja.
   otro valor una pantalla mas ancha —un telefono, que se lleva `MUNDO.ancho`
   hasta 800— amplia mas, sobra mas alto y la franja volveria a asomar. En cero
   la lamina queda centrada y se ve igual en todas las pantallas.
+- **2026-10-02** — Orlando estrena **su decorado propio**, seis piezas, y con eso
+  son tres las ciudades vestidas de lo suyo por los dos lados. De lo prestado
+  solo le queda la palmera, que ahi si pega.
+- **2026-10-02** — **El fondo no solo se queda: a veces TINE.** Los radios de la
+  noria son lineas de un pixel dibujadas sobre el magenta, y la compresion del
+  JPG no dejo ni la linea ni el fondo, sino la mezcla de los dos: un morado
+  sucio. No es un problema de tolerancia y no se arregla con ninguna —ese morado
+  esta a **264** del fondo, MAS LEJOS que el crema de la propia noria, que esta
+  a 200—, asi que cualquier filtro que se lo llevara se habria llevado el dibujo
+  primero.
+
+  La herramienta gana `repintar`, que le devuelve el color a lo que el fondo
+  tino. Y **no busca un color con su tolerancia**, porque lo que queda no es un
+  color sino una RAMPA, del morado oscuro al rosa palido, que es el degradado de
+  la linea fina. Lo que todos tienen en comun es que **siguen llevando el tinte
+  del fondo**, y con fondo magenta eso se reconoce de un vistazo: **el verde
+  queda por debajo del rojo Y del azul**. Nada de lo dibujado cumple eso (el
+  crema tiene el azul por debajo del verde; la tinta tiene los tres iguales),
+  asi que la cuenta separa limpiamente. De 572 puntos morados a cero.
+
+  Esto es otra ventaja del magenta que no se habia visto venir: como el tinte
+  del fondo es reconocible por la forma de sus canales, **lo que contamine se
+  puede encontrar sin tocar nada del dibujo**. Con el turquesa de antes esto no
+  habria sido posible, porque el turquesa se parece demasiado a los grises y los
+  cremas que si estan dibujados.
+- **2026-10-02** — Dos cosas que salieron del generador distintas de lo pedido y
+  que **Daniel decidio dejar**: el bocadillo del villano, que se trajo los
+  corchetes del hueco que le deje en el prompt y escribio dos palabras juntas,
+  y el raton de 1928, que salio **conejo** (orejas largas en vez de los dos
+  discos redondos). Las dos van tal cual.
+
+  Lo del corchete si es una leccion para los prompts: **un hueco marcado con
+  `[...]` lo dibuja**. Si hay que dejar un hueco en un texto que va DENTRO del
+  dibujo, se marca con una linea aparte que diga "borra esta linea y escribe
+  aqui", nunca con un simbolo dentro de la frase.
 
