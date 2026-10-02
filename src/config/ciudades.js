@@ -137,21 +137,28 @@ export const CIUDAD_POR_DEFECTO = 'space-coast';
 // paseo de parque, de baldosa clara y gastada, con la cornisa en el mismo verde
 // azulado que el cielo de su ilustracion.
 //
-// Los ADORNOS siguen prestados, pero ya no de Medellin: un guayacan en flor y
-// una chiva delante de una montana rusa se leian fatal. Se le presta lo de
-// Space Coast, que tambien es Florida: palmeras delante y, por detras, la casa
-// y el jeep.
+// **Ya tiene los suyos**, dibujados por Daniel, asi que se le va lo prestado de
+// Space Coast (el jeep y la casa de Florida). Por DETRAS, los parques: la noria
+// panoramica, la casa puesta boca abajo y el letrero de la entrada. Por
+// DELANTE, las tres primas de los ninos, el raton malvado de 1928 y el villano
+// desenmascarado con su bocadillo.
 //
-// Lo que NO se le presta es el letrero del muelle, que pone "Cocoa Beach Pier"
-// con todas sus letras. Un adorno generico se perdona; uno que nombra otra
-// ciudad, no.
+// La PALMERA se queda, y es la unica prestada que sobrevive: Orlando es
+// Florida, asi que ahi no chirria nada —es lo contrario de lo que paso en Lake
+// Lanier, donde las palmeras se lo llevaban a otro clima—. Y da el ritmo
+// vertical que si no pondria solo la noria.
 CIUDADES.orlando = {
   pais: 'us',
   frente: [
-    { textura: TEXTURAS.frentePalmera, desde: 'abajo', alto: 152, cada: 820, desfase: 340 },
-    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 184, cada: 1240, desfase: 760, detras: true },
-    { textura: TEXTURAS.frenteJeep, desde: 'abajo', alto: 146, cada: 1320, desfase: 1600, detras: true },
-    { textura: TEXTURAS.frenteCasaFlorida, desde: 'abajo', alto: 206, cada: 1180, desfase: 340, detras: true },
+    { textura: TEXTURAS.frentePalmera, desde: 'abajo', alto: 152, cada: 1120, desfase: 260 },
+    // las tres primas, el raton y el villano con lo que dice
+    { textura: TEXTURAS.frentePrimas, desde: 'abajo', alto: 138, cada: 1260, desfase: 700 },
+    { textura: TEXTURAS.frenteRaton, desde: 'abajo', alto: 152, cada: 1180, desfase: 1480 },
+    { textura: TEXTURAS.frenteVillano, desde: 'abajo', alto: 186, cada: 1620, desfase: 1060 },
+    // y por detras, los parques
+    { textura: TEXTURAS.frenteNoria, desde: 'abajo', alto: 266, cada: 1460, desfase: 900, detras: true },
+    { textura: TEXTURAS.frenteCasaAlReves, desde: 'abajo', alto: 172, cada: 1340, desfase: 320, detras: true },
+    { textura: TEXTURAS.frenteDisneySprings, desde: 'abajo', alto: 152, cada: 1540, desfase: 1700, detras: true },
   ],
   pavimento: { patron: 'baldosa', claro: 0xd9c8b4, medio: 0xbfac96, oscuro: 0x968573 },
   subsuelo: { patron: 'estratos', claro: 0xa89a88, medio: 0x8e8171, oscuro: 0x6b6156 },

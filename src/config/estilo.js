@@ -295,6 +295,13 @@ export const TEXTURAS = {
   frentePino: 'tex-frente-pino',
   frenteGata: 'tex-frente-gata',
   frenteEufonio: 'tex-frente-eufonio',
+  // los de Orlando
+  frentePrimas: 'tex-frente-primas',
+  frenteRaton: 'tex-frente-raton',
+  frenteVillano: 'tex-frente-villano',
+  frenteNoria: 'tex-frente-noria',
+  frenteCasaAlReves: 'tex-frente-casa-al-reves',
+  frenteDisneySprings: 'tex-frente-disney-springs',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',

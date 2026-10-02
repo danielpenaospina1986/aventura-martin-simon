@@ -1033,6 +1033,166 @@ const PERSONAJES = [
       },
     ],
   },
+  // --- LO DE ORLANDO --------------------------------------------------------
+  //
+  // Tambien sobre magenta. Los parques: la noria, la casa al reves y el letrero
+  // por detras; las tres primas por delante.
+  {
+    // Las tres primas de los ninos, en un solo dibujo: la de 7, la de 6 (la de
+    // los ojos azules) y la de 3. Va DELANTE, asi que contorno entero.
+    nombre: 'primas',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 560, alto: 440 },
+    salida: 'webp',
+    // Lo mas cercano del dibujo esta a 240, asi que con 90 sobra sitio por los
+    // dos lados.
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'primas',
+        porPieza: true,
+        nombres: ['primas'],
+        // Las tres en una sola pieza: van juntas, como para una foto, y
+        // separarlas las dejaria sueltas por el tablero.
+        zonas: [{ x: 257, y: 28, ancho: 934, alto: 724 }],
+      },
+    ],
+  },
+  {
+    // La noria panoramica. Va DETRAS: mide mucho mas que el nino.
+    nombre: 'noria',
+    colorExacto: true,
+    // Los radios del aro son lineas de un pixel dibujadas sobre el magenta, y
+    // la compresion del JPG las dejo de un morado sucio: ni fondo ni dibujo,
+    // la mezcla de los dos. Esta a 264 del fondo —mas lejos que el crema de la
+    // propia noria, que esta a 200— asi que no hay forma de quitarlo por
+    // tolerancia. Se le devuelve el blanco, que es de lo que es el aro.
+    repintar: { tenido: 20 },
+    limpiarBolsas: true,
+    // Entre los radios del aro queda magenta encerrado en cunas finisimas, que
+    // es justo lo que el minimo de casa dejaba puesto.
+    bolsaMinima: 20,
+    holguraBolsa: 0,
+    lienzo: { ancho: 460, alto: 660 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    // La mas apretada de esta tanda, por los dos lados: su fondo trae un
+    // degradado que llega a 120 (hay que pasar de ahi para quitarlo) y su crema
+    // esta a 200 (el filtro de residuos, que corta en tolerancia x 1,7, no
+    // puede llegar). Con 115 corta en 115 y 195: entra por los pelos.
+    tolerancia: 115,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'noria',
+        porPieza: true,
+        nombres: ['noria'],
+        zonas: [{ x: 44, y: 75, ancho: 763, alto: 1091 }],
+      },
+    ],
+  },
+  {
+    // La casa puesta boca abajo. Va DETRAS.
+    nombre: 'casa-al-reves',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 420 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'casa-al-reves',
+        porPieza: true,
+        nombres: ['casa-al-reves'],
+        zonas: [{ x: 93, y: 71, ancho: 1202, alto: 655 }],
+      },
+    ],
+  },
+  {
+    // El letrero de la entrada. Va DETRAS.
+    nombre: 'disney-springs',
+    colorExacto: true,
+    limpiarBolsas: true,
+    // Las rendijas entre los postes y el cartel.
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 420 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'disney-springs',
+        porPieza: true,
+        nombres: ['disney-springs'],
+        zonas: [{ x: 90, y: 58, ancho: 1212, alto: 661 }],
+      },
+    ],
+  },
+  {
+    // El villano desenmascarado, con su bocadillo. Va DELANTE.
+    nombre: 'villano',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 360, alto: 660 },
+    salida: 'webp',
+    // El crema del bocadillo esta a 220: con 80, el filtro de las bolsas corta
+    // en 176 y le queda margen.
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'villano',
+        porPieza: true,
+        nombres: ['villano'],
+        // El dibujo entero, bocadillo incluido: el chiste es lo que dice.
+        zonas: [{ x: 171, y: 28, ancho: 645, alto: 1185 }],
+      },
+    ],
+  },
+  {
+    // El raton malvado de 1928 —que salio conejo, y asi se queda: Daniel lo
+    // vio y le gusto—. Va DELANTE.
+    nombre: 'raton',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 360, alto: 620 },
+    salida: 'webp',
+    // Mismo caso que los cachorros negros de la finca: es un bicho casi todo
+    // negro, asi que el magenta que el JPG desparrama contra la tinta se le ve
+    // muchisimo, y hace falta tolerancia. Su blanco esta a 220, que es lo que
+    // pone el techo.
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'raton',
+        porPieza: true,
+        nombres: ['raton'],
+        zonas: [{ x: 137, y: 93, ancho: 599, alto: 1079 }],
+      },
+    ],
+  },
   {
     // PAPA INODORO, el guardian del bano de Space Coast: una cabeza saliendo de
     // un retrete, con la cara de Daniel.
@@ -1887,6 +2047,7 @@ for (const personaje of aTrabajar) {
       limpiarBolsas: personaje.limpiarBolsas || false,
       bolsaMinima: bolsaMinimaDeEste,
       holguraBolsa: personaje.holguraBolsa,
+      repintar: personaje.repintar,
     });
     medidas.push(m);
   }
@@ -1939,6 +2100,7 @@ for (const personaje of aTrabajar) {
       limpiarBolsas: personaje.limpiarBolsas || false,
       bolsaMinima: bolsaMinimaDeEste,
       holguraBolsa: personaje.holguraBolsa,
+      repintar: personaje.repintar,
       soloElCuerpo: trabajo.soloElCuerpo || false,
       formato: salida,
     });
@@ -2164,6 +2326,7 @@ async function recortarPose(pagina, opciones) {
         limpiarBolsas,
         bolsaMinima,
         holguraBolsa,
+        repintar,
         soloElCuerpo,
         formato,
       }) => {
@@ -2303,6 +2466,39 @@ async function recortarPose(pagina, opciones) {
           quitar.forEach((i) => {
             p[i + 3] = 0;
           });
+        }
+
+        // --- repintar lo que el fondo tino ---
+        //
+        // Una linea finisima dibujada SOBRE el fondo se la come la compresion
+        // del JPG: no queda ni la linea ni el fondo, queda la mezcla de los
+        // dos. En la noria de Orlando los radios del aro salieron de un morado
+        // sucio (160,120,144), que no es fondo —esta a 264 de el, mas lejos que
+        // el propio crema del dibujo— asi que no hay tolerancia que lo quite
+        // sin llevarse medio dibujo por delante. Lo unico que se puede hacer es
+        // devolverle su color, y eso lo tiene que decir la hoja.
+        //
+        // Se hace al final, sobre el recorte ya limpio, y solo toca lo que
+        // sigue siendo opaco: lo que era fondo ya se fue.
+        // No vale buscarlo por un color con su tolerancia: lo que queda no es UN
+        // color sino una RAMPA, del morado oscuro al rosa palido, que es el
+        // degradado de una linea fina. Lo que todos tienen en comun es que
+        // siguen llevando el TINTE del fondo, y con fondo magenta eso se
+        // reconoce de un vistazo: el verde queda por debajo del rojo Y del
+        // azul. Nada de lo que hay dibujado aqui cumple eso —el crema tiene el
+        // azul por debajo del verde, y la tinta tiene los tres iguales—, asi
+        // que la cuenta separa limpiamente.
+        if (repintar) {
+          const margen = repintar.tenido === undefined ? 20 : repintar.tenido;
+          const a = repintar.a || [255, 255, 255];
+          for (let i = 0; i < p.length; i += 4) {
+            if (p[i + 3] === 0) continue;
+            const g = p[i + 1] + margen;
+            if (g > p[i] || g > p[i + 2]) continue;
+            p[i] = a[0];
+            p[i + 1] = a[1];
+            p[i + 2] = a[2];
+          }
         }
 
         ctx.putImageData(datos, 0, 0);
