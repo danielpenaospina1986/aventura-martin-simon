@@ -1072,7 +1072,15 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   **Y Orlando tambien**: por detras la noria panoramica, la casa puesta boca
   abajo y el letrero de la entrada de Disney Springs; por delante las tres
   primas de los ninos, el raton malvado de 1928 y el villano desenmascarado con
-  su bocadillo. De lo prestado solo le sobrevive **la palmera**, y a proposito:
+  su bocadillo.
+
+  **Y Miami**: por detras la hilera de hoteles art deco de Ocean Drive y la
+  camioneta azul de Jhon —el esposo de la tia—, con el equipo de buzo en el
+  platon y la tia de copiloto con su casco blanco de obra; por delante las
+  palmeras con el letrero de MIAMI BEACH, las tres banistas y los dos delfines
+  malvados. Los delfines van delante a proposito: naciendo del borde de abajo se
+  ve la parte alta del salto, como si vinieran del agua que queda fuera de
+  cuadro. Con eso se le va lo prestado de Medellin. De lo prestado solo le sobrevive **la palmera**, y a proposito:
   Orlando es Florida, asi que ahi no chirria —es justo lo contrario de Lake
   Lanier, donde las palmeras se lo llevaban a otro clima— y da el ritmo vertical
   que si no pondria solo la noria.
@@ -2349,4 +2357,25 @@ baja.
   `[...]` lo dibuja**. Si hay que dejar un hueco en un texto que va DENTRO del
   dibujo, se marca con una linea aparte que diga "borra esta linea y escribe
   aqui", nunca con un simbolo dentro de la frase.
+- **2026-10-02** — Miami estrena **su decorado propio**, cinco piezas, y con eso
+  son cuatro las ciudades vestidas de lo suyo. Quedan Space Coast, Medellin,
+  Atlanta y Cartagena.
+- **2026-10-02** — Dos hojas de Miami pidieron **la tolerancia mas baja de todo
+  lo que va sobre magenta**, y por motivos distintos:
+
+  - **Ocean Drive**, porque sus fachadas son PASTELES: el gris verdoso mas claro
+    se queda a 170 del magenta. Va con 65, que deja el filtro de las bolsas en
+    143.
+  - **Las palmeras con el letrero**, porque su lamina trae ademas un degradado
+    de fondo que llega a 40, asi que hay que pasar de ahi por abajo y no llegar
+    a 170 por arriba. 65 corta en 65, 110 y 143: las tres caben.
+
+  Es la misma ventana estrecha que ya tuvo el cachorro blanco de la finca, pero
+  por el otro lado: alli apretaba el blanco, aqui aprietan los pasteles.
+- **2026-10-02** — Ojo con el contador de "lo que lleva tinte del fondo" que se
+  uso para la noria: en Miami marca **miles de puntos que son legitimos**, los
+  rosados y lavandas de las fachadas art deco. Era de esperar —un pastel rosado
+  tiene, como el magenta, el verde por debajo del rojo y del azul— pero conviene
+  dejarlo escrito: **ese contador vale para decidir si hace falta `repintar`, no
+  para decidir si un recorte esta bien.** Lo que decide es mirarlo.
 

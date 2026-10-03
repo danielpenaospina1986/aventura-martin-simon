@@ -112,9 +112,25 @@ export const CIUDADES = {
   },
 
   // Miami: acera art deco en rosa palido con junta clara.
+  // Miami **ya tiene los suyos**, dibujados por Daniel, asi que se le va lo
+  // prestado de Medellin. Por DETRAS, Ocean Drive: la hilera de hoteles art
+  // deco y la camioneta azul de Jhon —el esposo de la tia— con su equipo de
+  // buzo en el platon y la tia de copiloto, con su casco blanco de obra. Por
+  // DELANTE, las palmeras con el letrero de MIAMI BEACH, las tres banistas y
+  // los dos delfines malvados.
+  //
+  // Los delfines van DELANTE a proposito: naciendo del borde de abajo se ve la
+  // parte alta del salto, como si vinieran del agua que queda fuera de cuadro.
   miami: {
     pais: 'us',
-    frente: [...DECORADO_DE_PUEBLO],
+    frente: [
+      { textura: TEXTURAS.frentePalmerasMiami, desde: 'abajo', alto: 198, cada: 1180, desfase: 380 },
+      { textura: TEXTURAS.frenteBanistas, desde: 'abajo', alto: 142, cada: 1340, desfase: 1020 },
+      { textura: TEXTURAS.frenteDelfines, desde: 'abajo', alto: 126, cada: 1080, desfase: 1660 },
+      // y por detras, Ocean Drive
+      { textura: TEXTURAS.frenteOceanDrive, desde: 'abajo', alto: 192, cada: 1420, desfase: 240, detras: true },
+      { textura: TEXTURAS.frenteCamioneta, desde: 'abajo', alto: 148, cada: 1520, desfase: 1140, detras: true },
+    ],
     pavimento: { patron: 'baldosa', claro: 0xe7c3bd, medio: 0xd0a49f, oscuro: 0xa87e7a },
     subsuelo: { patron: 'estratos', claro: 0xb99d9b, medio: 0x9d8482, oscuro: 0x7a6563 },
     cornisa: { cuerpo: 0x7fc4c0, borde: 0x3f7a78 },

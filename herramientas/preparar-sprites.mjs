@@ -1193,6 +1193,129 @@ const PERSONAJES = [
       },
     ],
   },
+  // --- LO DE MIAMI ----------------------------------------------------------
+  //
+  // Ocean Drive y la playa: los hoteles art deco y la camioneta de Jhon y la
+  // tia por detras; las palmeras con su letrero, las banistas y los delfines
+  // malvados por delante.
+  {
+    // La hilera de hoteles art deco. Va DETRAS.
+    nombre: 'ocean-drive',
+    colorExacto: true,
+    limpiarBolsas: true,
+    // Las ventanas, los huecos entre los toldos y los de las balaustradas.
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 400 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    // Apretada: sus fachadas son PASTELES, y el gris verdoso mas claro se queda
+    // a 170 del magenta. Con 65 el filtro de las bolsas corta en 143 y le deja
+    // margen; con la tolerancia de casa se habria comido media fachada.
+    tolerancia: 65,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'ocean-drive',
+        porPieza: true,
+        nombres: ['ocean-drive'],
+        zonas: [{ x: 28, y: 75, ancho: 1323, alto: 639 }],
+      },
+    ],
+  },
+  {
+    // La camioneta de Jhon, con la tia de copiloto y el equipo de buzo en el
+    // platon. Va DETRAS, como la chiva de Medellin y el jeep de Space Coast.
+    nombre: 'camioneta',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 360 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    // Su crema esta a 200; con 75 las bolsas cortan en 165.
+    tolerancia: 75,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'camioneta',
+        porPieza: true,
+        nombres: ['camioneta'],
+        zonas: [{ x: 60, y: 133, ancho: 1260, alto: 571 }],
+      },
+    ],
+  },
+  {
+    // Las palmeras con el letrero de MIAMI BEACH. Va DELANTE.
+    nombre: 'palmeras-miami',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 440, alto: 640 },
+    salida: 'webp',
+    // Su fondo trae degradado hasta 40 y el crema de los troncos y del letrero
+    // se queda a 170, asi que la ventana es estrecha: 65 corta en 65, 110 y
+    // 143, y las tres caben.
+    tolerancia: 65,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'palmeras-miami',
+        porPieza: true,
+        nombres: ['palmeras-miami'],
+        zonas: [{ x: 48, y: 70, ancho: 762, alto: 1113 }],
+      },
+    ],
+  },
+  {
+    // Las tres banistas. Va DELANTE, en una sola pieza: van juntas.
+    nombre: 'banistas',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 620, alto: 380 },
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'banistas',
+        porPieza: true,
+        nombres: ['banistas'],
+        zonas: [{ x: 68, y: 33, ancho: 1266, alto: 735 }],
+      },
+    ],
+  },
+  {
+    // Los dos delfines malvados, en pleno salto. Van DELANTE: naciendo del
+    // borde de abajo se ve la parte alta del salto, como si vinieran del agua
+    // que queda fuera de cuadro.
+    nombre: 'delfines',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 620, alto: 360 },
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'delfines',
+        porPieza: true,
+        nombres: ['delfines'],
+        zonas: [{ x: 55, y: 34, ancho: 1266, alto: 699 }],
+      },
+    ],
+  },
   {
     // PAPA INODORO, el guardian del bano de Space Coast: una cabeza saliendo de
     // un retrete, con la cara de Daniel.
