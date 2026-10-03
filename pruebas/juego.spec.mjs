@@ -130,7 +130,19 @@ async function entrarAlNivel(page, personaje = 'martin', extra = '') {
   await esperarEscena(page, 'relato');
   await page.keyboard.press('Escape');
   await esperarEscena(page, 'nivel');
-  await page.waitForTimeout(600); // fundido de entrada
+  // Se espera a que el nino haya ATERRIZADO, no 600 ms de reloj. Nace un poco
+  // por encima del suelo y cae; con la maquina lenta en 600 ms todavia venia
+  // bajando, y cualquier prueba que mirase su estado nada mas entrar se
+  // encontraba con que NO estaba en el suelo. Esperar el aterrizaje cubre
+  // ademas el fundido de entrada, que es lo que ese reloj queria cubrir.
+  await page.waitForFunction(
+    () => {
+      const n = window.juego.scene.getScene('nivel');
+      return Boolean(n && n.jugadores && n.jugadores[0] && n.jugadores[0].body.blocked.down);
+    },
+    null,
+    { timeout: 20000 },
+  );
 
   // Se apaga el azar de los regalos: unos bichos sueltan corazon en vez de
   // monedas, y con eso suelto no hay forma de medir cuanto da un bicho.
@@ -548,16 +560,29 @@ test('al jefe se le gana saltándole encima cuando está expuesto', async ({ pag
       // entera por delante el navegador va lento, la caida no habia llegado a
       // tocar al jefe y ese golpe se perdia: al final quedaba en pie y la
       // prueba fallaba sin que el juego estuviera mal.
-      for (let i = 0; i < 120 && n.jefe && n.jefe.active && n.jefe.vidas === antes; i += 1) {
+      for (let i = 0; i < 200 && n.jefe && n.jefe.active && n.jefe.vidas === antes; i += 1) {
         await new Promise((r) => setTimeout(r, 25));
       }
     });
   };
 
+  // Se le salta encima HASTA QUE CAE, no exactamente `vidas` veces.
+  //
+  // Dando los golpes contados, si uno se pierde —y se pierde: el salto espera
+  // a que el golpe cuente, pero con un tope, y con la maquina al doble de lenta
+  // ese tope se agota— el jefe se queda en pie con una vida y la espera final
+  // revienta. Con unos cuantos intentos de mas, un golpe perdido se recupera
+  // solo. El bucle para en cuanto el jefe ya no esta, asi que no cuesta tiempo
+  // cuando todo va bien.
   const vidas = await page.evaluate(() => window.juego.scene.getScene('nivel').jefe.vidas);
-  for (let i = 0; i < vidas; i += 1) await saltarEncima();
+  const sigueEnPie = () =>
+    page.evaluate(() => Boolean(window.juego.scene.getScene('nivel').jefe));
+  for (let i = 0; i < vidas + 6; i += 1) {
+    if (!(await sigueEnPie())) break;
+    await saltarEncima();
+  }
   await page.waitForFunction(() => !window.juego.scene.getScene('nivel').jefe, null, {
-    timeout: 15000,
+    timeout: 20000,
   });
 
   // derrotado: desaparece y la meta se enciende
@@ -2935,6 +2960,59 @@ test('el cartel dice lo que viene, y en ningun mundo avisa de una vaca que no ha
     if (!String(m.piel).includes('vaca')) {
       expect(m.dice, `${m.ciudad} (${m.piel}) llama vaca a lo que no lo es`).not.toContain('VACA');
     }
+  });
+});
+
+test('lo que tira un bicho mide lo mismo en los ocho mundos', async ({ page }) => {
+  // Lo conto Daniel: en Medellin los balones de Mini Papa salian ENORMES.
+  //
+  // El tamano se sacaba de la escala (`aEscalaDeJuego`, que la pone en
+  // 1/densidad), y eso solo vale cuando la textura se dibuja por codigo: la del
+  // agua se genera a 30x30 por la densidad, asi que a esa escala sale de 30 px.
+  // Pero desde que cada bicho tira LO SUYO, lo que llega puede ser una imagen
+  // cargada: el balon es un webp de 260x260 y salia de 260 px, ocho veces y
+  // media mas grande. Al gas del raton de Orlando le pasaba igual.
+  //
+  // Esto no lo ve el compilador ni una captura de la pantalla de inicio: hay
+  // que hacerles tirar y medir lo que sale.
+  await entrarAlNivel(page, 'martin');
+
+  const tiros = await page.evaluate(async () => {
+    const { TOTAL_NIVELES } = await import('/src/niveles/index.js');
+    const { AGUA } = await import('/src/config/ajustes.js');
+    const fuera = [];
+    for (let i = 0; i < TOTAL_NIVELES; i += 1) {
+      window.juego.scene.start('nivel', { personajeId: 'martin', indiceNivel: i });
+      for (let v = 0; v < 200; v += 1) {
+        const e = window.juego.scene.getScene('nivel');
+        if (e && e.indiceNivel === i && e.nivel) break;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      const n = window.juego.scene.getScene('nivel');
+      const bicho = n.enemigos.getChildren()[0];
+      if (!bicho) continue;
+      n.lanzarAgua(bicho);
+      const hijos = n.peligros.getChildren();
+      const tiro = hijos[hijos.length - 1];
+      fuera.push({
+        ciudad: n.datosNivel.fondo,
+        dibujo: tiro.texture.key,
+        ancho: Math.round(tiro.displayWidth),
+        alto: Math.round(tiro.displayHeight),
+        caja: Math.round(tiro.body.width * (tiro.scaleX || 1)),
+        tamano: AGUA.tamano,
+      });
+      tiro.destroy();
+    }
+    return fuera;
+  });
+
+  expect(tiros.length).toBeGreaterThanOrEqual(8);
+  tiros.forEach((t) => {
+    expect(t.ancho, `${t.ciudad} tira ${t.dibujo} de ${t.ancho} px`).toBe(t.tamano);
+    expect(t.alto, `${t.ciudad} tira ${t.dibujo} de ${t.alto} px de alto`).toBe(t.tamano);
+    // y su caja mide lo mismo en pantalla, venga la textura de donde venga
+    expect(t.caja, `${t.ciudad}: la caja de ${t.dibujo}`).toBe(t.tamano - 8);
   });
 });
 

@@ -1453,12 +1453,29 @@ export class EscenaNivel extends Phaser.Scene {
       banera.y - 20,
       (banera.dibujos && banera.dibujos.municion) || TEXTURAS.agua,
     );
-    aEscalaDeJuego(agua);
+    // El tamano se FIJA en pixeles de pantalla, no se saca de la escala.
+    //
+    // Antes se hacia con `aEscalaDeJuego`, que pone la escala en 1/densidad, y
+    // eso solo vale cuando la textura se dibuja por codigo: la del agua se
+    // genera a 30 x 30 (por la densidad), asi que a esa escala sale de 30 px,
+    // que es lo que se queria. Pero desde que cada bicho tira LO SUYO, lo que
+    // llega aqui puede ser una imagen cargada: el balon de Mini Papa es un webp
+    // de 260 x 260 y salia de 260 px, ocho veces y media mas grande que el
+    // agua. Lo mismo le pasaba al gas del raton de Orlando.
+    //
+    // Con `setDisplaySize` da igual de donde venga la textura: los dos miden lo
+    // que tienen que medir.
+    agua.setDisplaySize(AGUA.tamano, AGUA.tamano);
     agua.setDepth(9);
     agua.body.setAllowGravity(true);
     agua.body.setGravityY(AGUA.gravedad - this.physics.world.gravity.y);
     agua.body.setVelocity(dir * AGUA.velocidad, AGUA.elevacion);
-    agua.body.setSize(AGUA.tamano - 8, AGUA.tamano - 8, true);
+    // Y la caja, dividida por la escala: Arcade la mide en pixeles de la
+    // TEXTURA y luego le aplica la del sprite, asi que sin dividir la del balon
+    // habria salido diminuta (260 px de textura contra 30 de pantalla).
+    const escalaX = agua.scaleX || 1;
+    const escalaY = agua.scaleY || 1;
+    agua.body.setSize((AGUA.tamano - 8) / escalaX, (AGUA.tamano - 8) / escalaY, true);
     agua.temporizador = this.time.delayedCall(AGUA.duracionMs, () => this.romperPeligro(agua));
 
     this.tweens.add({

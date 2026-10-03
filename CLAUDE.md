@@ -2497,4 +2497,47 @@ baja.
 - **2026-10-02** — Se comprobaron los NUEVE nombres nuevos contra el proyecto
   antes de usarlos, por lo de `balon` y lo de `proyectiles`. Ninguno chocaba.
   Buscar primero cuesta un `grep`; no buscar ha costado ya dos sesiones.
+- **2026-10-03** — **Los balones de Mini Papa salian ENORMES.** Lo conto Daniel.
+  Es pariente de dos fallos ya anotados —los bloques de Samaon y el jefe del
+  doble de grande— pero con una vuelta de tuerca que no estaba escrita.
+
+  El tamano del proyectil no se fijaba: se sacaba de la escala, con
+  `aEscalaDeJuego`, que la pone en `1 / densidad`. **Eso solo vale cuando la
+  textura se dibuja por codigo**: la del agua se genera a 30 x 30 (por la
+  densidad), asi que a esa escala sale de 30 px, que es lo que se queria. Pero
+  desde que cada bicho tira LO SUYO, por ese mismo sitio pasa ahora una imagen
+  CARGADA: el balon es un webp de 260 x 260 y salia de 260 px, ocho veces y
+  media mas grande. Al gas del raton de Orlando le pasaba igual, solo que
+  todavia no se habia visto.
+
+  Ahora se fija con `setDisplaySize`, que da igual de donde venga la textura. Y
+  hubo que arreglar tambien la CAJA: Arcade la mide en pixeles de la textura y
+  luego le aplica la escala del sprite, asi que sin dividir, la del balon habria
+  quedado diminuta —un balon enorme que casi no toca—.
+
+  La regla que deja: **cuando un sitio del codigo empieza a recibir texturas de
+  los dos tipos, el truco de la escala deja de valer.** Hay una prueba que hace
+  tirar a un bicho en los ocho mundos y mide lo que sale.
+- **2026-10-03** — Dos pruebas mas que esperaban el reloj, destapadas por dos
+  pasadas con la maquina al doble de lenta (18,4 min en vez de 9,4; se comprobo
+  que no habia servidores ni procesos sueltos, era carga de fuera):
+
+  - La de **ganarle al jefe saltandole encima** daba exactamente tantos saltos
+    como vidas tiene el jefe. Cada salto espera a que el golpe cuente, pero con
+    un tope, y con la maquina lenta ese tope se agotaba: el golpe se perdia y el
+    jefe se quedaba en pie con una vida. Ahora **se le salta encima HASTA QUE
+    CAE**, con unos intentos de mas, parando en cuanto ya no esta.
+  - Y la gorda: `entrarAlNivel`, **el ayudante que usan casi todas**, esperaba
+    `600 ms` "por el fundido de entrada". El nino nace un poco por encima del
+    suelo y cae; con la maquina lenta todavia venia bajando, y cualquier prueba
+    que mirase su estado nada mas entrar se encontraba con que NO estaba en el
+    suelo. Ahora se espera a que **aterrice**, que ademas cubre el fundido.
+
+  Quedan 41 `waitForTimeout` en la suite. No se tocan en bloque —muchos son
+  asentamientos cortos legitimos— pero cada pasada lenta destapa uno.
+- **2026-10-03** — Sobre comprobar estos arreglos frenando la CPU
+  (`Emulation.setCPUThrottlingRate`): **a 5x no arranca ni el juego**, caduca el
+  propio `esperarEscena` del arranque, asi que ese freno no prueba nada util en
+  una prueba que abre el juego. **2x es el que sirve**, y ademas es justo la
+  lentitud que tenia la maquina cuando fallaron de verdad.
 
