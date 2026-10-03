@@ -1316,6 +1316,124 @@ const PERSONAJES = [
       },
     ],
   },
+  // --- LO DE ATLANTA --------------------------------------------------------
+  //
+  // Tambien sobre magenta. La ciudad donde viven: el estadio y la estacion de
+  // MARTA por detras; la abuelita Martha, el saxofonista y las botellas
+  // malvadas por delante.
+  {
+    // El estadio del techo en espiral. Va DETRAS: es la pieza mas grande
+    // de la tanda.
+    nombre: 'estadio',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 420 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'estadio',
+        porPieza: true,
+        nombres: ['estadio'],
+        zonas: [{ x: 76, y: 60, ancho: 1221, alto: 668 }],
+      },
+    ],
+  },
+  {
+    // La entrada de la estacion de metro, con su cartel. Va DETRAS.
+    nombre: 'marta',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 460 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'marta',
+        porPieza: true,
+        nombres: ['marta'],
+        zonas: [{ x: 86, y: 17, ancho: 1204, alto: 725 }],
+      },
+    ],
+  },
+  {
+    // La abuelita Martha en su asoleadera. Va DELANTE, y es APAISADA, al
+    // contrario que la abuelita de la finca: ocupa menos alto y tapa menos al
+    // nino al pasar.
+    nombre: 'martha',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 620, alto: 380 },
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'martha',
+        porPieza: true,
+        nombres: ['martha'],
+        zonas: [{ x: 99, y: 29, ancho: 1180, alto: 710 }],
+      },
+    ],
+  },
+  {
+    // El musico callejero con su saxo. Va DELANTE.
+    nombre: 'saxofonista',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 380, alto: 640 },
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'saxofonista',
+        porPieza: true,
+        nombres: ['saxofonista'],
+        zonas: [{ x: 132, y: 101, ancho: 661, alto: 1123 }],
+      },
+    ],
+  },
+  {
+    // Las dos botellas de cola malvadas. Va DELANTE.
+    // La mas apretada de la tanda: el crema de sus cintas se queda a 180 del
+    // magenta, asi que con 70 el filtro de las bolsas corta en 154 y le deja
+    // margen.
+    nombre: 'botellas',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 440, alto: 440 },
+    salida: 'webp',
+    tolerancia: 70,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'botellas',
+        porPieza: true,
+        nombres: ['botellas'],
+        zonas: [{ x: 336, y: 17, ancho: 743, alto: 735 }],
+      },
+    ],
+  },
   {
     // PAPA INODORO, el guardian del bano de Space Coast: una cabeza saliendo de
     // un retrete, con la cara de Daniel.

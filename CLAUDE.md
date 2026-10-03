@@ -1074,6 +1074,11 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   primas de los ninos, el raton malvado de 1928 y el villano desenmascarado con
   su bocadillo.
 
+  **Y Atlanta**: por detras el estadio del techo en espiral y la entrada de una
+  estacion de **MARTA** —que es como se llama el metro de Atlanta, sin hache,
+  aunque la abuelita se llame Martha—; por delante la abuelita Martha en su
+  asoleadera, el saxofonista de la calle y las dos botellas de cola malvadas.
+
   **Y Miami**: por detras la hilera de hoteles art deco de Ocean Drive y la
   camioneta azul de Jhon —el esposo de la tia—, con el equipo de buzo en el
   platon y la tia de copiloto con su casco blanco de obra; por delante las
@@ -2378,4 +2383,24 @@ baja.
   tiene, como el magenta, el verde por debajo del rojo y del azul— pero conviene
   dejarlo escrito: **ese contador vale para decidir si hace falta `repintar`, no
   para decidir si un recorte esta bien.** Lo que decide es mirarlo.
+- **2026-10-02** — Atlanta estrena **su decorado propio**, cinco piezas, y con eso
+  son cinco las ciudades vestidas de lo suyo. Quedan Space Coast, Medellin y
+  Cartagena.
+
+  El metro de Atlanta se llama **MARTA**, sin hache (Metropolitan Atlanta Rapid
+  Transit Authority). Daniel lo pidio como "MARTHA" y se le dijo: va a quedar
+  ESCRITO dentro del dibujo, sus hijos viven ahi y lo iban a notar, y ademas
+  escrito bien el chiste es mejor —la abuelita Martha y el metro MARTA a un paso
+  de distancia—. **Lo que se dibuja dentro de una lamina no se puede corregir
+  despues sin rehacerla**, asi que los datos que van escritos se comprueban
+  ANTES de mandar el prompt.
+- **2026-10-02** — Y una leccion de verificacion: el saxofonista no salia en
+  ninguna de las cuatro capturas que se tomaron, y la primera sonda que se
+  escribio para averiguarlo **pregunto por un nombre interno que no existe**
+  (`planos.adornos`) y devolvio cero adornos, que parecia confirmar el fallo. No
+  lo era: las cinco texturas estaban cargadas y los cinco adornos montados.
+
+  La regla: **cuando una sonda dice que no hay nada, lo primero que hay que
+  dudar es de la sonda.** Se comprobo mirando lo que de verdad hay en la lista de
+  la escena, recorriendo el tablero entero, y los cinco salian igual de veces.
 

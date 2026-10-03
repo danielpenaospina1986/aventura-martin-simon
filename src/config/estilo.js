@@ -308,6 +308,12 @@ export const TEXTURAS = {
   frentePalmerasMiami: 'tex-frente-palmeras-miami',
   frenteBanistas: 'tex-frente-banistas',
   frenteDelfines: 'tex-frente-delfines',
+  // los de Atlanta
+  frenteEstadio: 'tex-frente-estadio',
+  frenteMarta: 'tex-frente-marta',
+  frenteMartha: 'tex-frente-martha',
+  frenteSaxofonista: 'tex-frente-saxofonista',
+  frenteBotellas: 'tex-frente-botellas',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',
