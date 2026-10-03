@@ -1599,8 +1599,9 @@ const PERSONAJES = [
     ],
   },
   {
-    // MIAMI: el flamenco. SOLO tiene la lamina de derribado; la de VUELO
-    // todavia no esta (las dos que llegaron eran las dos de caida).
+    // MIAMI: el flamenco, en sus dos laminas. Las zonas de las DOS van a mano:
+    // en los dos casos las poses se tocan por las alas, que se montan unas
+    // sobre otras, y la medicion por bandas no las separa.
     // 
     // Zonas a mano: sus dos filas tambien se solapan en vertical. Su carmesi se
     // queda a 200 del magenta, que es poco para un rosa, asi que con 80 el
@@ -1626,6 +1627,17 @@ const PERSONAJES = [
           { x: 673, y: 518, ancho: 560, alto: 200 },
         ],
       },
+      {
+        archivo: 'flamenco-vuela',
+        nombres: ['vuela1', 'vuela2', 'vuela3', 'vuela4', 'suelta'],
+        zonas: [
+          { x: 38, y: 18, ancho: 450, alto: 375 },
+          { x: 482, y: 48, ancho: 445, alto: 345 },
+          { x: 925, y: 103, ancho: 445, alto: 335 },
+          { x: 180, y: 383, ancho: 455, alto: 355 },
+          { x: 735, y: 458, ancho: 485, alto: 240 },
+        ],
+      },
     ],
   },
   {
@@ -1647,6 +1659,271 @@ const PERSONAJES = [
         nombres: ['balon'],
         zonas: [
           { x: 482, y: 214, ancho: 449, alto: 327 },
+        ],
+      },
+    ],
+  },
+  // --- LO DE CARTAGENA ------------------------------------------------------
+  //
+  // La ciudad amurallada: el castillo, el buque y el galeon por detras; las
+  // palenqueras, los trillizos, las iguanas y los camarones vallenateros por
+  // delante. Y su bicho de a pie, que son canones con cara.
+  {
+    // El castillo de San Felipe con su muralla y sus piratas. Va DETRAS.
+    // Su dibujo toca los dos bordes de la lamina, asi que no hay margen que darle.
+    nombre: 'castillo',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 420 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 95,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'castillo',
+        porPieza: true,
+        nombres: ['castillo'],
+        zonas: [
+          { x: 0, y: 24, ancho: 1376, alto: 744 },
+        ],
+      },
+    ],
+  },
+  {
+    // El buque de la Armada, con sus marinos saludando. Va DETRAS.
+    nombre: 'buque',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 380 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'buque',
+        porPieza: true,
+        nombres: ['buque'],
+        zonas: [
+          { x: 37, y: 56, ancho: 1284, alto: 605 },
+        ],
+      },
+    ],
+  },
+  {
+    // El galeon espanol de 1800. Va DETRAS.
+    nombre: 'galeon',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 700, alto: 480 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 95,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'galeon',
+        porPieza: true,
+        nombres: ['galeon'],
+        zonas: [
+          { x: 198, y: 5, ancho: 1098, alto: 751 },
+        ],
+      },
+    ],
+  },
+  {
+    // Las tres palenqueras con sus bateas de fruta. Van DELANTE, en una sola
+    // pieza: van juntas, como las primas de Orlando.
+    nombre: 'palenqueras',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 520, alto: 420 },
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'palenqueras',
+        porPieza: true,
+        nombres: ['palenqueras'],
+        zonas: [
+          { x: 239, y: 12, ancho: 904, alto: 739 },
+        ],
+      },
+    ],
+  },
+  {
+    // Los trillizos jugando al futbol. Van DELANTE.
+    nombre: 'trillizos',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 660, alto: 380 },
+    salida: 'webp',
+    tolerancia: 95,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'trillizos',
+        porPieza: true,
+        nombres: ['trillizos'],
+        zonas: [
+          { x: 38, y: 7, ancho: 1297, alto: 735 },
+        ],
+      },
+    ],
+  },
+  {
+    // Las dos iguanas al sol. Van DELANTE.
+    nombre: 'iguanas',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 620, alto: 330 },
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'iguanas',
+        porPieza: true,
+        nombres: ['iguanas'],
+        zonas: [
+          { x: 33, y: 65, ancho: 1298, alto: 679 },
+        ],
+      },
+    ],
+  },
+  {
+    // Los dos camarones tocando vallenato. Van DELANTE.
+    nombre: 'camarones',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 580, alto: 360 },
+    salida: 'webp',
+    tolerancia: 100,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'camarones',
+        porPieza: true,
+        nombres: ['camarones'],
+        zonas: [
+          { x: 84, y: 36, ancho: 1144, alto: 705 },
+        ],
+      },
+    ],
+  },
+  {
+    // CARTAGENA: los canones malvados, el bicho de a pie de la ciudad.
+    // 
+    // La pose de disparo corta ANTES de la bala: la bala es un objeto aparte en
+    // el juego y, dibujada dentro, saldria doble. Es lo mismo que ya se hizo con
+    // el heladito de Papa Inodoro.
+    nombre: 'canones',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 95,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/canon',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'canones',
+        nombres: ['quieta', 'anda1', 'anda2', 'carga', 'lanza'],
+        zonas: [
+          { x: 54, y: 59, ancho: 407, alto: 331 },
+          { x: 503, y: 60, ancho: 404, alto: 330 },
+          { x: 946, y: 60, ancho: 408, alto: 326 },
+          { x: 106, y: 415, ancho: 413, alto: 311 },
+          { x: 631, y: 390, ancho: 566, alto: 346 },
+        ],
+      },
+    ],
+  },
+  {
+    // ORLANDO: el raton de orejas de conejo, que es el mismo de su decorado pero
+    // en cinco poses. No tira cosas: tira GASES.
+    // 
+    // Su pose de soltar corta ANTES de la nube, por lo mismo que el canon.
+    nombre: 'raton-bicho',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    // El halo morado que el JPG deja contra la tinta NO se puede quitar con
+    // tolerancia: esta a 240 del magenta, exactamente donde esta su blanco.
+    // Asi que no se quita, se REPINTA de tinta. La cuenta del tinte sirve
+    // igual de bien aqui que en la noria: el halo lleva el verde por debajo
+    // del rojo y del azul, y ni su blanco ni su negro lo llevan.
+    repintar: { tenido: 20, a: [26, 24, 28] },
+    salida: 'webp',
+    // Alta porque es un bicho casi todo NEGRO: el magenta que el JPG
+    // desparrama contra la tinta se le ve muchisimo, igual que les pasaba a
+    // los cachorros negros de la finca. Con 85 le quedaba un halo morado
+    // alrededor del contorno. Su blanco esta a 240, asi que 100 cabe: el
+    // filtro de las bolsas corta en 220.
+    tolerancia: 100,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/raton',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'raton-bicho',
+        nombres: ['quieta', 'anda1', 'anda2', 'carga', 'lanza'],
+        zonas: [
+          { x: 70, y: 17, ancho: 275, alto: 391 },
+          { x: 499, y: 20, ancho: 297, alto: 387 },
+          { x: 926, y: 21, ancho: 308, alto: 385 },
+          { x: 374, y: 413, ancho: 268, alto: 342 },
+          // Esta SI se lleva su nube dentro: el chorro sale pegado al bicho y
+          // no hay por donde partirlos. Que se vea una en el dibujo y otra
+          // volando es lo mismo que le pasa a Mini Papa con su balon.
+          { x: 700, y: 410, ancho: 564, alto: 321 },
+        ],
+      },
+    ],
+  },
+  {
+    // La nube de gas que suelta el raton de Orlando, en vez del agua con jabon.
+    nombre: 'gas',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 180, alto: 180 },
+    salida: 'webp',
+    tolerancia: 110,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/objetos',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'gas',
+        porPieza: true,
+        nombres: ['gas'],
+        zonas: [
+          { x: 287, y: 68, ancho: 823, alto: 633 },
         ],
       },
     ],

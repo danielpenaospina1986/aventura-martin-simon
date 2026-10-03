@@ -96,11 +96,16 @@ export const POSES_DE_PALOMA = [
 const BANERA_POR_CIUDAD = {
   medellin: 'minipapa',
   atlanta: 'botella',
+  cartagena: 'canon',
+  // El mismo raton de orejas de conejo que decora Orlando, ahora de bicho.
+  // No tira cosas: tira gases.
+  orlando: 'raton',
   finca: 'zancudo',
 };
 
 const PALOMA_POR_CIUDAD = {
   'space-coast': ['pelicano', 'gaviota'],
+  miami: ['flamenco'],
 };
 
 export function baneraDeCiudad(ciudad) {
