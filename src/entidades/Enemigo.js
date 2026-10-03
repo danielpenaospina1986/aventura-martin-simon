@@ -16,15 +16,39 @@ import Phaser from 'phaser';
 import { ENEMIGO } from '../config/ajustes.js';
 import { TEXTURAS } from '../config/estilo.js';
 
-const POSES = {
-  anda: [TEXTURAS.baneraAnda1, TEXTURAS.baneraAnda2],
-  carga: TEXTURAS.baneraCarga,
-  lanza: TEXTURAS.baneraLanza,
-};
+// Los dibujos de una piel. Sin piel, la banera de toda la vida: sus dibujos no
+// salen del glob de `src/assets/bichos/` sino de las claves sueltas de
+// TEXTURAS, porque son PNG y estan ahi desde antes de que esto fuera por
+// pieles.
+function dibujosDe(piel) {
+  if (!piel) {
+    return {
+      municion: TEXTURAS.agua,
+      quieta: TEXTURAS.baneraQuieta,
+      anda: [TEXTURAS.baneraAnda1, TEXTURAS.baneraAnda2],
+      carga: TEXTURAS.baneraCarga,
+      lanza: TEXTURAS.baneraLanza,
+    };
+  }
+  const suyo = (pose) => TEXTURAS.bichoDe(piel, pose);
+  return {
+    // Lo que tira no lo sabe la escena: lo dice el bicho, como ya hacian los
+    // jefes con su `municion`. Mini Papa tira balones; los demas, el agua con
+    // jabon de siempre, que es de lo que va el cuento.
+    municion: piel === 'minipapa' ? TEXTURAS.balonUsa : TEXTURAS.agua,
+    quieta: suyo('quieta'),
+    anda: [suyo('anda1'), suyo('anda2')],
+    carga: suyo('carga'),
+    lanza: suyo('lanza'),
+  };
+}
 
 export class Enemigo extends Phaser.Physics.Arcade.Sprite {
-  constructor(escena, x, y, direccion = -1) {
-    super(escena, x, y, TEXTURAS.baneraAnda1);
+  constructor(escena, x, y, direccion = -1, piel = null) {
+    super(escena, x, y, dibujosDe(piel).anda[0]);
+
+    this.piel = piel;
+    this.dibujos = dibujosDe(piel);
 
     this.escena = escena;
     escena.add.existing(this);
@@ -88,13 +112,13 @@ export class Enemigo extends Phaser.Physics.Arcade.Sprite {
 
     if (this.estado === 'carga') {
       cuerpo.velocity.x = 0;
-      this.setTexture(POSES.carga);
+      this.setTexture(this.dibujos.carga);
       if (this.reloj >= this.cambioDeEstado) this.saltarYLanzar();
       return;
     }
 
     if (this.estado === 'lanza') {
-      this.setTexture(POSES.lanza);
+      this.setTexture(this.dibujos.lanza);
       if (this.reloj >= this.cambioDeEstado) {
         this.estado = 'anda';
         this.proximoAtaque = this.reloj + this.esperaDeAtaque();
@@ -115,9 +139,9 @@ export class Enemigo extends Phaser.Physics.Arcade.Sprite {
     this.relojPaso += delta;
     if (this.relojPaso >= 200) {
       this.relojPaso = 0;
-      this.paso = (this.paso + 1) % POSES.anda.length;
+      this.paso = (this.paso + 1) % this.dibujos.anda.length;
     }
-    this.setTexture(POSES.anda[this.paso]);
+    this.setTexture(this.dibujos.anda[this.paso]);
 
     if (this.reloj >= this.proximoAtaque && cuerpo.blocked.down && this.hayAlguienATiro()) {
       this.agacharse();

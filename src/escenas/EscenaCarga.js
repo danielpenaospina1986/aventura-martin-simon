@@ -138,6 +138,7 @@ import frenteMarta from '../assets/frente/marta.webp';
 import frenteMartha from '../assets/frente/martha.webp';
 import frenteSaxofonista from '../assets/frente/saxofonista.webp';
 import frenteBotellas from '../assets/frente/botellas.webp';
+import balonUsa from '../assets/objetos/balon.webp';
 import frenteCasaFlorida from '../assets/frente/casa-florida.webp';
 import frenteJeep from '../assets/frente/jeep.webp';
 import frenteLetrero from '../assets/frente/letrero.webp';
@@ -339,6 +340,7 @@ export class EscenaCarga extends Phaser.Scene {
     this.load.image(TEXTURAS.frenteMartha, frenteMartha);
     this.load.image(TEXTURAS.frenteSaxofonista, frenteSaxofonista);
     this.load.image(TEXTURAS.frenteBotellas, frenteBotellas);
+    this.load.image(TEXTURAS.balonUsa, balonUsa);
     this.load.image(TEXTURAS.frenteCasaFlorida, frenteCasaFlorida);
     this.load.image(TEXTURAS.frenteJeep, frenteJeep);
     this.load.image(TEXTURAS.frenteLetrero, frenteLetrero);

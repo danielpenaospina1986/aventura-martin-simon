@@ -70,4 +70,50 @@ export function pielDeCiudad(ciudad, cual) {
   return suyas[Math.floor(Math.random() * suyas.length)];
 }
 
+// --------------------------------------------------------------------------
+// Y LO MISMO CON LA BANERA Y CON LA PALOMA
+//
+// Las dos eran UNA para los ocho tableros. Ahora cada ciudad puede poner la
+// suya, con el mismo mecanismo de la vaca: una carpeta de dibujos en
+// `src/assets/bichos/` y su nombre aqui.
+//
+// La diferencia con la vaca es que estas DOS TIENEN ORIGINAL: la banera de toda
+// la vida y la paloma de toda la vida, que siguen siendo las de la mayoria de
+// los mundos. Por eso `null` quiere decir "la de siempre", y sus dibujos no
+// salen del glob sino de las claves sueltas de `TEXTURAS`.
+
+// Las poses que tiene que traer toda piel de banera.
+export const POSES_DE_BANERA = ['quieta', 'anda1', 'anda2', 'carga', 'lanza'];
+
+// Y las de un pajaro: cuatro de aleteo, la de soltar, y las cinco de cuando ya
+// lo han derribado.
+export const POSES_DE_PALOMA = [
+  'vuela1', 'vuela2', 'vuela3', 'vuela4', 'suelta',
+  'mareada', 'cae1', 'cae2', 'cae3', 'suelo',
+];
+
+// `null` = la de siempre.
+const BANERA_POR_CIUDAD = {
+  medellin: 'minipapa',
+  atlanta: 'botella',
+  finca: 'zancudo',
+};
+
+const PALOMA_POR_CIUDAD = {
+  'space-coast': ['pelicano', 'gaviota'],
+};
+
+export function baneraDeCiudad(ciudad) {
+  return BANERA_POR_CIUDAD[ciudad] || null;
+}
+
+// Space Coast tiene dos pajaros y se sortean, como los buses de Medellin. El
+// azar se puede apagar pasando un numero, que es lo que hacen las pruebas.
+export function palomaDeCiudad(ciudad, cual) {
+  const suyas = PALOMA_POR_CIUDAD[ciudad];
+  if (!suyas || !suyas.length) return null;
+  if (cual !== undefined) return suyas[((cual % suyas.length) + suyas.length) % suyas.length];
+  return suyas[Math.floor(Math.random() * suyas.length)];
+}
+
 export default pielDeCiudad;

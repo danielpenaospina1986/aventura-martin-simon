@@ -8,6 +8,7 @@ import { CHECKPOINT, ENEMIGO, JEFE, META, MUNDO, PREMIO } from '../config/ajuste
 import { COLORES, FUENTE, TEXTURAS } from '../config/estilo.js';
 import { aEscalaDeJuego, mosaico } from './dibujo.js';
 import { ciudadDe } from '../config/ciudades.js';
+import { baneraDeCiudad } from '../config/bichos.js';
 import { Enemigo } from '../entidades/Enemigo.js';
 import { jefeDeCiudad } from '../entidades/jefes/index.js';
 import { hayTactil } from './tactil.js';
@@ -71,6 +72,9 @@ export function construirNivel(escena, nivel, opciones = {}) {
   const plataformas = escena.physics.add.staticGroup();
   const monedas = escena.physics.add.staticGroup();
   const checkpoints = escena.physics.add.staticGroup();
+  // Que bicho de a pie le toca a esta ciudad: una banera en casi todas, Mini
+  // Papa en Medellin, una botella en Atlanta y un zancudo en la finca.
+  const suPiel = baneraDeCiudad(nivel.fondo || "");
   const enemigos = escena.physics.add.group({ allowGravity: true, collideWorldBounds: false });
   let meta = null;
   let jefe = null;
@@ -191,7 +195,7 @@ export function construirNivel(escena, nivel, opciones = {}) {
           // 25 px por debajo del suelo y la fisica lo dejaba medio enterrado o
           // lo escupia a caminar por el aire.
           const apoyo = baseY(fila) - ENEMIGO.alto / 2 + (ENEMIGO.margenPie || 0);
-          const enemigo = new Enemigo(escena, x, apoyo, col % 2 === 0 ? -1 : 1);
+          const enemigo = new Enemigo(escena, x, apoyo, col % 2 === 0 ? -1 : 1, suPiel);
           enemigos.add(enemigo);
           break;
         }

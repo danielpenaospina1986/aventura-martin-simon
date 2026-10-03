@@ -14,19 +14,39 @@ import Phaser from 'phaser';
 import { MUNDO, PALOMA } from '../config/ajustes.js';
 import { TEXTURAS } from '../config/estilo.js';
 
-const ALETEO = [
-  TEXTURAS.palomaVuela1,
-  TEXTURAS.palomaVuela2,
-  TEXTURAS.palomaVuela3,
-  TEXTURAS.palomaVuela4,
-];
-
-// La caida, cuando se le acaban los golpes de aguante.
-const CAIDA = [TEXTURAS.palomaCae1, TEXTURAS.palomaCae2, TEXTURAS.palomaCae3];
+// Los dibujos de una piel. Sin piel, la paloma de toda la vida, por lo mismo
+// que la banera: sus PNG estan sueltos en TEXTURAS y no en el glob.
+function dibujosDe(piel) {
+  if (!piel) {
+    return {
+      aleteo: [
+        TEXTURAS.palomaVuela1,
+        TEXTURAS.palomaVuela2,
+        TEXTURAS.palomaVuela3,
+        TEXTURAS.palomaVuela4,
+      ],
+      suelta: TEXTURAS.palomaSuelta,
+      mareada: TEXTURAS.palomaMareada,
+      caida: [TEXTURAS.palomaCae1, TEXTURAS.palomaCae2, TEXTURAS.palomaCae3],
+      suelo: TEXTURAS.palomaSuelo,
+    };
+  }
+  const suyo = (pose) => TEXTURAS.bichoDe(piel, pose);
+  return {
+    aleteo: [suyo('vuela1'), suyo('vuela2'), suyo('vuela3'), suyo('vuela4')],
+    suelta: suyo('suelta'),
+    mareada: suyo('mareada'),
+    caida: [suyo('cae1'), suyo('cae2'), suyo('cae3')],
+    suelo: suyo('suelo'),
+  };
+}
 
 export class Paloma extends Phaser.Physics.Arcade.Sprite {
-  constructor(escena, x, y, direccion = -1) {
-    super(escena, x, y, ALETEO[0]);
+  constructor(escena, x, y, direccion = -1, piel = null) {
+    super(escena, x, y, dibujosDe(piel).aleteo[0]);
+
+    this.piel = piel;
+    this.dibujos = dibujosDe(piel);
 
     this.escena = escena;
     escena.add.existing(this);
@@ -67,7 +87,7 @@ export class Paloma extends Phaser.Physics.Arcade.Sprite {
     if (this.vidas > 0) {
       this.estado = 'aturdida';
       this.aturdidaHasta = this.reloj + PALOMA.aturdidaMs;
-      this.setTexture(TEXTURAS.palomaMareada);
+      this.setTexture(this.dibujos.mareada);
       return true;
     }
 
@@ -85,7 +105,7 @@ export class Paloma extends Phaser.Physics.Arcade.Sprite {
     if (this.estado === 'suelo') return;
     this.estado = 'suelo';
     const suelo = this.body.bottom;
-    this.setTexture(TEXTURAS.palomaSuelo);
+    this.setTexture(this.dibujos.suelo);
     this.body.setVelocity(0, 0);
     this.body.setAllowGravity(false);
     this.setFlipX(this.direccion < 0);
@@ -118,9 +138,9 @@ export class Paloma extends Phaser.Physics.Arcade.Sprite {
       this.relojAleteo += delta;
       if (this.relojAleteo >= PALOMA.msPorVuelta) {
         this.relojAleteo = 0;
-        this.paso = (this.paso + 1) % CAIDA.length;
+        this.paso = (this.paso + 1) % this.dibujos.caida.length;
       }
-      this.setTexture(CAIDA[this.paso]);
+      this.setTexture(this.dibujos.caida[this.paso]);
       if (this.body.blocked.down || this.body.touching.down) this.aterrizar();
       return;
     }
@@ -130,7 +150,7 @@ export class Paloma extends Phaser.Physics.Arcade.Sprite {
       if (this.reloj >= this.aturdidaHasta) {
         this.estado = 'vuela';
       } else {
-        this.setTexture(TEXTURAS.palomaMareada);
+        this.setTexture(this.dibujos.mareada);
         this.body.velocity.x = this.direccion * PALOMA.velocidad * 0.55;
         this.body.velocity.y = Math.sin(this.reloj / 90) * 60;
         return;
@@ -144,14 +164,14 @@ export class Paloma extends Phaser.Physics.Arcade.Sprite {
 
     // aleteo
     if (this.reloj < this.soltandoHasta) {
-      this.setTexture(TEXTURAS.palomaSuelta);
+      this.setTexture(this.dibujos.suelta);
     } else {
       this.relojAleteo += delta;
       if (this.relojAleteo >= PALOMA.msPorAleteo) {
         this.relojAleteo = 0;
-        this.paso = (this.paso + 1) % ALETEO.length;
+        this.paso = (this.paso + 1) % this.dibujos.aleteo.length;
       }
-      this.setTexture(ALETEO[this.paso]);
+      this.setTexture(this.dibujos.aleteo[this.paso]);
     }
 
     // soltar justo al pasar por encima del nino

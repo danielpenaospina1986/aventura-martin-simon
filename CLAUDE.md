@@ -2403,4 +2403,58 @@ baja.
   La regla: **cuando una sonda dice que no hay nada, lo primero que hay que
   dudar es de la sonda.** Se comprobo mirando lo que de verdad hay en la lista de
   la escena, recorriendo el tablero entero, y los cinco salian igual de veces.
+- **2026-10-02** — **La banera y la paloma estrenan pieles por mundo**, con el
+  mismo mecanismo de la vaca. Hasta ahora eran UNA para los ocho tableros.
+
+  | Mundo | El de a pie | El que vuela |
+  |---|---|---|
+  | Space Coast | la banera de siempre | **pelicano** y **gaviota**, sorteados |
+  | Medellin | **Mini Papa** | la paloma de siempre |
+  | Atlanta | **botella de cola** | la paloma de siempre |
+  | Miami | la banera de siempre | la paloma (falta el flamenco volando) |
+  | La finca | **zancudo** | la paloma de siempre |
+
+  La diferencia con la vaca es que estas DOS **tienen original**, asi que `null`
+  quiere decir "la de siempre" y sus dibujos no salen del glob de
+  `src/assets/bichos/` sino de las claves sueltas de `TEXTURAS`: son PNG y
+  estaban ahi desde antes de que esto fuera por pieles.
+
+  Y **lo que tira un bicho tampoco lo sabe ya la escena**: se lo pregunta a su
+  `municion`, como se hizo con los jefes. Mini Papa tira balones; los demas, el
+  agua con jabon de siempre.
+- **2026-10-02** — **Segunda vez que un nombre nuevo pisa a uno viejo.** Al
+  balon de Mini Papa se le puso `balon`... que ya era el **balon en llamas del
+  Tio Camilo**, importado cien lineas mas arriba en el mismo archivo. Esta vez
+  si dio error de compilacion y se vio enseguida, al contrario que la primera
+  (`proyectiles`, que se llevo por delante los bloques de Samaon y no dijo ni
+  mu). Se llama `balonUsa`. La regla, ya con dos muescas: **antes de estrenar un
+  nombre, se busca.**
+- **2026-10-02** — Dos descuidos propios al parametrizar, los dos del mismo
+  tipo y los dos caros de encontrar:
+
+  - Se convirtieron las constantes de `Paloma.js` a `this.dibujos.*` con un
+    **reemplazo a ciegas sobre todo el archivo**, y eso tambien reescribio la
+    rama POR DEFECTO del propio ayudante, que quedo llamandose a si misma
+    (`suelta: this.dibujos.suelta` dentro de `dibujosDe`). Reventaba al crear
+    cualquier paloma.
+  - En `constructor-nivel.js` se escribio `datos.fondo` cuando el parametro de
+    esa funcion se llama `nivel`. El nivel entero dejaba de montarse.
+
+  Los dos los caza lo mismo: **abrir el juego y jugar un tablero**. Ninguno de
+  los dos salia en el compilador, y el primero tampoco en una captura.
+- **2026-10-02** — Las hojas de las **botellas y los zancudos** vinieron con las
+  poses tan juntas que se rozaban, asi que sus zonas van A MANO. La regla que
+  deja, y que vale para cualquier hoja apretada: **una zona tiene que empezar
+  despues del extremo MAXIMO del vecino**, no donde menos tinta haya. Cortando
+  por donde menos tinta hay, lo que entra es un trozo del de al lado —un zapato
+  suelto flotando junto al bicho—, y eso se ve muchisimo mas que un recorte.
+
+  Y cuando hay que elegir a quien se le quita, **se sacrifica la punta fina** (un
+  dedo que senala, una trompa) **y nunca la parte ancha** (un zapato, un ala).
+- **2026-10-02** — Ojo al leer la salida de la suite cuando una pasada se corta
+  a medias: el reportero lista las pruebas **que no llegaron a correr** con el
+  mismo formato con el que lista las que fallan. Se leyo "1 passed" con una
+  lista larga debajo y se dio por hecho que se habia roto casi todo; no era eso,
+  era una pasada interrumpida. **Si la cuenta final no dice `failed`, no hay
+  fallos**, por larga que sea la lista.
 
