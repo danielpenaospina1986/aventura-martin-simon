@@ -148,9 +148,25 @@ export const CIUDADES = {
   },
 
   // Cartagena: calzada de piedra colonial, ocre y gastada.
+  // Cartagena **ya tiene los suyos**, dibujados por Daniel, asi que se le va
+  // lo prestado de Medellin. Por DETRAS, la ciudad amurallada: el castillo de
+  // San Felipe con sus piratas, el buque de la Armada con sus marinos
+  // saludando y el galeon espanol. Por DELANTE, las palenqueras con sus
+  // bateas de fruta, los trillizos jugando al futbol, las iguanas al sol y
+  // los dos camarones tocando vallenato.
   cartagena: {
     pais: 'co',
-    frente: [...DECORADO_DE_PUEBLO],
+    frente: [
+      { textura: TEXTURAS.frentePalenqueras, desde: 'abajo', alto: 178, cada: 1240, desfase: 360 },
+      { textura: TEXTURAS.frenteTrillizos, desde: 'abajo', alto: 150, cada: 1380, desfase: 1020 },
+      { textura: TEXTURAS.frenteCamarones, desde: 'abajo', alto: 134, cada: 1160, desfase: 1700 },
+      // las iguanas van bajitas: se tumban al sol, no se pasean
+      { textura: TEXTURAS.frenteIguanas, desde: 'abajo', alto: 86, cada: 1060, desfase: 620 },
+      // y por detras, la ciudad amurallada
+      { textura: TEXTURAS.frenteCastillo, desde: 'abajo', alto: 196, cada: 1520, desfase: 280, detras: true },
+      { textura: TEXTURAS.frenteBuque, desde: 'abajo', alto: 148, cada: 1440, desfase: 980, detras: true },
+      { textura: TEXTURAS.frenteGaleon, desde: 'abajo', alto: 212, cada: 1620, desfase: 1660, detras: true },
+    ],
     pavimento: { patron: 'piedra', claro: 0xdcc28c, medio: 0xc2a670, oscuro: 0x9b8252 },
     subsuelo: { patron: 'piedra', claro: 0xab8f5f, medio: 0x917847, oscuro: 0x6f5c36 },
     cornisa: { cuerpo: 0xd9a05b, borde: 0x8a5f2c },

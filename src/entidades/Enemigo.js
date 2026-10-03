@@ -16,6 +16,13 @@ import Phaser from 'phaser';
 import { ENEMIGO } from '../config/ajustes.js';
 import { TEXTURAS } from '../config/estilo.js';
 
+// Lo que tira cada piel. Quien no diga nada, el agua con jabon de siempre,
+// que es de lo que va el cuento.
+const MUNICION = {
+  minipapa: TEXTURAS.balonUsa,
+  raton: TEXTURAS.gas,
+};
+
 // Los dibujos de una piel. Sin piel, la banera de toda la vida: sus dibujos no
 // salen del glob de `src/assets/bichos/` sino de las claves sueltas de
 // TEXTURAS, porque son PNG y estan ahi desde antes de que esto fuera por
@@ -35,7 +42,7 @@ function dibujosDe(piel) {
     // Lo que tira no lo sabe la escena: lo dice el bicho, como ya hacian los
     // jefes con su `municion`. Mini Papa tira balones; los demas, el agua con
     // jabon de siempre, que es de lo que va el cuento.
-    municion: piel === 'minipapa' ? TEXTURAS.balonUsa : TEXTURAS.agua,
+    municion: MUNICION[piel] || TEXTURAS.agua,
     quieta: suyo('quieta'),
     anda: [suyo('anda1'), suyo('anda2')],
     carga: suyo('carga'),

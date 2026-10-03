@@ -163,6 +163,8 @@ export const TEXTURAS = {
   // la primera fue `proyectiles`, que se llevo por delante los bloques de
   // Samaon. Antes de estrenar un nombre, se busca.
   balonUsa: 'tex-balon-usa',
+  // la nube de gas que suelta el raton de Orlando
+  gas: 'tex-gas',
   palomaVuela1: 'tex-paloma-vuela1',
   palomaVuela2: 'tex-paloma-vuela2',
   palomaVuela3: 'tex-paloma-vuela3',
@@ -320,6 +322,14 @@ export const TEXTURAS = {
   frenteMartha: 'tex-frente-martha',
   frenteSaxofonista: 'tex-frente-saxofonista',
   frenteBotellas: 'tex-frente-botellas',
+  // los de Cartagena
+  frenteCastillo: 'tex-frente-castillo',
+  frenteBuque: 'tex-frente-buque',
+  frenteGaleon: 'tex-frente-galeon',
+  frentePalenqueras: 'tex-frente-palenqueras',
+  frenteTrillizos: 'tex-frente-trillizos',
+  frenteIguanas: 'tex-frente-iguanas',
+  frenteCamarones: 'tex-frente-camarones',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',

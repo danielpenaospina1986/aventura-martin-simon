@@ -1074,6 +1074,13 @@ mano, en `Planos`: `setScrollFactor` no se lleva con el zoom de la camara.
   primas de los ninos, el raton malvado de 1928 y el villano desenmascarado con
   su bocadillo.
 
+  **Y Cartagena**, con la que **se acaba lo prestado: los ocho mundos tienen ya
+  su decorado propio**. Por detras, la ciudad amurallada: el castillo de San
+  Felipe con sus piratas, el buque de la Armada con sus marinos saludando y el
+  galeon espanol. Por delante, las palenqueras con sus bateas de fruta, los
+  trillizos jugando al futbol, las iguanas al sol y los dos camarones tocando
+  vallenato.
+
   **Y Atlanta**: por detras el estadio del techo en espiral y la entrada de una
   estacion de **MARTA** —que es como se llama el metro de Atlanta, sin hache,
   aunque la abuelita se llame Martha—; por delante la abuelita Martha en su
@@ -2457,4 +2464,37 @@ baja.
   lista larga debajo y se dio por hecho que se habia roto casi todo; no era eso,
   era una pasada interrumpida. **Si la cuenta final no dice `failed`, no hay
   fallos**, por larga que sea la lista.
+- **2026-10-02** — **Cartagena estrena su decorado, y con ella se acaba lo
+  prestado**: los ocho mundos tienen ya el suyo. Ninguna ciudad lleva encima
+  adornos de otra.
+- **2026-10-02** — Y **tres pieles mas de bicho de a pie**: los canones malvados
+  de Cartagena, el raton de orejas de conejo en Orlando —el mismo de su decorado,
+  ahora en cinco poses, y que **no tira cosas sino GASES**— y el flamenco de
+  Miami, que ya tiene sus dos laminas. Con eso cinco de los ocho mundos tienen
+  bicho propio y tres tienen pajaro propio.
+- **2026-10-02** — **El halo del fondo no siempre se puede quitar, pero siempre
+  se puede repintar.** Al raton, que es casi todo negro, el JPG le dejo un halo
+  morado pegado a la tinta, y esta vez subir la tolerancia NO valia: ese halo
+  esta a 240 del magenta, que es exactamente donde esta su blanco. Cualquier
+  filtro que llegara al halo se habria llevado el blanco.
+
+  Se arregla con el mismo `repintar` de la noria, pero mandando a TINTA en vez
+  de a blanco (`a: [26, 24, 28]`). La cuenta del tinte separa igual de bien en
+  los dos casos: el halo lleva el verde por debajo del rojo y del azul, y ni el
+  blanco ni el negro del dibujo lo llevan. **La herramienta ya no solo quita
+  fondo: tambien le devuelve su color a lo que el fondo tino, y el color al que
+  volver lo dice la hoja.**
+- **2026-10-02** — Una pose que lleva su proyectil dibujado dentro se recorta de
+  una de dos maneras, y se elige mirando si se puede separar:
+
+  - Si el proyectil esta SUELTO, la zona corta antes (el canon dispara su bala y
+    la bala queda fuera; es lo mismo que ya se hacia con el heladito de Papa
+    Inodoro).
+  - Si sale PEGADO al bicho y no hay por donde partirlos, se deja dentro: el
+    chorro de gas del raton sale de su propio trasero. Que se vea uno en el
+    dibujo y otro volando no chirria —es lo que ya pasa con el balon de Mini
+    Papa— y es mejor que un corte a mitad del chorro.
+- **2026-10-02** — Se comprobaron los NUEVE nombres nuevos contra el proyecto
+  antes de usarlos, por lo de `balon` y lo de `proyectiles`. Ninguno chocaba.
+  Buscar primero cuesta un `grep`; no buscar ha costado ya dos sesiones.
 
