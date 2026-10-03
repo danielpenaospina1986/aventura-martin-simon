@@ -19,7 +19,7 @@ import { montarPrimerPlano, Planos } from '../sistemas/planos.js';
 import { hayTactil, MandosTactiles } from '../sistemas/tactil.js';
 import { terminarPartida } from '../sistemas/cuento.js';
 import { ciudadDe } from '../config/ciudades.js';
-import { pielDeCiudad } from '../config/bichos.js';
+import { palomaDeCiudad, pielDeCiudad } from '../config/bichos.js';
 import { AVISOS, avisoDeBicho, jefeDelCuento } from '../config/historia.js';
 import { anotarPuntaje, nuevaPartida } from '../sistemas/puntajes.js';
 import { nombreDeSesion } from '../sistemas/sesion.js';
@@ -1451,7 +1451,7 @@ export class EscenaNivel extends Phaser.Scene {
     const agua = this.peligros.create(
       banera.x + dir * 18,
       banera.y - 20,
-      TEXTURAS.agua,
+      (banera.dibujos && banera.dibujos.municion) || TEXTURAS.agua,
     );
     aEscalaDeJuego(agua);
     agua.setDepth(9);
@@ -1652,7 +1652,13 @@ export class EscenaNivel extends Phaser.Scene {
       : Phaser.Math.FloatBetween(PALOMA.alturaMinFila, PALOMA.alturaMaxFila);
     const y = fila * MUNDO.casilla;
 
-    const paloma = new Paloma(this, x, y, desdeLaDerecha ? -1 : 1);
+    const paloma = new Paloma(
+      this,
+      x,
+      y,
+      desdeLaDerecha ? -1 : 1,
+      palomaDeCiudad(this.datosNivel.fondo || '', this.pielDeLasPalomas),
+    );
     this.palomas.add(paloma);
   }
 

@@ -157,6 +157,12 @@ export const TEXTURAS = {
   baneraCarga: 'tex-banera-carga',
   baneraLanza: 'tex-banera-lanza',
   agua: 'tex-agua',
+  // El balon de futbol americano que tira Mini Papa, el bicho de Medellin.
+  // Se llama balonUsa y no balon porque `balon` YA ERA el balon en llamas
+  // del Tio Camilo. Es la segunda vez que un nombre nuevo pisa a uno viejo:
+  // la primera fue `proyectiles`, que se llevo por delante los bloques de
+  // Samaon. Antes de estrenar un nombre, se busca.
+  balonUsa: 'tex-balon-usa',
   palomaVuela1: 'tex-paloma-vuela1',
   palomaVuela2: 'tex-paloma-vuela2',
   palomaVuela3: 'tex-paloma-vuela3',
@@ -308,6 +314,12 @@ export const TEXTURAS = {
   frentePalmerasMiami: 'tex-frente-palmeras-miami',
   frenteBanistas: 'tex-frente-banistas',
   frenteDelfines: 'tex-frente-delfines',
+  // los de Atlanta
+  frenteEstadio: 'tex-frente-estadio',
+  frenteMarta: 'tex-frente-marta',
+  frenteMartha: 'tex-frente-martha',
+  frenteSaxofonista: 'tex-frente-saxofonista',
+  frenteBotellas: 'tex-frente-botellas',
 
   frenteRama: 'tex-frente-rama',
   frenteFarol: 'tex-frente-farol',

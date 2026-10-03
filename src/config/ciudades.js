@@ -101,11 +101,22 @@ export const CIUDADES = {
   },
 
   // Atlanta: calle de asfalto con su linea pintada, sobre hormigon.
+  // Atlanta **ya tiene los suyos**, dibujados por Daniel, asi que se le va lo
+  // prestado de Medellin. Por DETRAS, la ciudad donde viven: el estadio del
+  // techo en espiral y la entrada de una estacion de MARTA —el metro de
+  // Atlanta, que se llama asi de verdad, sin hache, aunque la abuelita se llame
+  // Martha—. Por DELANTE, la abuelita Martha en su asoleadera, el saxofonista
+  // de la calle y las dos botellas de cola malvadas.
   atlanta: {
     pais: 'us',
-    // sin adornos propios todavia: de fondo, el decorado prestado; de delante,
-    // los provisionales que pone montarPrimerPlano
-    frente: [...DECORADO_DE_PUEBLO],
+    frente: [
+      { textura: TEXTURAS.frenteMartha, desde: 'abajo', alto: 132, cada: 1240, desfase: 420 },
+      { textura: TEXTURAS.frenteSaxofonista, desde: 'abajo', alto: 168, cada: 1160, desfase: 1080 },
+      { textura: TEXTURAS.frenteBotellas, desde: 'abajo', alto: 118, cada: 1060, desfase: 1700 },
+      // y por detras, la ciudad
+      { textura: TEXTURAS.frenteEstadio, desde: 'abajo', alto: 188, cada: 1480, desfase: 300, detras: true },
+      { textura: TEXTURAS.frenteMarta, desde: 'abajo', alto: 176, cada: 1380, desfase: 1120, detras: true },
+    ],
     pavimento: { patron: 'asfalto', claro: 0x6a6a6e, medio: 0x55555a, oscuro: 0x3c3c41, linea: 0xd8b44a },
     subsuelo: { patron: 'estratos', claro: 0x807c78, medio: 0x6a6663, oscuro: 0x4e4b48 },
     cornisa: { cuerpo: 0x9c9690, borde: 0x4e4b48 },

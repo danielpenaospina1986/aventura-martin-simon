@@ -1316,6 +1316,341 @@ const PERSONAJES = [
       },
     ],
   },
+  // --- LO DE ATLANTA --------------------------------------------------------
+  //
+  // Tambien sobre magenta. La ciudad donde viven: el estadio y la estacion de
+  // MARTA por detras; la abuelita Martha, el saxofonista y las botellas
+  // malvadas por delante.
+  {
+    // El estadio del techo en espiral. Va DETRAS: es la pieza mas grande
+    // de la tanda.
+    nombre: 'estadio',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 420 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'estadio',
+        porPieza: true,
+        nombres: ['estadio'],
+        zonas: [{ x: 76, y: 60, ancho: 1221, alto: 668 }],
+      },
+    ],
+  },
+  {
+    // La entrada de la estacion de metro, con su cartel. Va DETRAS.
+    nombre: 'marta',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 760, alto: 460 },
+    contornoRelativo: 0.5,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'marta',
+        porPieza: true,
+        nombres: ['marta'],
+        zonas: [{ x: 86, y: 17, ancho: 1204, alto: 725 }],
+      },
+    ],
+  },
+  {
+    // La abuelita Martha en su asoleadera. Va DELANTE, y es APAISADA, al
+    // contrario que la abuelita de la finca: ocupa menos alto y tapa menos al
+    // nino al pasar.
+    nombre: 'martha',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 620, alto: 380 },
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'martha',
+        porPieza: true,
+        nombres: ['martha'],
+        zonas: [{ x: 99, y: 29, ancho: 1180, alto: 710 }],
+      },
+    ],
+  },
+  {
+    // El musico callejero con su saxo. Va DELANTE.
+    nombre: 'saxofonista',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 380, alto: 640 },
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'saxofonista',
+        porPieza: true,
+        nombres: ['saxofonista'],
+        zonas: [{ x: 132, y: 101, ancho: 661, alto: 1123 }],
+      },
+    ],
+  },
+  {
+    // Las dos botellas de cola malvadas. Va DELANTE.
+    // La mas apretada de la tanda: el crema de sus cintas se queda a 180 del
+    // magenta, asi que con 70 el filtro de las bolsas corta en 154 y le deja
+    // margen.
+    nombre: 'botellas',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    lienzo: { ancho: 440, alto: 440 },
+    salida: 'webp',
+    tolerancia: 70,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/frente',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'botellas',
+        porPieza: true,
+        nombres: ['botellas'],
+        zonas: [{ x: 336, y: 17, ancho: 743, alto: 735 }],
+      },
+    ],
+  },
+  // --- LAS PIELES DE LA BANERA Y DE LA PALOMA -------------------------------
+  //
+  // Hasta ahora la banera y la paloma eran UNA para los ocho tableros. Estas
+  // son sus pieles por mundo, con las mismas poses y el mismo lienzo de 260 que
+  // las originales, para que en el juego midan exactamente lo mismo.
+  {
+    // MEDELLIN: Mini Papa, el duende en tanga que tira balones.
+    // 
+    // Sus zonas van A MANO: las dos filas se solapan en vertical (la pose de
+    // abajo empieza antes de que acabe la de arriba), asi que la medicion por
+    // bandas no las separa. Y NO van en orden de lectura: la que hace de
+    // `anda2` es la del brinco, que esta abajo a la derecha.
+    // 
+    // Su piel crema se queda a 180 del magenta y el fondo trae degradado hasta
+    // 70, asi que la ventana es estrecha: 70 corta en 70, 119 y 154.
+    nombre: 'minipapa',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 70,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/minipapa',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'bicho-minipapa',
+        nombres: ['quieta', 'anda1', 'anda2', 'carga', 'lanza'],
+        zonas: [
+          { x: 88, y: 18, ancho: 235, alto: 390 },
+          { x: 1035, y: 20, ancho: 262, alto: 390 },
+          { x: 805, y: 395, ancho: 312, alto: 368 },
+          { x: 250, y: 400, ancho: 398, alto: 355 },
+          { x: 455, y: 28, ancho: 435, alto: 390 },
+        ],
+      },
+    ],
+  },
+  {
+    // ATLANTA: las botellas de cola malvadas.
+    // El crema de sus cintas se queda a 170, asi que 70 deja las bolsas en 154.
+    nombre: 'botella',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 70,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/botella',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'bicho-botellas',
+        nombres: ['quieta', 'anda1', 'anda2', 'carga', 'lanza'],
+        zonas: [
+          { x: 28, y: 23, ancho: 245, alto: 565 },   // quieta
+          { x: 293, y: 23, ancho: 234, alto: 550 },    // anda1
+          { x: 549, y: 23, ancho: 281, alto: 475 },    // anda2
+          { x: 48, y: 683, ancho: 350, alto: 515 },   // carga
+          { x: 440, y: 633, ancho: 390, alto: 565 },  // lanza
+        ],
+      },
+    ],
+  },
+  {
+    // LA FINCA: los zancudos malvados.
+    nombre: 'zancudo',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 70,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/zancudo',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'bicho-zancudo',
+        nombres: ['quieta', 'anda1', 'anda2', 'carga', 'lanza'],
+        zonas: [
+          { x: 5, y: 118, ancho: 259, alto: 468 },    // quieta
+          { x: 301, y: 123, ancho: 226, alto: 463 },   // anda1
+          { x: 579, y: 123, ancho: 257, alto: 355 },   // anda2
+          { x: 48, y: 638, ancho: 341, alto: 565 },   // carga
+          { x: 433, y: 668, ancho: 397, alto: 535 },  // lanza
+        ],
+      },
+    ],
+  },
+  {
+    // SPACE COAST: el pelicano. Sus DIEZ poses vienen en una sola lamina y
+    // debajo de cada una esta ESCRITO su nombre, asi que las zonas van a mano y
+    // todas cortan por encima de las letras (y=335 arriba, y=705 abajo). Es lo
+    // mismo que ya pasaba con las hojas de Papa Inodoro y de Jean Luke.
+    nombre: 'pelicano',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 70,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/pelicano',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'ave-pelicano',
+        nombres: ['vuela1', 'vuela2', 'vuela3', 'vuela4', 'suelta',
+          'mareada', 'cae1', 'cae2', 'cae3', 'suelo'],
+        zonas: [
+          { x: 63, y: 38, ancho: 264, alto: 280 },
+          { x: 328, y: 38, ancho: 264, alto: 280 },
+          { x: 593, y: 123, ancho: 264, alto: 210 },
+          { x: 858, y: 38, ancho: 264, alto: 280 },
+          { x: 1123, y: 123, ancho: 254, alto: 215 },
+          { x: 23, y: 428, ancho: 269, alto: 270 },
+          { x: 323, y: 433, ancho: 264, alto: 265 },
+          { x: 603, y: 463, ancho: 234, alto: 235 },
+          { x: 853, y: 488, ancho: 244, alto: 200 },
+          { x: 1093, y: 498, ancho: 304, alto: 180 },
+        ],
+      },
+    ],
+  },
+  {
+    // SPACE COAST: la gaviota. Viene en DOS laminas, volando y derribada, y van
+    // en la misma entrada para que las diez poses compartan escala.
+    // 
+    // Su blanco se queda a 250, lejisimos, asi que la tolerancia puede ir alta:
+    // hace falta para que el magenta no se le pegue al contorno, que es lo que
+    // les paso a los cachorros negros de la finca.
+    nombre: 'gaviota',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 95,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/gaviota',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'ave-gaviota-vuela',
+        nombres: ['vuela1', 'vuela2', 'vuela3', 'vuela4', 'suelta'],
+        zonas: [
+          { x: 109, y: 22, ancho: 325, alto: 382 },
+          { x: 482, y: 47, ancho: 383, alto: 336 },
+          { x: 884, y: 110, ancho: 482, alto: 278 },
+          { x: 114, y: 406, ancho: 432, alto: 328 },
+          { x: 689, y: 442, ancho: 431, alto: 299 },
+        ],
+      },
+      {
+        archivo: 'ave-gaviota-cae',
+        nombres: ['mareada', 'cae1', 'cae2', 'cae3', 'suelo'],
+        zonas: [
+          { x: 28, y: 75, ancho: 403, alto: 308 },
+          { x: 482, y: 47, ancho: 386, alto: 335 },
+          { x: 973, y: 47, ancho: 353, alto: 367 },
+          { x: 198, y: 399, ancho: 357, alto: 335 },
+          { x: 664, y: 453, ancho: 571, alto: 271 },
+        ],
+      },
+    ],
+  },
+  {
+    // MIAMI: el flamenco. SOLO tiene la lamina de derribado; la de VUELO
+    // todavia no esta (las dos que llegaron eran las dos de caida).
+    // 
+    // Zonas a mano: sus dos filas tambien se solapan en vertical. Su carmesi se
+    // queda a 200 del magenta, que es poco para un rosa, asi que con 80 el
+    // filtro de las bolsas corta en 176 y le deja margen.
+    nombre: 'flamenco',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 80,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/bichos/flamenco',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'ave-flamenco-cae',
+        nombres: ['mareada', 'cae1', 'cae2', 'cae3', 'suelo'],
+        zonas: [
+          { x: 38, y: 78, ancho: 390, alto: 305 },
+          { x: 483, y: 48, ancho: 445, alto: 345 },
+          { x: 978, y: 38, ancho: 350, alto: 390 },
+          { x: 138, y: 398, ancho: 425, alto: 340 },
+          { x: 673, y: 518, ancho: 560, alto: 200 },
+        ],
+      },
+    ],
+  },
+  {
+    // El balon de futbol americano que tira Mini Papa. La lamina trae cinco
+    // iguales; se recorta el del medio, que es el unico que no toca a ningun otro.
+    nombre: 'balon',
+    colorExacto: true,
+    limpiarBolsas: true,
+    bolsaMinima: 20,
+    salida: 'webp',
+    tolerancia: 90,
+    origen: 'src/assets/adornos-origen',
+    destino: 'src/assets/objetos',
+    poses: [],
+    hojas: [
+      {
+        archivo: 'balon',
+        porPieza: true,
+        nombres: ['balon'],
+        zonas: [
+          { x: 482, y: 214, ancho: 449, alto: 327 },
+        ],
+      },
+    ],
+  },
   {
     // PAPA INODORO, el guardian del bano de Space Coast: una cabeza saliendo de
     // un retrete, con la cara de Daniel.
